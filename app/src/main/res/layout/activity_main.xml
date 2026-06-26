@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Top bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="18dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔥"
+                android:textSize="26sp"
+                android:layout_marginEnd="10dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Momentum"
+                    android:textColor="@color/text"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Build good habits. Detox the rest."
+                    android:textColor="@color/muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnScience"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/pill"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp"
+                android:text="The science"
+                android:textColor="@color/text"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg"
+            app:tabIndicatorColor="@color/primary"
+            app:tabSelectedTextColor="@color/text"
+            app:tabTextColor="@color/muted"
+            app:tabIndicatorFullWidth="false"
+            app:tabMode="fixed">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Habits" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Detox" />
+        </com.google.android.material.tabs.TabLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <!-- ===================== HABITS ===================== -->
+            <ScrollView
+                android:id="@+id/scrollHabits"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fadeScrollbars="true"
+                android:clipToPadding="false"
+                android:paddingBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Overview -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_surface"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <com.momentum.app.RingView
+                            android:id="@+id/ringToday"
+                            android:layout_width="116dp"
+                            android:layout_height="116dp" />
+
+                        <LinearLayout
+                            android:id="@+id/habitStats"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="14dp"
+                            android:orientation="vertical" />
+                    </LinearLayout>
+
+                    <!-- Add habit -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/rounded_surface"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <EditText
+                                android:id="@+id/inputName"
+                                android:layout_width="0dp"
+                                android:layout_height="48dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/rounded_input"
+                                android:hint="A tiny habit — e.g. Read 1 page"
+                                android:textColorHint="@color/muted"
+                                android:textColor="@color/text"
+                                android:textSize="15sp"
+                                android:paddingHorizontal="14dp"
+                                android:maxLength="40"
+                                android:inputType="textCapSentences"
+                                android:imeOptions="actionNext" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnAdd"
+                                android:layout_width="wrap_content"
+                                android:layout_height="48dp"
+                                android:layout_marginStart="10dp"
+                                android:text="Add"
+                                android:textColor="@color/white"
+                                app:backgroundTint="@color/primary"
+                                app:cornerRadius="12dp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="After I"
+                                android:textColor="@color/muted"
+                                android:textSize="14sp"
+                                android:layout_marginEnd="8dp" />
+
+                            <EditText
+                                android:id="@+id/inputAnchor"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/rounded_input"
+                                android:hint="brush my teeth / pour my coffee…"
+                                android:textColorHint="@color/muted"
+                                android:textColor="@color/text"
+                                android:textSize="14sp"
+                                android:paddingHorizontal="12dp"
+                                android:maxLength="50"
+                                android:inputType="textCapSentences"
+                                android:imeOptions="actionDone" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Attach it to an existing routine — an if-then plan that makes it automatic."
+                            android:textColor="@color/muted"
+                            android:textSize="11sp" />
+
+                        <HorizontalScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:scrollbars="none">
+
+                            <LinearLayout
+                                android:id="@+id/swatchRow"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal" />
+                        </HorizontalScrollView>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="4dp"
+                        android:text="Your habits"
+                        android:textColor="@color/text"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:id="@+id/habitContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                    <LinearLayout
+                        android:id="@+id/emptyState"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="28dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🌱"
+                            android:textSize="44sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Start tiny"
+                            android:textColor="@color/text"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:gravity="center"
+                            android:text="Add one small habit above. Make it so easy you can't say no — then check in each day to grow the chain."
+                            android:textColor="@color/muted"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </ScrollView>
+
+            <!-- ===================== DETOX ===================== -->
+            <ScrollView
+                android:id="@+id/scrollDetox"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                android:clipToPadding="false"
+                android:paddingBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:id="@+id/detoxStats"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_surface"
+                        android:orientation="vertical"
+                        android:padding="14dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/rounded_surface"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Detox focus session"
+                            android:textColor="@color/text"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Put the phone out of reach. Pick a length, press start, and stay off the feed. When a craving hits, don't fight it — surf it."
+                            android:textColor="@color/muted"
+                            android:textSize="13sp" />
+
+                        <LinearLayout
+                            android:id="@+id/durationRow"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:orientation="horizontal" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnStart"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:layout_marginTop="18dp"
+                            android:text="Start focus session"
+                            android:textSize="16sp"
+                            android:textColor="@color/white"
+                            app:backgroundTint="@color/primary"
+                            app:cornerRadius="14dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="4dp"
+                        android:text="Recent sessions"
+                        android:textColor="@color/text"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:id="@+id/sessionContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+                </LinearLayout>
+            </ScrollView>
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingVertical="10dp"
+            android:text="100% offline · your data never leaves this device"
+            android:textColor="@color/muted"
+            android:textSize="11sp"
+            android:background="@color/bg" />
+    </LinearLayout>
+
+    <!-- ===================== FOCUS OVERLAY ===================== -->
+    <LinearLayout
+        android:id="@+id/focusOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/overlay_bg"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="28dp"
+        android:clickable="true"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/focusState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stay present."
+            android:textColor="@color/muted"
+            android:textSize="15sp"
+            android:layout_marginBottom="20dp" />
+
+        <com.momentum.app.RingView
+            android:id="@+id/ringFocus"
+            android:layout_width="240dp"
+            android:layout_height="240dp" />
+
+        <TextView
+            android:id="@+id/focusTip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:text=""
+            android:textColor="@color/muted"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnUrge"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="28dp"
+            android:text="I feel an urge"
+            android:textSize="16sp"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/orange"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEnd"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="End session"
+            android:textColor="@color/muted" />
+    </LinearLayout>
+
+    <!-- ===================== URGE-SURF OVERLAY ===================== -->
+    <LinearLayout
+        android:id="@+id/urgeOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/overlay_bg"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="28dp"
+        android:clickable="true"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Surf the urge"
+            android:textColor="@color/text"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="A craving is a wave. It rises, peaks, and passes — usually in under 90 seconds. Breathe with the circle and let it roll by."
+            android:textColor="@color/muted"
+            android:textSize="14sp" />
+
+        <FrameLayout
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="20dp">
+
+            <View
+                android:id="@+id/breathOrb"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle" />
+
+            <TextView
+                android:id="@+id/breathText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Breathe in"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="16sp" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/urgeCountdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="@color/muted"
+            android:textSize="14sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnUrgeDone"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="24dp"
+            android:text="It passed — back to focus"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            app:backgroundTint="@color/green"
+            app:cornerRadius="14dp" />
+    </LinearLayout>
+
+</FrameLayout>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#0E1116</color>
+    <color name="surface">#161B22</color>
+    <color name="surface2">#1F2630</color>
+    <color name="stroke">#2A323D</color>
+    <color name="text">#E6EDF3</color>
+    <color name="muted">#8B98A5</color>
+    <color name="primary">#4F8CFF</color>
+    <color name="primary_dark">#2F6BD8</color>
+    <color name="green">#2EA043</color>
+    <color name="orange">#FF7A1A</color>
+    <color name="red">#E5534B</color>
+    <color name="ring_track">#262E39</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="icon_bg">#0E1116</color>
+</resources>

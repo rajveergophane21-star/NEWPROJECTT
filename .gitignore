@@ -1,0 +1,12 @@
+# Gradle / Android build output
+.gradle/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
+captures/
+.cxx/
+
+# Keep distributable APKs in dist/
+!dist/
