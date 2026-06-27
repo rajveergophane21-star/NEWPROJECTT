@@ -71,8 +71,14 @@ class OnboardingActivity : AppCompatActivity() {
 
         doneBtn = Ui.primary(this, "I'm set up")
         doneBtn.setOnClickListener {
+            Ui.haptic(it)
             getSharedPreferences("anchor_flags", MODE_PRIVATE).edit().putBoolean("onboarded", true).apply()
             if (Store.rules.any { it.enabled }) MonitorService.start(this)
+            // Land the user straight in their first block — the activation moment.
+            if (Store.rules.isEmpty()) {
+                startActivity(Intent(this, RuleEditorActivity::class.java)
+                    .putExtra(RuleEditorActivity.EXTRA_FIRST_RUN, true))
+            }
             finish()
         }
         root.addView(Ui.spacer(this, 6))
