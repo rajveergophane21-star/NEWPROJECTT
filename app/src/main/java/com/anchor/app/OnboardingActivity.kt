@@ -23,6 +23,7 @@ class OnboardingActivity : AppCompatActivity() {
     private val steps = mutableListOf<StepView>()
     private lateinit var doneBtn: com.google.android.material.button.MaterialButton
     private var progressText: TextView? = null
+    private var identityInput: android.widget.EditText? = null
     private var prevReady = false
 
     private val notifPermLauncher =
@@ -41,11 +42,29 @@ class OnboardingActivity : AppCompatActivity() {
 
     private fun build() {
         root.addView(Ui.eyebrow(this, "Setup"))
-        root.addView(Ui.title(this, "A few keys to the gate.", 26f).also { it.setPadding(0, Ui.dp(this,8),0,0) })
+        root.addView(Ui.display(this, "First, the point of all this.").also { it.setPadding(0, Ui.dp(this,8),0, Ui.dp(this,16)) })
+
+        // Motivation before machinery: name the identity first.
+        val idCard = Ui.card(this)
+        idCard.addView(Ui.eyebrow(this, "Who are you becoming?"))
+        idCard.addView(Ui.body(this,
+            "Margin isn't about using your phone less — it's about becoming someone in particular. Name that person; every boundary will point back to it.")
+            .also { it.setPadding(0, Ui.dp(this,8),0, Ui.dp(this,4)) })
+        val idField = android.widget.EditText(this).apply {
+            setText(Store.identity)
+            hint = "I'm someone who…"; setHintTextColor(Ui.FAINT); setTextColor(Ui.TEXT); textSize = 16f
+            background = ContextCompat.getDrawable(this@OnboardingActivity, R.drawable.input)
+            setPadding(Ui.dp(this@OnboardingActivity,14), Ui.dp(this@OnboardingActivity,12), Ui.dp(this@OnboardingActivity,14), Ui.dp(this@OnboardingActivity,12))
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).also { it.topMargin = Ui.dp(this@OnboardingActivity,8) }
+        }
+        identityInput = idField
+        idCard.addView(idField)
+        root.addView(idCard)
+
+        root.addView(Ui.eyebrow(this, "Now, the keys to the gate").also { it.setPadding(0, Ui.dp(this,8),0, Ui.dp(this,6)) })
         root.addView(Ui.body(this,
-            "Blocking apps without rooting your phone means borrowing a few of Android's own controls. " +
-            "Margin only ever reads which app is in front — never your content, and nothing leaves your device.")
-            .also { it.setPadding(0, Ui.dp(this,10),0, Ui.dp(this,16)) })
+            "Blocking without rooting means borrowing a few of Android's own controls. Margin only reads which app is in front — never your content.")
+            .also { it.setPadding(0, 0,0, Ui.dp(this,16)) })
 
         progressText = Ui.eyebrow(this, "0 of 3 essentials ready").also { it.setPadding(0,0,0, Ui.dp(this,16)) }
         root.addView(progressText)
@@ -72,6 +91,7 @@ class OnboardingActivity : AppCompatActivity() {
         doneBtn = Ui.primary(this, "I'm set up")
         doneBtn.setOnClickListener {
             Ui.haptic(it)
+            identityInput?.text?.toString()?.let { s -> if (s.isNotBlank()) Store.updateIdentity(s) }
             getSharedPreferences("anchor_flags", MODE_PRIVATE).edit().putBoolean("onboarded", true).apply()
             if (Store.rules.any { it.enabled }) MonitorService.start(this)
             // Land the user straight in their first block — the activation moment.

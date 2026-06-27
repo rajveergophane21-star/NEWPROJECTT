@@ -40,7 +40,8 @@ class Rule(
     val windows: MutableList<TimeWindow>,
     var mode: Mode,
     var enabled: Boolean,
-    var strict: Boolean              // commitment device: can't be turned off while active
+    var strict: Boolean,             // commitment device: can't be turned off while active
+    var reason: String = ""          // optional personal "why", recalled at the intercept
 ) {
     fun activeNow(nowMin: Int, dow: Int): Boolean =
         enabled && windows.any { it.activeAt(nowMin, dow) }
@@ -51,6 +52,21 @@ class Rule(
         return w.endMin - nowMin
     }
 }
+
+/** One end-of-day reflection: how close the day felt to who you're becoming. */
+class DayNote(
+    val day: Long,            // epoch-day, unique
+    var alignment: Int,       // 0 = drifted, 1 = some of the day, 2 = that was me
+    var note: String = ""
+)
+
+/** A weekly review: the mirror, a reflection, and the focus chosen for next week. */
+class WeeklyReview(
+    val weekStart: Long,             // epoch-day of the Monday of that week
+    var noticed: String = "",        // what you noticed about yourself
+    var focus: String = "",          // one thing to lean into next week
+    var lastFocusOutcome: Int = -1   // -1 unset, else 0/1/2 against the prior week's focus
+)
 
 /** A logged moment where Margin stepped in. */
 class Interception(

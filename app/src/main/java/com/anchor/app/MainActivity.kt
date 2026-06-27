@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_today -> show(TodayFragment())
                 R.id.nav_shield -> show(ShieldFragment())
                 R.id.nav_habits -> show(HabitsFragment())
+                R.id.nav_review -> show(ReviewFragment())
                 R.id.nav_insights -> show(InsightsFragment())
                 else -> false
             }
@@ -43,13 +44,17 @@ class MainActivity : AppCompatActivity() {
         if (Perms.coreReady(this) && (Store.rules.any { it.enabled } || Store.focusActive())) {
             MonitorService.start(this)
         }
+        // A quiet dot on Review when this week's review is waiting.
+        val badge = b.bottomNav.getOrCreateBadge(R.id.nav_review)
+        badge.isVisible = Store.reviewDue()
+        badge.backgroundColor = 0xFFC2674A.toInt()
         // refresh whatever tab is visible
         (supportFragmentManager.findFragmentById(R.id.container) as? Refreshable)?.refresh()
     }
 
     private fun show(f: Fragment): Boolean {
+        // Motion restraint: tab switches are instant, no cross-fade.
         supportFragmentManager.beginTransaction()
-            .setCustomAnimations(R.anim.frag_enter, R.anim.frag_exit)
             .replace(R.id.container, f)
             .commit()
         return true

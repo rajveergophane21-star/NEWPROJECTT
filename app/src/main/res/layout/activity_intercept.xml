@@ -89,10 +89,23 @@
             android:lineSpacingExtra="4dp" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReplace"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="28dp"
+            android:text=""
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/line"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPrimary"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="12dp"
             android:text="Take me back"
             android:textSize="16sp"
             android:textColor="@color/ink_on_accent"

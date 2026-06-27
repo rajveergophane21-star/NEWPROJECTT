@@ -24,7 +24,7 @@ class RingView @JvmOverloads constructor(
     private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
     private val centerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0xFF161616.toInt(); textAlign = Paint.Align.CENTER
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
     }
     private val subPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF6E6B64.toInt(); textAlign = Paint.Align.CENTER }
     private val rect = RectF()
@@ -37,7 +37,7 @@ class RingView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         val pad = dp(8f)
         val size = min(width, height).toFloat()
-        val stroke = size * 0.08f
+        val stroke = size * 0.055f
         trackPaint.strokeWidth = stroke; arcPaint.strokeWidth = stroke
         trackPaint.color = trackColor; arcPaint.color = activeColor
         val cx = width / 2f; val cy = height / 2f

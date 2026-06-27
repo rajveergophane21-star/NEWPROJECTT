@@ -46,6 +46,7 @@ class RuleEditorActivity : AppCompatActivity() {
     private var modeBlock = true
     private var strict = false
     private var nameText = ""
+    private var reasonText = ""
     private var editing: Rule? = null
 
     private var windowsBox: LinearLayout? = null
@@ -73,8 +74,20 @@ class RuleEditorActivity : AppCompatActivity() {
             modeBlock = r.mode == Mode.BLOCK
             strict = r.strict
             nameText = r.name
+            reasonText = r.reason
         }
         if (windows.isEmpty()) windows.add(TimeWindow(9 * 60, 17 * 60, mutableSetOf(1, 2, 3, 4, 5)))
+
+        // Prefill from an Insights suggestion ("Block X around the evening").
+        if (editing == null) {
+            intent.getStringExtra(EXTRA_PREFILL_PKG)?.let { p ->
+                pkgs.add(p)
+                val s = intent.getIntExtra(EXTRA_PREFILL_START, -1)
+                val e = intent.getIntExtra(EXTRA_PREFILL_END, -1)
+                if (s >= 0 && e > s) { windows.clear(); windows.add(TimeWindow(s, e, mutableSetOf(1,2,3,4,5,6,7))) }
+                nameText = try { packageManager.getApplicationLabel(packageManager.getApplicationInfo(p, 0)).toString() } catch (_: Exception) { "" }
+            }
+        }
 
         setContentView(buildChrome())
         editing?.let { if (Store.isLocked(it)) { lockUi(); return } }
@@ -149,8 +162,9 @@ class RuleEditorActivity : AppCompatActivity() {
             addView(content, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT))
         }
         container.removeAllViews(); container.addView(sv)
-        sv.alpha = 0f; sv.translationX = (if (forward) 1 else -1) * Ui.dp(this, 36).toFloat()
-        sv.animate().alpha(1f).translationX(0f).setDuration(260).setInterpolator(DecelerateInterpolator()).start()
+        // Motion restraint: a quiet 160ms alpha cross — no slide.
+        sv.alpha = 0f
+        sv.animate().alpha(1f).setDuration(160).setInterpolator(DecelerateInterpolator()).start()
         updateChrome()
     }
 
@@ -304,6 +318,25 @@ class RuleEditorActivity : AppCompatActivity() {
         strictCard.addView(sr)
         v.addView(strictCard)
 
+        // Optional "why" — recalled to you at the intercept moment.
+        val whyCard = Ui.card(this)
+        whyCard.addView(Ui.eyebrow(this, "Your why (optional)"))
+        whyCard.addView(Ui.body(this, "Margin will show this back to you the moment you reach for these apps.").also { it.setPadding(0, Ui.dp(this,6),0,0) })
+        val whyInput = EditText(this).apply {
+            setText(reasonText)
+            hint = "e.g. I want to be present at dinner"; setHintTextColor(Ui.FAINT); setTextColor(Ui.TEXT); textSize = 15f
+            background = ContextCompat.getDrawable(this@RuleEditorActivity, R.drawable.input)
+            setPadding(Ui.dp(this@RuleEditorActivity,14), Ui.dp(this@RuleEditorActivity,12), Ui.dp(this@RuleEditorActivity,14), Ui.dp(this@RuleEditorActivity,12))
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).also { it.topMargin = Ui.dp(this@RuleEditorActivity,8) }
+            addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) { reasonText = s?.toString() ?: "" }
+                override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+                override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            })
+        }
+        whyCard.addView(whyInput)
+        v.addView(whyCard)
+
         if (editing != null) {
             val del = Ui.ghost(this, "Delete rule").apply { setTextColor(Ui.CLAY) }
             del.setOnClickListener { confirmDelete() }
@@ -361,10 +394,10 @@ class RuleEditorActivity : AppCompatActivity() {
 
         val r = editing
         if (r == null) {
-            Store.addRule(Rule(Store.newId(), name, pkgs.toMutableSet(), valid.toMutableList(), mode, true, strict))
+            Store.addRule(Rule(Store.newId(), name, pkgs.toMutableSet(), valid.toMutableList(), mode, true, strict, reasonText.trim()))
         } else {
             r.name = name; r.packages.clear(); r.packages.addAll(pkgs)
-            r.windows.clear(); r.windows.addAll(valid); r.mode = mode; r.strict = strict
+            r.windows.clear(); r.windows.addAll(valid); r.mode = mode; r.strict = strict; r.reason = reasonText.trim()
             Store.save()
         }
         if (Perms.coreReady(this)) MonitorService.start(this)
@@ -407,5 +440,8 @@ class RuleEditorActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_RULE_ID = "rule_id"
         const val EXTRA_FIRST_RUN = "first_run"
+        const val EXTRA_PREFILL_PKG = "prefill_pkg"
+        const val EXTRA_PREFILL_START = "prefill_start"
+        const val EXTRA_PREFILL_END = "prefill_end"
     }
 }

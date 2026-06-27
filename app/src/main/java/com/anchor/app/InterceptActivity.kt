@@ -29,6 +29,7 @@ class InterceptActivity : AppCompatActivity() {
     private var mode = Mode.BLOCK
     private var minutesLeft = -1
     private var ruleName = ""
+    private var reason = ""
     private var pauseTimer: CountDownTimer? = null
     private var breathAnimator: ValueAnimator? = null
     private var frictionRing: RingView? = null
@@ -41,17 +42,16 @@ class InterceptActivity : AppCompatActivity() {
         b = ActivityInterceptBinding.inflate(layoutInflater)
         setContentView(b.root)
 
-        // Arrive deliberately: a quiet fade-up and a single haptic tap.
+        // Arrive deliberately: one quiet fade-up and a single grounding haptic.
         b.root.alpha = 0f
-        b.root.animate().alpha(1f).setDuration(300).start()
-        b.mark.scaleX = 0.8f; b.mark.scaleY = 0.8f
-        b.mark.animate().scaleX(1f).scaleY(1f).setStartDelay(80).setDuration(420).start()
+        b.root.animate().alpha(1f).setDuration(200).start()
         b.root.post { b.root.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) }
 
         pkg = intent.getStringExtra(EXTRA_PKG) ?: run { finish(); return }
         mode = Mode.valueOf(intent.getStringExtra(EXTRA_MODE) ?: "BLOCK")
         minutesLeft = intent.getIntExtra(EXTRA_LEFT, -1)
         ruleName = intent.getStringExtra(EXTRA_RULE) ?: "Margin"
+        reason = intent.getStringExtra(EXTRA_REASON) ?: ""
 
         // Back = leave (the good outcome), never fall through to the app.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -75,11 +75,32 @@ class InterceptActivity : AppCompatActivity() {
             if (minutesLeft > 0) append(" is closed until ${untilTime()}.")
             else append(" is closed right now.")
         }
-        b.sub.text = "You set this boundary when you were thinking clearly. Trust that version of you."
+        b.sub.text = whyLine("You set this boundary when you were thinking clearly. Trust that version of you.")
         b.breathWrap.visibility = View.GONE
         b.btnPrimary.text = "Take me back"
         b.btnPrimary.setOnClickListener { leave(logWin = true) }
         b.btnSecondary.visibility = View.GONE
+        setupReplacement()
+    }
+
+    /** Recall the user's own words at the moment of choice (values affirmation). */
+    private fun whyLine(default: String): String = when {
+        reason.isNotEmpty() -> "You told yourself: “$reason”"
+        Store.identity.isNotEmpty() -> "Remember — you're becoming ${Store.identity}."
+        else -> default
+    }
+
+    /** Offer the replacement behaviour: doing it instead is the real win. */
+    private fun setupReplacement() {
+        val h = Store.firstUndoneToday()
+        if (h == null) { b.btnReplace.visibility = View.GONE; return }
+        b.btnReplace.visibility = View.VISIBLE
+        b.btnReplace.text = "Instead, ${h.name} →"
+        b.btnReplace.setOnClickListener {
+            Ui.haptic(b.btnReplace)
+            Store.toggleToday(h)        // mark the replacement done
+            leave(logWin = true)        // a win, and back to home
+        }
     }
 
     // ------------------------------------------------------------- friction
@@ -87,8 +108,9 @@ class InterceptActivity : AppCompatActivity() {
         b.eyebrow.text = "PAUSE"
         b.headline.text = "One breath first."
         b.appLine.text = "You reached for ${appName()}. Sit with that for a moment before you decide."
-        b.sub.text = "Most urges crest and fall within a minute. Let this one pass."
+        b.sub.text = whyLine("Most urges crest and fall within a minute. Let this one pass.")
         b.breathWrap.visibility = View.VISIBLE
+        setupReplacement()
 
         // A ring fills behind the breathing orb as the pause elapses.
         frictionRing = RingView(this).apply {
@@ -189,6 +211,7 @@ class InterceptActivity : AppCompatActivity() {
         const val EXTRA_MODE = "mode"
         const val EXTRA_LEFT = "left"
         const val EXTRA_RULE = "rule"
+        const val EXTRA_REASON = "reason"
         private const val PAUSE_SECONDS = 12
         private const val GRANT_MINUTES = 3
     }

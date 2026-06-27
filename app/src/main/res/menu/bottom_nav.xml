@@ -3,5 +3,6 @@
     <item android:id="@+id/nav_today" android:icon="@drawable/ic_today" android:title="Today" />
     <item android:id="@+id/nav_shield" android:icon="@drawable/ic_shield" android:title="Shield" />
     <item android:id="@+id/nav_habits" android:icon="@drawable/ic_habits" android:title="Habits" />
+    <item android:id="@+id/nav_review" android:icon="@drawable/ic_review" android:title="Review" />
     <item android:id="@+id/nav_insights" android:icon="@drawable/ic_insights" android:title="Insights" />
 </menu>

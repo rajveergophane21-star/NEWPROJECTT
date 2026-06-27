@@ -34,6 +34,7 @@ object Enforcer {
             putExtra(InterceptActivity.EXTRA_MODE, decision.mode.name)
             putExtra(InterceptActivity.EXTRA_LEFT, decision.minutesLeft)
             putExtra(InterceptActivity.EXTRA_RULE, decision.ruleName)
+            putExtra(InterceptActivity.EXTRA_REASON, decision.reason)
         }
         ctx.startActivity(i)
     }

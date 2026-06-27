@@ -27,6 +27,13 @@ object Store {
     val habits = mutableListOf<Habit>()
     val interceptions = mutableListOf<Interception>()
 
+    // Self-improvement layer (all additive / backward-compatible).
+    var identity: String = ""                        // "I'm someone who…"
+    var identitySetDay: Long = 0L
+    var reviewDow: Int = 7                            // weekly review day (7 = Sunday)
+    val dayNotes = mutableMapOf<Long, DayNote>()      // epoch-day -> reflection
+    val reviews = mutableListOf<WeeklyReview>()
+
     // Ad-hoc "Focus now" session (not persisted as a Rule).
     var focusUntil: Long = 0L
     var focusTotalMs: Long = 0L
@@ -77,7 +84,7 @@ object Store {
             val left = r.minutesLeft(nowMin, dow)
             // BLOCK wins over FRICTION if multiple rules apply
             if (best == null || (r.mode == Mode.BLOCK && best.mode == Mode.FRICTION)) {
-                best = Decision(r.mode, left, r.name, r.id)
+                best = Decision(r.mode, left, r.name, r.id, r.reason)
             }
         }
         return best
@@ -149,6 +156,97 @@ object Store {
         return BooleanArray(days) { i -> h.checkins.contains(t - (days - 1 - i)) }
     }
     fun doneTodayCount() = habits.count { isDoneToday(it) }
+    fun firstUndoneToday(): Habit? = habits.firstOrNull { !isDoneToday(it) }
+
+    // ---- Identity ---------------------------------------------------------
+
+    fun updateIdentity(text: String) {
+        identity = text.trim()
+        if (identity.isNotEmpty() && identitySetDay == 0L) identitySetDay = today()
+        save()
+    }
+
+    // ---- Daily reflection -------------------------------------------------
+
+    fun dayNoteFor(day: Long): DayNote? = dayNotes[day]
+    fun setDayNote(day: Long, alignment: Int, note: String) {
+        dayNotes[day] = DayNote(day, alignment, note.trim()); save()
+    }
+    fun alignedDaysTotal() = dayNotes.values.count { it.alignment >= 1 }
+
+    // ---- Weekly review ----------------------------------------------------
+
+    /** Epoch-day of the Monday on or before [day]. */
+    fun weekStartOf(day: Long): Long {
+        val dow = LocalDate.ofEpochDay(day).dayOfWeek.value   // 1=Mon..7=Sun
+        return day - (dow - 1)
+    }
+    fun reviewFor(weekStart: Long): WeeklyReview? = reviews.firstOrNull { it.weekStart == weekStart }
+    fun lastReview(): WeeklyReview? = reviews.maxByOrNull { it.weekStart }
+    fun saveReview(weekStart: Long, noticed: String, focus: String, lastOutcome: Int) {
+        val ex = reviewFor(weekStart)
+        if (ex != null) { ex.noticed = noticed.trim(); ex.focus = focus.trim(); ex.lastFocusOutcome = lastOutcome }
+        else reviews.add(WeeklyReview(weekStart, noticed.trim(), focus.trim(), lastOutcome))
+        save()
+    }
+    /** Review is due once the chosen day has arrived this week and it isn't done yet. */
+    fun reviewDue(): Boolean {
+        val ws = weekStartOf(today())
+        return reviewFor(ws) == null && LocalDate.now().dayOfWeek.value >= reviewDow
+    }
+    fun reviewsCount() = reviews.size
+
+    // ---- Analytics over the intercept log --------------------------------
+
+    fun interceptionsByHour(days: Int): IntArray {
+        val cutoff = today() - (days - 1)
+        val out = IntArray(24)
+        for (it in interceptions) {
+            if (it.day < cutoff) continue
+            val hour = LocalTime.ofInstant(
+                java.time.Instant.ofEpochMilli(it.timeMillis), java.time.ZoneId.systemDefault()
+            ).hour
+            out[hour]++
+        }
+        return out
+    }
+    fun peakInterceptionHour(days: Int): Int? {
+        val byHour = interceptionsByHour(days)
+        val max = byHour.maxOrNull() ?: return null
+        return if (max == 0) null else byHour.indexOfFirst { it == max }
+    }
+    fun interceptionsByPackage(days: Int): Map<String, Int> {
+        val cutoff = today() - (days - 1)
+        val out = mutableMapOf<String, Int>()
+        for (it in interceptions) { if (it.day >= cutoff) out[it.pkg] = (out[it.pkg] ?: 0) + 1 }
+        return out
+    }
+    fun topInterceptedPackage(days: Int): String? =
+        interceptionsByPackage(days).maxByOrNull { it.value }?.key
+    fun resistedByDay(days: Int): IntArray {
+        val start = today() - (days - 1)
+        val out = IntArray(days)
+        for (it in interceptions) {
+            if (it.proceeded || it.day < start || it.day > today()) continue
+            out[(it.day - start).toInt()]++
+        }
+        return out
+    }
+    fun resistRatio(days: Int): Float {
+        val cutoff = today() - (days - 1)
+        val window = interceptions.filter { it.day >= cutoff }
+        if (window.isEmpty()) return -1f
+        return window.count { !it.proceeded }.toFloat() / window.size
+    }
+    /** Consecutive days (ending today or yesterday) with at least one resisted urge. */
+    fun resistedMomentum(): Int {
+        val days = interceptions.filter { !it.proceeded }.map { it.day }.toSet()
+        val t = today()
+        var day = if (days.contains(t)) t else t - 1
+        var c = 0
+        while (days.contains(day)) { c++; day-- }
+        return c
+    }
 
     // ---- Time helpers -----------------------------------------------------
 
@@ -187,7 +285,8 @@ object Store {
                         o.getLong("id"), o.getString("name"), pkgs, windows,
                         Mode.valueOf(o.optString("mode", "BLOCK")),
                         o.optBoolean("enabled", true),
-                        o.optBoolean("strict", false)
+                        o.optBoolean("strict", false),
+                        o.optString("reason", "")
                     )
                 )
             }
@@ -207,6 +306,25 @@ object Store {
                 val o = ia.getJSONObject(i)
                 interceptions.add(Interception(o.getLong("t"), o.getLong("day"), o.getString("pkg"), o.getBoolean("proc")))
             }
+
+            identity = root.optString("identity", "")
+            identitySetDay = root.optLong("identitySet", 0L)
+            reviewDow = root.optInt("reviewDow", 7)
+
+            dayNotes.clear()
+            val dna = root.optJSONArray("dayNotes") ?: JSONArray()
+            for (i in 0 until dna.length()) {
+                val o = dna.getJSONObject(i)
+                val d = o.getLong("day")
+                dayNotes[d] = DayNote(d, o.optInt("a", 0), o.optString("n", ""))
+            }
+
+            reviews.clear()
+            val rva = root.optJSONArray("reviews") ?: JSONArray()
+            for (i in 0 until rva.length()) {
+                val o = rva.getJSONObject(i)
+                reviews.add(WeeklyReview(o.getLong("week"), o.optString("noticed", ""), o.optString("focus", ""), o.optInt("outcome", -1)))
+            }
         } catch (_: Exception) { }
     }
 
@@ -218,7 +336,7 @@ object Store {
         for (r in rules) {
             val o = JSONObject()
             o.put("id", r.id); o.put("name", r.name); o.put("mode", r.mode.name)
-            o.put("enabled", r.enabled); o.put("strict", r.strict)
+            o.put("enabled", r.enabled); o.put("strict", r.strict); o.put("reason", r.reason)
             val pa = JSONArray(); r.packages.forEach { pa.put(it) }; o.put("pkgs", pa)
             val wa = JSONArray()
             for (w in r.windows) {
@@ -247,9 +365,27 @@ object Store {
         }
         root.put("intercepts", ia)
 
+        root.put("identity", identity)
+        root.put("identitySet", identitySetDay)
+        root.put("reviewDow", reviewDow)
+
+        val dna = JSONArray()
+        for (n in dayNotes.values) {
+            val o = JSONObject(); o.put("day", n.day); o.put("a", n.alignment); o.put("n", n.note); dna.put(o)
+        }
+        root.put("dayNotes", dna)
+
+        val rva = JSONArray()
+        for (w in reviews) {
+            val o = JSONObject()
+            o.put("week", w.weekStart); o.put("noticed", w.noticed); o.put("focus", w.focus); o.put("outcome", w.lastFocusOutcome)
+            rva.put(o)
+        }
+        root.put("reviews", rva)
+
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, root.toString()).apply()
     }
 }
 
 /** Result of evaluating the current foreground app against all rules. */
-class Decision(val mode: Mode, val minutesLeft: Int, val ruleName: String, val ruleId: Long)
+class Decision(val mode: Mode, val minutesLeft: Int, val ruleName: String, val ruleId: Long, val reason: String = "")
