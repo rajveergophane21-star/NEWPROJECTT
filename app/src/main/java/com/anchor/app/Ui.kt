@@ -4,8 +4,10 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -96,5 +98,32 @@ object Ui {
     fun row(c: Context): LinearLayout = LinearLayout(c).apply {
         orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+    }
+
+    // ---- Motion -----------------------------------------------------------
+
+    /** A light tap so actions feel physical. */
+    fun haptic(v: View) {
+        v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING)
+    }
+
+    /** Spring a view, then run [then] — used for check-ins and confirmations. */
+    fun pop(v: View, then: (() -> Unit)? = null) {
+        v.animate().scaleX(1.18f).scaleY(1.18f).setDuration(90).withEndAction {
+            v.animate().scaleX(1f).scaleY(1f).setDuration(110).start()
+            then?.invoke()
+        }.start()
+    }
+
+    /** Staggered rise-and-fade for a container's direct children. */
+    fun stagger(parent: LinearLayout) {
+        val d = dp(parent.context, 14).toFloat()
+        for (i in 0 until parent.childCount) {
+            val v = parent.getChildAt(i)
+            v.alpha = 0f; v.translationY = d
+            v.animate().alpha(1f).translationY(0f)
+                .setStartDelay((i * 45).toLong()).setDuration(300)
+                .setInterpolator(DecelerateInterpolator()).start()
+        }
     }
 }

@@ -29,6 +29,7 @@ object Store {
 
     // Ad-hoc "Focus now" session (not persisted as a Rule).
     var focusUntil: Long = 0L
+    var focusTotalMs: Long = 0L
     val focusPackages = mutableSetOf<String>()
 
     // Transient, in-memory: after a user chooses "open anyway", grant a short pass
@@ -87,9 +88,11 @@ object Store {
 
     fun startFocus(pkgs: Set<String>, minutes: Int) {
         focusPackages.clear(); focusPackages.addAll(pkgs)
-        focusUntil = System.currentTimeMillis() + minutes * 60_000L
+        focusTotalMs = minutes * 60_000L
+        focusUntil = System.currentTimeMillis() + focusTotalMs
     }
     fun focusActive() = System.currentTimeMillis() < focusUntil && focusPackages.isNotEmpty()
+    fun focusRemainingMs() = (focusUntil - System.currentTimeMillis()).coerceAtLeast(0)
     fun stopFocus() { focusUntil = 0L; focusPackages.clear() }
 
     // ---- Interceptions ----------------------------------------------------

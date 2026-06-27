@@ -22,6 +22,8 @@ class OnboardingActivity : AppCompatActivity() {
     private lateinit var root: LinearLayout
     private val steps = mutableListOf<StepView>()
     private lateinit var doneBtn: com.google.android.material.button.MaterialButton
+    private var progressText: TextView? = null
+    private var prevReady = false
 
     private val notifPermLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { render() }
@@ -43,7 +45,10 @@ class OnboardingActivity : AppCompatActivity() {
         root.addView(Ui.body(this,
             "Blocking apps without rooting your phone means borrowing a few of Android's own controls. " +
             "Anchor only ever reads which app is in front — never your content, and nothing leaves your device.")
-            .also { (it.layoutParams as? LinearLayout.LayoutParams) ; it.setPadding(0, Ui.dp(this,10),0, Ui.dp(this,20)) })
+            .also { it.setPadding(0, Ui.dp(this,10),0, Ui.dp(this,16)) })
+
+        progressText = Ui.eyebrow(this, "0 of 3 essentials ready").also { it.setPadding(0,0,0, Ui.dp(this,16)) }
+        root.addView(progressText)
 
         steps.clear()
         steps += StepView("Accessibility · the engine",
@@ -72,6 +77,8 @@ class OnboardingActivity : AppCompatActivity() {
         }
         root.addView(Ui.spacer(this, 6))
         root.addView(doneBtn)
+
+        Ui.stagger(root)
     }
 
     private fun requestNotifications() {
@@ -85,11 +92,16 @@ class OnboardingActivity : AppCompatActivity() {
 
     private fun render() {
         steps.forEach { it.update() }
+        val readyCount = listOf(Perms.hasAccessibility(this), Perms.canDrawOverlays(this), Perms.hasNotifications(this)).count { it }
+        progressText?.text = if (readyCount == 3) "All set — your shield is ready" else "$readyCount of 3 essentials ready"
+        progressText?.setTextColor(if (readyCount == 3) Ui.SAGE else Ui.MUTED)
         if (::doneBtn.isInitialized) {
-            val core = Perms.coreReady(this)
+            val core = readyCount == 3
             doneBtn.isEnabled = core
             doneBtn.alpha = if (core) 1f else 0.4f
-            doneBtn.text = if (core) "I'm set up" else "Grant the three above to continue"
+            doneBtn.text = if (core) "Arm the shield" else "Grant the three above to continue"
+            if (core && !prevReady) Ui.pop(doneBtn)
+            prevReady = core
         }
     }
 

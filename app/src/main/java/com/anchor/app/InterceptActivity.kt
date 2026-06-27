@@ -1,10 +1,14 @@
 package com.anchor.app
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.view.HapticFeedbackConstants
 import android.view.View
+import android.widget.FrameLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.anchor.app.databinding.ActivityInterceptBinding
@@ -27,13 +31,22 @@ class InterceptActivity : AppCompatActivity() {
     private var ruleName = ""
     private var pauseTimer: CountDownTimer? = null
     private var breathAnimator: ValueAnimator? = null
+    private var frictionRing: RingView? = null
     private var canProceed = false
+    private var inhale = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Store.init(this)
         b = ActivityInterceptBinding.inflate(layoutInflater)
         setContentView(b.root)
+
+        // Arrive deliberately: a quiet fade-up and a single haptic tap.
+        b.root.alpha = 0f
+        b.root.animate().alpha(1f).setDuration(300).start()
+        b.mark.scaleX = 0.8f; b.mark.scaleY = 0.8f
+        b.mark.animate().scaleX(1f).scaleY(1f).setStartDelay(80).setDuration(420).start()
+        b.root.post { b.root.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) }
 
         pkg = intent.getStringExtra(EXTRA_PKG) ?: run { finish(); return }
         mode = Mode.valueOf(intent.getStringExtra(EXTRA_MODE) ?: "BLOCK")
@@ -77,32 +90,43 @@ class InterceptActivity : AppCompatActivity() {
         b.sub.text = "Most urges crest and fall within a minute. Let this one pass."
         b.breathWrap.visibility = View.VISIBLE
 
+        // A ring fills behind the breathing orb as the pause elapses.
+        frictionRing = RingView(this).apply {
+            setActiveColor(0xFF86B49A.toInt())
+            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+        }
+        b.breathWrap.addView(frictionRing, 0)
+
         b.btnPrimary.text = "Not now — take me back"
         b.btnPrimary.setOnClickListener { leave(logWin = true) }
 
         b.btnSecondary.visibility = View.VISIBLE
         b.btnSecondary.text = "Wait ${PAUSE_SECONDS}s…"
         b.btnSecondary.isEnabled = false
+        b.btnSecondary.alpha = 0.5f
         b.btnSecondary.setOnClickListener { if (canProceed) proceed() }
 
         startBreathing()
-        pauseTimer = object : CountDownTimer(PAUSE_SECONDS * 1000L, 1000) {
+        val totalMs = PAUSE_SECONDS * 1000L
+        pauseTimer = object : CountDownTimer(totalMs, 250) {
             override fun onTick(ms: Long) {
+                frictionRing?.setProgress((totalMs - ms).toFloat() / totalMs)
                 val s = (ms / 1000).toInt() + 1
-                b.breathCount.text = s.toString()
                 b.btnSecondary.text = "Wait ${s}s…"
             }
             override fun onFinish() {
                 canProceed = true
-                b.breathCount.text = ""
+                frictionRing?.setProgress(1f)
                 b.btnSecondary.text = "Open ${appName()} anyway"
                 b.btnSecondary.isEnabled = true
+                b.btnSecondary.animate().alpha(1f).setDuration(220).start()
             }
         }.start()
     }
 
-    /** Inhale/exhale orb that paces the breath during the pause. */
+    /** Inhale/exhale orb that paces the breath during the pause; centre shows the phase. */
     private fun startBreathing() {
+        b.breathCount.text = "In"
         breathAnimator = ValueAnimator.ofFloat(0.62f, 1f).apply {
             duration = 4000
             repeatMode = ValueAnimator.REVERSE
@@ -111,6 +135,12 @@ class InterceptActivity : AppCompatActivity() {
                 val v = it.animatedValue as Float
                 b.breathOrb.scaleX = v; b.breathOrb.scaleY = v
             }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationRepeat(animation: Animator) {
+                    inhale = !inhale
+                    b.breathCount.text = if (inhale) "In" else "Out"
+                }
+            })
             start()
         }
     }

@@ -3,6 +3,8 @@ package com.anchor.app
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Typeface
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.View
 import android.widget.EditText
@@ -18,8 +20,30 @@ import java.time.format.DateTimeFormatter
 /* ============================== TODAY ============================== */
 
 class TodayFragment : BaseFragment() {
+    private val handler = Handler(Looper.getMainLooper())
+    private var focusRing: RingView? = null
+    private val tick = object : Runnable {
+        override fun run() {
+            val r = focusRing ?: return
+            if (!Store.focusActive()) { refresh(); return }
+            val remain = Store.focusRemainingMs()
+            val total = Store.focusTotalMs.coerceAtLeast(1)
+            r.setProgress((total - remain).toFloat() / total)
+            r.setCenterText(mmss(remain))
+            handler.postDelayed(this, 1000)
+        }
+    }
+
+    override fun onPause() { super.onPause(); handler.removeCallbacks(tick) }
+    override fun onResume() { super.onResume(); if (Store.focusActive() && focusRing != null) { handler.removeCallbacks(tick); handler.post(tick) } }
+
+    private fun mmss(ms: Long): String {
+        val s = (ms / 1000).toInt(); return "%d:%02d".format(s / 60, s % 60)
+    }
+
     override fun render() {
         val c = requireContext()
+        focusRing = null; handler.removeCallbacks(tick)
         val hour = LocalTime.now().hour
         val greet = when { hour < 12 -> "Good morning"; hour < 18 -> "Good afternoon"; else -> "Good evening" }
         col.addView(Ui.eyebrow(c, LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM"))))
@@ -56,11 +80,25 @@ class TodayFragment : BaseFragment() {
         val fcard = Ui.card(c)
         if (Store.focusActive()) {
             fcard.addView(Ui.eyebrow(c, "Focus session"))
-            fcard.addView(Ui.title(c, "${Store.focusMinutesLeft()} minutes left.", 20f).also { it.setPadding(0, Ui.dp(c,6),0, Ui.dp(c,8)) })
-            fcard.addView(Ui.body(c, "Your distractions are sealed off. Stay with what matters."))
-            val end = Ui.ghost(c, "End focus early").also { it.setPadding(0, Ui.dp(c,10),0,0) }
-            end.setOnClickListener { Store.stopFocus(); refresh() }
-            fcard.addView(Ui.spacer(c,10)); fcard.addView(end)
+            val ringRow = Ui.row(c).also { it.gravity = Gravity.CENTER_VERTICAL; it.setPadding(0, Ui.dp(c,12),0, Ui.dp(c,4)) }
+            val ring = RingView(c).apply {
+                setProgress(((Store.focusTotalMs - Store.focusRemainingMs()).toFloat()) / Store.focusTotalMs.coerceAtLeast(1))
+                setCenterText(mmss(Store.focusRemainingMs())); setSubText("left")
+                layoutParams = LinearLayout.LayoutParams(Ui.dp(c,108), Ui.dp(c,108))
+            }
+            focusRing = ring
+            val rcol = LinearLayout(c).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { it.marginStart = Ui.dp(c,16) }
+            }
+            rcol.addView(Ui.title(c, "Sealed off.", 19f))
+            rcol.addView(Ui.body(c, "Stay with what matters. Anchor has the rest.").also { it.setPadding(0, Ui.dp(c,4),0,0) })
+            ringRow.addView(ring); ringRow.addView(rcol)
+            fcard.addView(ringRow)
+            val end = Ui.ghost(c, "End focus early").also { it.setPadding(0, Ui.dp(c,12),0,0) }
+            end.setOnClickListener { Ui.haptic(it); Store.stopFocus(); refresh() }
+            fcard.addView(Ui.spacer(c,12)); fcard.addView(end)
+            handler.removeCallbacks(tick); handler.post(tick)
         } else {
             fcard.addView(Ui.eyebrow(c, "Focus now"))
             fcard.addView(Ui.title(c, "Seal off distractions, right now.", 20f).also { it.setPadding(0, Ui.dp(c,6),0, Ui.dp(c,8)) })
@@ -70,7 +108,7 @@ class TodayFragment : BaseFragment() {
                 val btn = Ui.ghost(c, "${m}m").apply {
                     layoutParams = LinearLayout.LayoutParams(0, Ui.dp(c,48), 1f).also { if (i>0) it.marginStart = Ui.dp(c,8) }
                 }
-                btn.setOnClickListener { startFocus(m) }
+                btn.setOnClickListener { Ui.haptic(it); startFocus(m) }
                 rowB.addView(btn)
             }
             fcard.addView(rowB)
@@ -111,7 +149,7 @@ class TodayFragment : BaseFragment() {
             background = ContextCompat.getDrawable(c, R.drawable.circle)
             backgroundTintList = ColorStateList.valueOf(if (done) Ui.SAGE else 0xFF1C1F26.toInt())
             layoutParams = LinearLayout.LayoutParams(Ui.dp(c,38), Ui.dp(c,38))
-            setOnClickListener { Store.toggleToday(h); refresh() }
+            setOnClickListener { Ui.haptic(this); Ui.pop(this) { Store.toggleToday(h); refresh() } }
         }
         row.addView(tcol); row.addView(check)
         return row
@@ -135,7 +173,7 @@ class ShieldFragment : BaseFragment() {
         }
 
         val add = Ui.primary(c, "New rule")
-        add.setOnClickListener { startActivity(Intent(c, RuleEditorActivity::class.java)) }
+        add.setOnClickListener { Ui.haptic(it); startActivity(Intent(c, RuleEditorActivity::class.java)) }
         col.addView(add); col.addView(Ui.spacer(c,14))
 
         if (Store.rules.isEmpty()) {
@@ -255,7 +293,7 @@ class HabitsFragment : BaseFragment() {
         addBtn.setOnClickListener {
             val n = name.text.toString().trim()
             if (n.isEmpty()) { Toast.makeText(c, "Name it first", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-            Store.addHabit(n, anchor.text.toString()); refresh()
+            Ui.haptic(it); Store.addHabit(n, anchor.text.toString()); refresh()
         }
         addCard.addView(name); addCard.addView(anchor); addCard.addView(Ui.spacer(c,10)); addCard.addView(addBtn)
         col.addView(addCard)
@@ -279,7 +317,7 @@ class HabitsFragment : BaseFragment() {
             background = ContextCompat.getDrawable(c, R.drawable.circle)
             backgroundTintList = ColorStateList.valueOf(if (done) Ui.SAGE else 0xFF1C1F26.toInt())
             layoutParams = LinearLayout.LayoutParams(Ui.dp(c,44), Ui.dp(c,44))
-            setOnClickListener { Store.toggleToday(h); refresh() }
+            setOnClickListener { Ui.haptic(this); Ui.pop(this) { Store.toggleToday(h); refresh() } }
         }
         header.addView(tcol); header.addView(check)
         card.addView(header)

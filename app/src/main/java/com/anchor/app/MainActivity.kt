@@ -17,6 +17,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(b.root)
 
         b.bottomNav.setOnItemSelectedListener {
+            Ui.haptic(b.bottomNav)
             when (it.itemId) {
                 R.id.nav_today -> show(TodayFragment())
                 R.id.nav_shield -> show(ShieldFragment())
@@ -47,7 +48,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun show(f: Fragment): Boolean {
-        supportFragmentManager.beginTransaction().replace(R.id.container, f).commit()
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(R.anim.frag_enter, R.anim.frag_exit)
+            .replace(R.id.container, f)
+            .commit()
         return true
     }
 
