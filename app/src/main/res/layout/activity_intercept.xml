@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/intercept_bg"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingHorizontal="32dp">
+
+        <ImageView
+            android:id="@+id/mark"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/ic_launcher_foreground"
+            android:alpha="0.9"
+            android:contentDescription="Anchor" />
+
+        <TextView
+            android:id="@+id/eyebrow"
+            style="@style/Label.Eyebrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="FOCUS" />
+
+        <TextView
+            android:id="@+id/headline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="Not now."
+            android:textColor="@color/text"
+            android:textSize="34sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="bold"
+            android:letterSpacing="-0.01" />
+
+        <TextView
+            android:id="@+id/appLine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:textColor="@color/muted"
+            android:textSize="15sp"
+            android:lineSpacingExtra="3dp" />
+
+        <!-- Friction-only breathing block -->
+        <FrameLayout
+            android:id="@+id/breathWrap"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:layout_marginTop="28dp"
+            android:visibility="gone">
+
+            <View
+                android:id="@+id/breathOrb"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle"
+                android:alpha="0.9" />
+
+            <TextView
+                android:id="@+id/breathCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textColor="@color/ink_on_accent"
+                android:textStyle="bold"
+                android:textSize="30sp" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/sub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:gravity="center"
+            android:textColor="@color/faint"
+            android:textSize="13sp"
+            android:lineSpacingExtra="4dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="32dp"
+            android:text="Take me back"
+            android:textSize="16sp"
+            android:textColor="@color/ink_on_accent"
+            app:backgroundTint="@color/sage"
+            app:cornerRadius="16dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSecondary"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/faint"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="6dp">
+        <TextView style="@style/Label.Eyebrow"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Choose apps" />
+        <TextView
+            android:id="@+id/pickTitle"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="What should this rule cover?"
+            android:textColor="@color/text" android:textSize="22sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="12dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/done"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_margin="20dp"
+        android:text="Done"
+        android:textColor="@color/ink_on_accent"
+        app:backgroundTint="@color/sage"
+        app:cornerRadius="14dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+</LinearLayout>

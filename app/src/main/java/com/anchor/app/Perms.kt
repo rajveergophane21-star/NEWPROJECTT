@@ -1,0 +1,47 @@
+package com.anchor.app
+
+import android.app.AppOpsManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.PowerManager
+import android.os.Process
+import android.provider.Settings
+import androidx.core.app.NotificationManagerCompat
+
+/** All the permission checks and the exact Settings intents to request them. */
+object Perms {
+
+    fun hasUsageAccess(ctx: Context): Boolean {
+        val ops = ctx.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = ops.unsafeCheckOpNoThrow(
+            AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.packageName
+        )
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    fun canDrawOverlays(ctx: Context): Boolean = Settings.canDrawOverlays(ctx)
+
+    fun hasNotifications(ctx: Context): Boolean =
+        NotificationManagerCompat.from(ctx).areNotificationsEnabled()
+
+    fun ignoringBattery(ctx: Context): Boolean {
+        val pm = ctx.getSystemService(Context.POWER_SERVICE) as PowerManager
+        return pm.isIgnoringBatteryOptimizations(ctx.packageName)
+    }
+
+    /** The core trio that must be granted for blocking to function at all. */
+    fun coreReady(ctx: Context): Boolean =
+        hasUsageAccess(ctx) && canDrawOverlays(ctx) && hasNotifications(ctx)
+
+    // ---- Settings intents -------------------------------------------------
+
+    fun usageAccessIntent() = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+
+    fun overlayIntent(ctx: Context) =
+        Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${ctx.packageName}"))
+
+    @Suppress("BatteryLife")
+    fun batteryIntent(ctx: Context) =
+        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${ctx.packageName}"))
+}

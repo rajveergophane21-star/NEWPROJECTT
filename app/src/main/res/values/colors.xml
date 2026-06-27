@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg">#0E1116</color>
-    <color name="surface">#161B22</color>
-    <color name="surface2">#1F2630</color>
-    <color name="stroke">#2A323D</color>
-    <color name="text">#E6EDF3</color>
-    <color name="muted">#8B98A5</color>
-    <color name="primary">#4F8CFF</color>
-    <color name="primary_dark">#2F6BD8</color>
-    <color name="green">#2EA043</color>
-    <color name="orange">#FF7A1A</color>
-    <color name="red">#E5534B</color>
-    <color name="ring_track">#262E39</color>
+    <!-- Warm ink base. Deliberately low-saturation: a calm, low-stimulation
+         surface is itself an attention-protective design choice. -->
+    <color name="bg">#0B0C0F</color>
+    <color name="surface">#14161B</color>
+    <color name="surface2">#1C1F26</color>
+    <color name="line">#282C35</color>
+    <color name="text">#ECEAE4</color>
+    <color name="muted">#878D99</color>
+    <color name="faint">#5B616C</color>
+
+    <!-- One restrained "go" accent (sage) and warm tones for friction/stop. -->
+    <color name="sage">#86B49A</color>
+    <color name="sage_deep">#6E9C84</color>
+    <color name="clay">#D08B5F</color>
+    <color name="terra">#C76551</color>
+    <color name="ink_on_accent">#0B0C0F</color>
+
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="icon_bg">#0E1116</color>
+    <color name="icon_bg">#14161B</color>
+    <color name="intercept_bg">#0B0C0F</color>
 </resources>
