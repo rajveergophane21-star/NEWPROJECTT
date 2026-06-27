@@ -54,17 +54,19 @@ Fully **non-root**, using Android's own controls:
 
 | Concern | Approach |
 |---|---|
-| Which app is in front | `UsageStatsManager.queryEvents` sampled ~1×/sec in a foreground service (no Accessibility service required) |
-| Showing the intercept | A normal full-screen `Activity` launched from the background — permitted because the app holds **`SYSTEM_ALERT_WINDOW`** (an official background-activity-launch exception) |
-| Staying alive | A `specialUse` **foreground service** (`FOREGROUND_SERVICE_SPECIAL_USE` + `PROPERTY_SPECIAL_USE_FGS_SUBTYPE`, per Android 14 rules), `START_STICKY`, restarted on boot |
-| Scheduling | The service evaluates each rule's time-windows against the clock in real time — no exact-alarm permission needed |
-| Choosing apps | `PackageManager` launcher query (`QUERY_ALL_PACKAGES`) |
+| Detect + enforce | An **`AccessibilityService`** listening for `TYPE_WINDOW_STATE_CHANGED`. When a blocked app surfaces it calls **`performGlobalAction(GLOBAL_ACTION_HOME)`** to pull you out instantly, then shows the intercept. This is the mechanism TimeLimit and DetoxDroid use — event-driven (no polling) and reliable, where launching an activity over a foreground app is not. |
+| Showing the intercept | A full-screen `Activity` launched *after* the HOME press (so the launcher, not the blocked app, is foreground); `SYSTEM_ALERT_WINDOW` keeps the background launch permitted. |
+| Fallback detection | `UsageStatsManager.queryEvents` polled in a `specialUse` foreground service — only used if the AccessibilityService is off. |
+| Staying alive | The AccessibilityService is system-bound (hard to kill); plus a `specialUse` **foreground service** (`FOREGROUND_SERVICE_SPECIAL_USE` + subtype property, per Android 14), restarted on boot. |
+| Scheduling | Rules' time-windows are evaluated against the clock in real time — no exact-alarm permission needed. |
+| Choosing apps | `PackageManager` launcher query (`QUERY_ALL_PACKAGES`). |
 
 **Permissions requested (and exactly why):**
-- `PACKAGE_USAGE_STATS` — read *which* app is foreground (never content)
-- `SYSTEM_ALERT_WINDOW` — draw the intercept over a blocked app
+- **Accessibility** (`BIND_ACCESSIBILITY_SERVICE`) — the engine: see when a blocked app opens and step in. Reads only the foreground package, never content.
+- `SYSTEM_ALERT_WINDOW` — draw the intercept over other apps
 - `POST_NOTIFICATIONS` — the persistent shield notification Android requires
-- `FOREGROUND_SERVICE` / `_SPECIAL_USE` — run the monitor
+- `FOREGROUND_SERVICE` / `_SPECIAL_USE` — fallback monitor + keep-alive
+- `PACKAGE_USAGE_STATS` — optional fallback detection
 - `RECEIVE_BOOT_COMPLETED` — re-arm after reboot
 - `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` — optional; stops the OS killing the shield
 - `QUERY_ALL_PACKAGES` — list installable apps to block

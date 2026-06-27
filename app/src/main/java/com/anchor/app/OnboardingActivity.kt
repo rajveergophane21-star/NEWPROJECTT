@@ -46,9 +46,9 @@ class OnboardingActivity : AppCompatActivity() {
             .also { (it.layoutParams as? LinearLayout.LayoutParams) ; it.setPadding(0, Ui.dp(this,10),0, Ui.dp(this,20)) })
 
         steps.clear()
-        steps += StepView("Usage access",
-            "So Anchor can tell which app you just opened. This is how the shield knows when to step in.",
-            { Perms.hasUsageAccess(this) }, { startActivity(Perms.usageAccessIntent()) })
+        steps += StepView("Accessibility · the engine",
+            "Find Anchor in the list and switch it on. This is what lets the shield notice the moment a blocked app opens and step in. It only reads which app is in front — never your content.",
+            { Perms.hasAccessibility(this) }, { startActivity(Perms.accessibilityIntent()) })
 
         steps += StepView("Display over other apps",
             "So the intercept screen can appear on top of a blocked app the instant it opens.",

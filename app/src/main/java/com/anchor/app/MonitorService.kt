@@ -29,8 +29,6 @@ class MonitorService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var usm: UsageStatsManager
     private var lastForeground = ""
-    private var lastInterceptPkg = ""
-    private var lastInterceptAt = 0L
 
     private val tick = object : Runnable {
         override fun run() {
@@ -59,28 +57,12 @@ class MonitorService : Service() {
     // -----------------------------------------------------------------------
 
     private fun sample() {
+        // The AccessibilityService is the real enforcer. Only fall back to polling
+        // (which can't press HOME and is less reliable) when it isn't enabled.
+        if (AnchorAccessibilityService.connected) return
         val pkg = foregroundPackage() ?: return
-        if (pkg == packageName) return                 // never intercept ourselves
         lastForeground = pkg
-
-        if (Store.hasPass(pkg)) return                 // user was granted a short pass
-
-        val decision = Store.decisionFor(pkg) ?: return
-
-        // De-dupe: don't relaunch the intercept for the same app within a short window.
-        val now = System.currentTimeMillis()
-        if (pkg == lastInterceptPkg && now - lastInterceptAt < INTERCEPT_DEBOUNCE) return
-        lastInterceptPkg = pkg
-        lastInterceptAt = now
-
-        val i = Intent(this, InterceptActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            putExtra(InterceptActivity.EXTRA_PKG, pkg)
-            putExtra(InterceptActivity.EXTRA_MODE, decision.mode.name)
-            putExtra(InterceptActivity.EXTRA_LEFT, decision.minutesLeft)
-            putExtra(InterceptActivity.EXTRA_RULE, decision.ruleName)
-        }
-        startActivity(i)
+        Enforcer.handle(this, pkg, null)
     }
 
     /** Most recently foregrounded package over the last few seconds. */
@@ -128,7 +110,6 @@ class MonitorService : Service() {
         const val CHANNEL = "anchor_shield"
         const val NOTIF_ID = 1001
         private const val SAMPLE_MS = 800L
-        private const val INTERCEPT_DEBOUNCE = 2500L
 
         fun start(ctx: Context) {
             val i = Intent(ctx, MonitorService::class.java)

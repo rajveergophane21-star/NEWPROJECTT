@@ -118,6 +118,7 @@ class InterceptActivity : AppCompatActivity() {
     // ----------------------------------------------------------------- exits
     private fun leave(logWin: Boolean) {
         if (logWin) Store.logInterception(pkg, proceeded = false)
+        Enforcer.reset()
         cleanup()
         // Send the user to the home screen rather than back into the blocked app.
         val home = Intent(Intent.ACTION_MAIN).apply {
@@ -131,8 +132,15 @@ class InterceptActivity : AppCompatActivity() {
     private fun proceed() {
         Store.logInterception(pkg, proceeded = true)
         Store.grantPass(pkg, GRANT_MINUTES)   // short pass so we don't loop
+        Enforcer.reset()
         cleanup()
-        finish()                               // returns to the app underneath
+        // We pressed HOME to get here, so re-open the app the user chose to enter.
+        val launch = packageManager.getLaunchIntentForPackage(pkg)
+        if (launch != null) {
+            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(launch)
+        }
+        finish()
     }
 
     private fun cleanup() {
