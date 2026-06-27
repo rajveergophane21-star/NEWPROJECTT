@@ -52,7 +52,7 @@ class Rule(
     }
 }
 
-/** A logged moment where Anchor stepped in. */
+/** A logged moment where Margin stepped in. */
 class Interception(
     val timeMillis: Long,
     val day: Long,                   // epoch-day

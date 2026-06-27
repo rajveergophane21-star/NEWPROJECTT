@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Warm ink base. Deliberately low-saturation: a calm, low-stimulation
-         surface is itself an attention-protective design choice. -->
-    <color name="bg">#0B0C0F</color>
-    <color name="surface">#14161B</color>
-    <color name="surface2">#1C1F26</color>
-    <color name="line">#282C35</color>
-    <color name="text">#ECEAE4</color>
-    <color name="muted">#878D99</color>
-    <color name="faint">#5B616C</color>
+    <!-- Margin: ink on paper. Light, minimal, editorial. One clay accent. -->
+    <color name="bg">#FFFFFF</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface2">#F4F2ED</color>
+    <color name="line">#E7E4DD</color>
+    <color name="text">#161616</color>
+    <color name="muted">#6E6B64</color>
+    <color name="faint">#9A968D</color>
 
-    <!-- One restrained "go" accent (sage) and warm tones for friction/stop. -->
-    <color name="sage">#86B49A</color>
-    <color name="sage_deep">#6E9C84</color>
-    <color name="clay">#D08B5F</color>
-    <color name="terra">#C76551</color>
-    <color name="ink_on_accent">#0B0C0F</color>
+    <!-- Single accent (clay) used for primary, active, and "go" states. -->
+    <color name="sage">#C2674A</color>
+    <color name="sage_deep">#A8523A</color>
+    <!-- Reserved for destructive / warning. -->
+    <color name="clay">#B23A2E</color>
+    <color name="terra">#B23A2E</color>
+    <color name="ink_on_accent">#FFFFFF</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="icon_bg">#14161B</color>
-    <color name="intercept_bg">#0B0C0F</color>
+    <color name="icon_bg">#FFFFFF</color>
+    <color name="intercept_bg">#FFFFFF</color>
 </resources>

@@ -3,42 +3,30 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Anchor, drawn as strokes, centered in the 72dp safe zone -->
-    <group>
-        <!-- ring -->
-        <path
-            android:strokeColor="#86B49A"
-            android:strokeWidth="5"
-            android:strokeLineCap="round"
-            android:fillColor="#00000000"
-            android:pathData="M54,28 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
-        <!-- shank -->
-        <path
-            android:strokeColor="#86B49A"
-            android:strokeWidth="5"
-            android:strokeLineCap="round"
-            android:fillColor="#00000000"
-            android:pathData="M54,35 L54,82" />
-        <!-- stock / crossbar -->
-        <path
-            android:strokeColor="#86B49A"
-            android:strokeWidth="5"
-            android:strokeLineCap="round"
-            android:fillColor="#00000000"
-            android:pathData="M41,45 L67,45" />
-        <!-- arms and flukes -->
-        <path
-            android:strokeColor="#86B49A"
-            android:strokeWidth="5"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round"
-            android:fillColor="#00000000"
-            android:pathData="M32,64 C32,77 43,84 54,84 C65,84 76,77 76,64" />
-        <path
-            android:strokeColor="#86B49A"
-            android:strokeWidth="5"
-            android:strokeLineCap="round"
-            android:fillColor="#00000000"
-            android:pathData="M32,64 L26,68 M32,64 L34,57 M76,64 L82,68 M76,64 L74,57" />
-    </group>
+    <!-- The margin: a single clay rule down the page -->
+    <path
+        android:strokeColor="#C2674A"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M42,30 L42,78" />
+    <!-- The text it frames -->
+    <path
+        android:strokeColor="#1C1C1C"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M52,40 L82,40" />
+    <path
+        android:strokeColor="#1C1C1C"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M52,54 L74,54" />
+    <path
+        android:strokeColor="#1C1C1C"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M52,68 L82,68" />
 </vector>

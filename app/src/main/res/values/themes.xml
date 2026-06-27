@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.Anchor" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Theme.Anchor" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/sage</item>
         <item name="colorOnPrimary">@color/ink_on_accent</item>
         <item name="colorSecondary">@color/clay</item>
@@ -10,13 +10,13 @@
         <item name="colorOnSurface">@color/text</item>
         <item name="android:statusBarColor">@color/bg</item>
         <item name="android:navigationBarColor">@color/bg</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
         <item name="android:textColorPrimary">@color/text</item>
         <item name="android:textColorSecondary">@color/muted</item>
         <item name="android:fontFamily">sans-serif</item>
     </style>
 
-    <!-- Intercept screen: opaque, full-bleed, no animation in. -->
+    <!-- Intercept screen: opaque paper, no animation in. -->
     <style name="Theme.Anchor.Intercept" parent="Theme.Anchor">
         <item name="android:windowBackground">@color/intercept_bg</item>
         <item name="android:windowAnimationStyle">@null</item>
@@ -26,7 +26,7 @@
     <style name="Label.Eyebrow" parent="">
         <item name="android:textColor">@color/muted</item>
         <item name="android:textSize">11sp</item>
-        <item name="android:letterSpacing">0.14</item>
+        <item name="android:letterSpacing">0.16</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>

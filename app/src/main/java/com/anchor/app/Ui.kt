@@ -16,12 +16,12 @@ import com.google.android.material.button.MaterialButton
 
 /** Small, consistent building blocks so every screen shares one visual language. */
 object Ui {
-    const val TEXT = 0xFFECEAE4.toInt()
-    const val MUTED = 0xFF878D99.toInt()
-    const val FAINT = 0xFF5B616C.toInt()
-    const val SAGE = 0xFF86B49A.toInt()
-    const val CLAY = 0xFFD08B5F.toInt()
-    const val INK = 0xFF0B0C0F.toInt()
+    const val TEXT = 0xFF161616.toInt()   // ink
+    const val MUTED = 0xFF6E6B64.toInt()
+    const val FAINT = 0xFF9A968D.toInt()
+    const val SAGE = 0xFFC2674A.toInt()   // primary accent (clay)
+    const val CLAY = 0xFFB23A2E.toInt()   // destructive / warning
+    const val INK = 0xFFFFFFFF.toInt()    // text on accent
 
     fun dp(c: Context, v: Int) = (v * c.resources.displayMetrics.density).toInt()
 
@@ -71,7 +71,7 @@ object Ui {
     fun ghost(c: Context, t: String): MaterialButton = MaterialButton(c,
         null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
         text = t; setTextColor(TEXT); textSize = 15f; isAllCaps = false
-        cornerRadius = dp(c, 14); strokeColor = ColorStateList.valueOf(0xFF282C35.toInt())
+        cornerRadius = dp(c, 14); strokeColor = ColorStateList.valueOf(0xFFE7E4DD.toInt())
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(c, 52))
     }
 

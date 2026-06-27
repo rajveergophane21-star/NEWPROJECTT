@@ -98,7 +98,7 @@ class MonitorService : Service() {
         )
         return NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_shield)
-            .setContentTitle("Anchor is holding the line")
+            .setContentTitle("Margin is holding the line")
             .setContentText("Your shield is active.")
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)

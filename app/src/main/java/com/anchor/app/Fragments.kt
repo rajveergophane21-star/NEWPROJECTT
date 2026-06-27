@@ -72,7 +72,7 @@ class TodayFragment : BaseFragment() {
                 else -> "No boundaries set."
             }
             card.addView(Ui.title(c, headline, 18f).also { it.setPadding(0, Ui.dp(c,6),0, Ui.dp(c,10)) })
-            card.addView(Ui.body(c, "${Store.resistedToday()} urges turned away today · ${Store.interceptionsToday()} times Anchor stepped in."))
+            card.addView(Ui.body(c, "${Store.resistedToday()} urges turned away today · ${Store.interceptionsToday()} times Margin stepped in."))
             col.addView(card)
         }
 
@@ -92,7 +92,7 @@ class TodayFragment : BaseFragment() {
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { it.marginStart = Ui.dp(c,16) }
             }
             rcol.addView(Ui.title(c, "Sealed off.", 19f))
-            rcol.addView(Ui.body(c, "Stay with what matters. Anchor has the rest.").also { it.setPadding(0, Ui.dp(c,4),0,0) })
+            rcol.addView(Ui.body(c, "Stay with what matters. Margin has the rest.").also { it.setPadding(0, Ui.dp(c,4),0,0) })
             ringRow.addView(ring); ringRow.addView(rcol)
             fcard.addView(ringRow)
             val end = Ui.ghost(c, "End focus early").also { it.setPadding(0, Ui.dp(c,12),0,0) }
@@ -147,7 +147,7 @@ class TodayFragment : BaseFragment() {
         val check = TextView(c).apply {
             text = if (done) "✓" else ""; gravity = Gravity.CENTER; textSize = 18f; setTextColor(Ui.INK)
             background = ContextCompat.getDrawable(c, R.drawable.circle)
-            backgroundTintList = ColorStateList.valueOf(if (done) Ui.SAGE else 0xFF1C1F26.toInt())
+            backgroundTintList = ColorStateList.valueOf(if (done) Ui.SAGE else 0xFFF4F2ED.toInt())
             layoutParams = LinearLayout.LayoutParams(Ui.dp(c,38), Ui.dp(c,38))
             setOnClickListener { Ui.haptic(this); Ui.pop(this) { Store.toggleToday(h); refresh() } }
         }
@@ -315,7 +315,7 @@ class HabitsFragment : BaseFragment() {
         val check = TextView(c).apply {
             text = if (done) "✓" else ""; gravity = Gravity.CENTER; textSize = 20f; setTextColor(Ui.INK)
             background = ContextCompat.getDrawable(c, R.drawable.circle)
-            backgroundTintList = ColorStateList.valueOf(if (done) Ui.SAGE else 0xFF1C1F26.toInt())
+            backgroundTintList = ColorStateList.valueOf(if (done) Ui.SAGE else 0xFFF4F2ED.toInt())
             layoutParams = LinearLayout.LayoutParams(Ui.dp(c,44), Ui.dp(c,44))
             setOnClickListener { Ui.haptic(this); Ui.pop(this) { Store.toggleToday(h); refresh() } }
         }
@@ -373,7 +373,7 @@ class InsightsFragment : BaseFragment() {
         note.addView(Ui.body(c,
             "Friction reliably stops the impulse in the moment, but on its own it doesn't durably cut how often you reach for an app. " +
             "Lasting change comes from pairing it with a commitment you set in advance and a better behaviour to put in its place. " +
-            "That's why Anchor has all three: the pause, the lock, and your replacement habits.", Ui.MUTED, 13f)
+            "That's why Margin has all three: the pause, the lock, and your replacement habits.", Ui.MUTED, 13f)
             .also { it.setPadding(0, Ui.dp(c,8),0,0) })
         col.addView(note)
     }

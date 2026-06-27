@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
 /**
- * Setup flow. Anchor is honest about what it needs and why — real blocking on
+ * Setup flow. Margin is honest about what it needs and why — real blocking on
  * non-rooted Android requires a few system grants, and hiding that erodes trust.
  */
 class OnboardingActivity : AppCompatActivity() {
@@ -44,7 +44,7 @@ class OnboardingActivity : AppCompatActivity() {
         root.addView(Ui.title(this, "A few keys to the gate.", 26f).also { it.setPadding(0, Ui.dp(this,8),0,0) })
         root.addView(Ui.body(this,
             "Blocking apps without rooting your phone means borrowing a few of Android's own controls. " +
-            "Anchor only ever reads which app is in front — never your content, and nothing leaves your device.")
+            "Margin only ever reads which app is in front — never your content, and nothing leaves your device.")
             .also { it.setPadding(0, Ui.dp(this,10),0, Ui.dp(this,16)) })
 
         progressText = Ui.eyebrow(this, "0 of 3 essentials ready").also { it.setPadding(0,0,0, Ui.dp(this,16)) }
@@ -52,7 +52,7 @@ class OnboardingActivity : AppCompatActivity() {
 
         steps.clear()
         steps += StepView("Accessibility · the engine",
-            "Find Anchor in the list and switch it on. This is what lets the shield notice the moment a blocked app opens and step in. It only reads which app is in front — never your content.",
+            "Find Margin in the list and switch it on. This is what lets the shield notice the moment a blocked app opens and step in. It only reads which app is in front — never your content.",
             { Perms.hasAccessibility(this) }, { startActivity(Perms.accessibilityIntent()) })
 
         steps += StepView("Display over other apps",
@@ -147,7 +147,7 @@ class OnboardingActivity : AppCompatActivity() {
             val ok = granted()
             chip.text = if (ok) "Granted" else if (optional) "Optional" else "Needed"
             chip.setTextColor(if (ok) Ui.SAGE else Ui.MUTED)
-            chip.backgroundTintList = ColorStateList.valueOf(if (ok) 0xFF1C2A22.toInt() else 0xFF1C1F26.toInt())
+            chip.backgroundTintList = ColorStateList.valueOf(if (ok) 0xFFF3E3DB.toInt() else 0xFFF4F2ED.toInt())
             btn.visibility = if (ok) View.GONE else View.VISIBLE
         }
     }

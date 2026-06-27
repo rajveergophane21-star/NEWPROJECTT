@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Anchor</string>
-    <string name="accessibility_desc">Anchor watches for the apps you choose to block and steps in with your intervention screen the instant one opens. It only reads which app is in the foreground — never your content, and nothing leaves your device.</string>
+    <string name="app_name">Margin</string>
+    <string name="accessibility_desc">Margin watches for the apps you choose to block and steps in with your intervention screen the instant one opens. It only reads which app is in the foreground — never your content, and nothing leaves your device.</string>
 </resources>

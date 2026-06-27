@@ -85,7 +85,7 @@ class RuleEditorActivity : AppCompatActivity() {
     private fun buildChrome(): View {
         val rootV = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(0xFF0B0C0F.toInt())
+            setBackgroundColor(0xFFFFFFFF.toInt())
             fitsSystemWindows = true
             setPadding(Ui.dp(this@RuleEditorActivity,20), Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,20), Ui.dp(this@RuleEditorActivity,16))
         }
@@ -158,10 +158,10 @@ class RuleEditorActivity : AppCompatActivity() {
         when (step) {
             0 -> { stepTitle.text = "What's pulling you in?"; stepSub.text = "Pick the apps this rule should govern." }
             1 -> { stepTitle.text = "When is it off-limits?"; stepSub.text = "Add the hours and days the rule applies." }
-            else -> { stepTitle.text = "And when you reach for it?"; stepSub.text = "Choose how Anchor steps in — and lock it if you mean it." }
+            else -> { stepTitle.text = "And when you reach for it?"; stepSub.text = "Choose how Margin steps in — and lock it if you mean it." }
         }
         for (d in 0 until dots.childCount) {
-            dots.getChildAt(d).backgroundTintList = ColorStateList.valueOf(if (d == step) Ui.SAGE else 0xFF282C35.toInt())
+            dots.getChildAt(d).backgroundTintList = ColorStateList.valueOf(if (d == step) Ui.SAGE else 0xFFE7E4DD.toInt())
         }
         backBtn.visibility = if (step == 0) View.INVISIBLE else View.VISIBLE
         nextBtn.text = if (step == 2) (if (editing == null) "Arm this rule" else "Save rule") else "Next"
@@ -250,7 +250,7 @@ class RuleEditorActivity : AppCompatActivity() {
                     text = names[d-1]; gravity = Gravity.CENTER; textSize = 13f
                     setTextColor(if (on) Ui.INK else Ui.MUTED)
                     background = ContextCompat.getDrawable(this@RuleEditorActivity, R.drawable.circle_stroke)
-                    backgroundTintList = ColorStateList.valueOf(if (on) Ui.SAGE else 0xFF1C1F26.toInt())
+                    backgroundTintList = ColorStateList.valueOf(if (on) Ui.SAGE else 0xFFF4F2ED.toInt())
                     layoutParams = LinearLayout.LayoutParams(Ui.dp(this@RuleEditorActivity,34), Ui.dp(this@RuleEditorActivity,34)).also { it.marginEnd = Ui.dp(this@RuleEditorActivity,7) }
                     setOnClickListener {
                         if (w.days.contains(d)) w.days.remove(d) else w.days.add(d)
@@ -327,7 +327,7 @@ class RuleEditorActivity : AppCompatActivity() {
     private fun applyModeSelection() {
         fun mark(box: LinearLayout?, on: Boolean) {
             box ?: return
-            box.backgroundTintList = ColorStateList.valueOf(if (on) 0xFF22303A.toInt() else 0xFF1C1F26.toInt())
+            box.backgroundTintList = ColorStateList.valueOf(if (on) 0xFFF3E3DB.toInt() else 0xFFF4F2ED.toInt())
             (box.getChildAt(0) as TextView).setTextColor(if (on) Ui.SAGE else Ui.TEXT)
         }
         mark(blockOpt, modeBlock); mark(frictionOpt, !modeBlock)
@@ -370,7 +370,7 @@ class RuleEditorActivity : AppCompatActivity() {
         if (Perms.coreReady(this)) MonitorService.start(this)
         if (firstRun) {
             val first = try { val pm = packageManager; pm.getApplicationLabel(pm.getApplicationInfo(pkgs.first(), 0)).toString() } catch (_: Exception) { "that app" }
-            Toast.makeText(this, "Shield armed. Open $first to see Anchor work.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Shield armed. Open $first to see Margin work.", Toast.LENGTH_LONG).show()
         }
         finish()
     }

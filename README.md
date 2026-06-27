@@ -1,4 +1,4 @@
-# ⚓ Anchor — *Decide once. Stay the course.*
+# ❘ Margin — *Reclaim the white space.*
 
 An **offline, non-root Android app** that helps you take back your attention. It
 pairs a real **app blocker** (scheduled, per-app, with intervention screens) with
@@ -7,7 +7,7 @@ device** and **replacement behaviours**.
 
 No account. No internet permission. Nothing leaves your device.
 
-> **Install:** [`dist/Anchor-1.0.apk`](dist/Anchor-1.0.apk) — sideload on any Android 8.0+ phone.
+> **Install:** [`dist/Margin-1.0.apk`](dist/Margin-1.0.apk) — sideload on any Android 8.0+ phone.
 
 ---
 
@@ -17,14 +17,15 @@ This isn't a generic "screen time" wrapper. The design follows the evidence:
 
 - **Friction works in the moment, but not on its own.** A mandatory pause reliably
   stops the *current* impulse, yet studies show it doesn't durably reduce how often
-  you reach for an app over weeks. So Anchor never relies on friction alone.
+  you reach for an app over weeks. So Margin never relies on friction alone.
 - **Commitment beats willpower.** A *Ulysses contract* — a decision your past self
   locks so your future self can't wriggle out — is the strongest lever. That's the
   **Commitment lock**: while a rule is active, you can't switch it off.
 - **You can't remove a habit, only replace it.** Cutting an app leaves a gap.
-  Anchor makes you name the **replacement behaviour** and tracks it like a habit.
-- **Calm by design.** The interface is deliberately low-saturation. A quiet surface
-  is itself attention-protective; bright, rewarding UI works against the goal.
+  Margin makes you name the **replacement behaviour** and tracks it like a habit.
+- **Calm by design.** Ink on paper, generous whitespace, one restrained accent. A
+  quiet, unrewarding interface is itself attention-protective — the opposite of the
+  apps it guards you from.
 
 ---
 
@@ -105,4 +106,4 @@ Kotlin · Android Views · Material 3 · custom `RingView`/`HeatmapView` ·
 `SharedPreferences`+JSON persistence · **no network permission** ·
 Gradle 8.9 wrapper, AGP 8.7.3 · minSdk 26 / targetSdk 34.
 
-*Anchor is a self-help tool, not medical treatment.*
+*Margin is a self-help tool, not medical treatment.*

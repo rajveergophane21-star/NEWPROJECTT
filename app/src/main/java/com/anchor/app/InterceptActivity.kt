@@ -51,7 +51,7 @@ class InterceptActivity : AppCompatActivity() {
         pkg = intent.getStringExtra(EXTRA_PKG) ?: run { finish(); return }
         mode = Mode.valueOf(intent.getStringExtra(EXTRA_MODE) ?: "BLOCK")
         minutesLeft = intent.getIntExtra(EXTRA_LEFT, -1)
-        ruleName = intent.getStringExtra(EXTRA_RULE) ?: "Anchor"
+        ruleName = intent.getStringExtra(EXTRA_RULE) ?: "Margin"
 
         // Back = leave (the good outcome), never fall through to the app.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -92,7 +92,7 @@ class InterceptActivity : AppCompatActivity() {
 
         // A ring fills behind the breathing orb as the pause elapses.
         frictionRing = RingView(this).apply {
-            setActiveColor(0xFF86B49A.toInt())
+            setActiveColor(0xFFC2674A.toInt())
             layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         }
         b.breathWrap.addView(frictionRing, 0)
