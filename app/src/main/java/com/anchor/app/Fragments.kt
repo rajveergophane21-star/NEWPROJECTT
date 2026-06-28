@@ -422,21 +422,29 @@ class HabitsFragment : BaseFragment() {
         }
         tcol.addView(Ui.title(c, h.name, 16f))
         if (h.anchor.isNotEmpty()) tcol.addView(Ui.body(c, "After I ${h.anchor}", Ui.MUTED, 12f))
-        val done = Store.isDoneToday(h)
+        val streakLine = Ui.body(c, "${Store.currentStreak(h)}-day streak · best ${Store.bestStreak(h)}", Ui.MUTED, 12f)
+            .also { it.setPadding(0, Ui.dp(c,12),0, Ui.dp(c,12)) }
+        val heat = HeatmapView(c).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            setDays(Store.heatDays(h, 16 * 7), 16)
+        }
         val check = View(c).apply {
-            background = ContextCompat.getDrawable(c, if (done) R.drawable.check_on else R.drawable.ring)
+            background = ContextCompat.getDrawable(c, if (Store.isDoneToday(h)) R.drawable.check_on else R.drawable.ring)
             layoutParams = LinearLayout.LayoutParams(Ui.dp(c,28), Ui.dp(c,28))
             isClickable = true
-            setOnClickListener { Ui.haptic(this); Store.toggleToday(h); refresh() }
+            // Update this card in place rather than rebuilding the whole screen (which would wipe
+            // the "Add habit" fields and lose scroll position).
+            setOnClickListener {
+                Ui.haptic(this); Store.toggleToday(h)
+                background = ContextCompat.getDrawable(c, if (Store.isDoneToday(h)) R.drawable.check_on else R.drawable.ring)
+                streakLine.text = "${Store.currentStreak(h)}-day streak · best ${Store.bestStreak(h)}"
+                heat.setDays(Store.heatDays(h, 16 * 7), 16)
+            }
         }
         header.addView(tcol); header.addView(check)
         card.addView(header)
-        card.addView(Ui.body(c, "${Store.currentStreak(h)}-day streak · best ${Store.bestStreak(h)}", Ui.MUTED, 12f)
-            .also { it.setPadding(0, Ui.dp(c,12),0, Ui.dp(c,12)) })
-        card.addView(HeatmapView(c).apply {
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-            setDays(Store.heatDays(h, 16 * 7), 16)
-        })
+        card.addView(streakLine)
+        card.addView(heat)
         card.setOnClickListener { editHabit(c, h) }
         card.setOnLongClickListener { editHabit(c, h); true }
         return card
@@ -654,10 +662,17 @@ class InsightsFragment : BaseFragment() {
             val act = Ui.primary(c, "Block $label around $band").also { it.setPadding(0, Ui.dp(c,12),0,0) }
             act.setOnClickListener {
                 Ui.haptic(it)
-                startActivity(Intent(c, RuleEditorActivity::class.java)
-                    .putExtra(RuleEditorActivity.EXTRA_PREFILL_PKG, top)
-                    .putExtra(RuleEditorActivity.EXTRA_PREFILL_START, start)
-                    .putExtra(RuleEditorActivity.EXTRA_PREFILL_END, end))
+                val intent = Intent(c, RuleEditorActivity::class.java)
+                val existing = Store.rules.firstOrNull { it.packages.contains(top) }
+                if (existing != null) {
+                    // Don't spawn a second, overlapping rule — edit the one that already governs this app.
+                    intent.putExtra(RuleEditorActivity.EXTRA_RULE_ID, existing.id)
+                } else {
+                    intent.putExtra(RuleEditorActivity.EXTRA_PREFILL_PKG, top)
+                        .putExtra(RuleEditorActivity.EXTRA_PREFILL_START, start)
+                        .putExtra(RuleEditorActivity.EXTRA_PREFILL_END, end)
+                }
+                startActivity(intent)
             }
             card.addView(Ui.spacer(c,12)); card.addView(act)
             col.addView(card)

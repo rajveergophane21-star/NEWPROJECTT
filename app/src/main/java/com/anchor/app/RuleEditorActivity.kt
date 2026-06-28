@@ -475,7 +475,7 @@ class RuleEditorActivity : AppCompatActivity() {
         var m = if (h >= 24) 0 else (((currentMin % 60) + 2) / 5 * 5).coerceIn(0, 55)
         val hh = Ui.numeral(c, "", 46f).apply { gravity = Gravity.CENTER }
         val mm = Ui.numeral(c, "", 46f).apply { gravity = Gravity.CENTER }
-        fun upd() { hh.text = "%02d".format(h); mm.text = "%02d".format(m) }
+        fun upd() { if (h >= 24) m = 0; hh.text = "%02d".format(h); mm.text = "%02d".format(m) }
         upd()
 
         fun key(label: String, onTap: () -> Unit) = TextView(c).apply {
@@ -510,7 +510,7 @@ class RuleEditorActivity : AppCompatActivity() {
         hcol.addView(unit(hh, { h = (h + 24) % 25 }, { h = (h + 1) % 25 }))
         hcol.addView(Ui.eyebrow(c, "Hour").also { it.gravity = Gravity.CENTER_HORIZONTAL; it.setPadding(0, Ui.dp(c,6),0,0) })
         val mcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER }
-        mcol.addView(unit(mm, { m = (m + 55) % 60 }, { m = (m + 5) % 60 }))
+        mcol.addView(unit(mm, { if (h < 24) m = (m + 55) % 60 }, { if (h < 24) m = (m + 5) % 60 }))
         mcol.addView(Ui.eyebrow(c, "Min").also { it.gravity = Gravity.CENTER_HORIZONTAL; it.setPadding(0, Ui.dp(c,6),0,0) })
         grid.addView(hcol)
         grid.addView(TextView(c).apply { text = ":"; typeface = Ui.vt(c); textSize = 38f; setTextColor(Ui.MUTED); setPadding(Ui.dp(c,8),0,Ui.dp(c,8),Ui.dp(c,16)) })
