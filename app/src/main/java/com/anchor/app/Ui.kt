@@ -16,9 +16,9 @@ import androidx.core.content.res.ResourcesCompat
 /** The Margin editorial design kit: warm paper, evergreen accent, serif + mono + sans. */
 object Ui {
     // palette — pixel · daylight (warm parchment)
-    const val TEXT = 0xFF3B2F2A.toInt()
-    const val MUTED = 0xFF7A6650.toInt()       // darkened so labels pass on parchment bg
-    const val FAINT = 0xFFB59B73.toInt()
+    const val TEXT = 0xFF2B2622.toInt()
+    const val MUTED = 0xFF8A8178.toInt()
+    const val FAINT = 0xFFB7AFA4.toInt()
     const val SAGE = 0xFFE07A3E.toInt()        // terracotta accent (fills/dots only)
     const val GREEN = 0xFF4FA64F.toInt()       // success / done
     const val BLUE = 0xFF3E8FD0.toInt()        // info
@@ -26,10 +26,10 @@ object Ui {
     const val ACC_TEXT = 0xFF9A4A1E.toInt()    // accent for small text — passes on light washes
     const val ACC_GLOW = 0xFFE07A3E.toInt()
     const val INK = 0xFFFFFBF0.toInt()         // light text on accent
-    const val SURFACE = 0xFFFBF6E9.toInt()
-    const val SURFACE2 = 0xFFE4D6B8.toInt()
-    const val LINE = 0xFFB59B73.toInt()
-    const val CARD_BORDER = 0xFFC2A87E.toInt()
+    const val SURFACE = 0xFFFBFAF7.toInt()
+    const val SURFACE2 = 0xFFF2F0EA.toInt()
+    const val LINE = 0xFFEEEAE2.toInt()
+    const val CARD_BORDER = 0xFFE2DDD2.toInt()
     const val SELECT = 0xFFF6E2CE.toInt()
     const val CLAY = 0xFFC8485B.toInt()        // danger
     const val TERRA = 0xFFD98E3E.toInt()       // amber / friction

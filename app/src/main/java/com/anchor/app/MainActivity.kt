@@ -71,6 +71,9 @@ class MainActivity : AppCompatActivity() {
         val d = a.getDrawable(0); a.recycle(); return d
     }
 
+    /** Public entry for fragments that want to jump to another tab (e.g. Today → Habits). */
+    fun goTab(i: Int) { select(i) }
+
     private fun select(i: Int) {
         chromeOnly(i)
         show(when (i) {

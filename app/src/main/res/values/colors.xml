@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Margin "pixel · daylight" — warm parchment, cozy daytime RPG. -->
-    <color name="bg">#EFE5CD</color>          <!-- parchment -->
-    <color name="surface">#FBF6E9</color>      <!-- panel face (raised, lighter) -->
-    <color name="surface2">#E4D6B8</color>     <!-- recessed (inputs/tiles) -->
-    <color name="panel_hi">#FFFDF5</color>     <!-- bevel highlight -->
-    <color name="panel_sh">#C2A87E</color>     <!-- bevel shadow -->
-    <color name="line">#B59B73</color>
-    <color name="card_border">#C2A87E</color>
-    <color name="text">#3B2F2A</color>         <!-- warm dark ink -->
-    <color name="muted">#8A7459</color>
-    <color name="faint">#B59B73</color>
+    <!-- Margin — clean, premium, white. Warm ink + a single terracotta accent;
+         surfaces are near-white with a whisper of a bevel, not chunky panels. -->
+    <color name="bg">#FFFFFF</color>          <!-- white -->
+    <color name="surface">#FBFAF7</color>      <!-- card face (barely warm, lifts off white) -->
+    <color name="surface2">#F2F0EA</color>     <!-- recessed (inputs/tiles) -->
+    <color name="panel_hi">#FFFFFF</color>     <!-- bevel highlight -->
+    <color name="panel_sh">#E6E2D8</color>     <!-- bevel shadow (soft warm grey) -->
+    <color name="line">#EEEAE2</color>
+    <color name="card_border">#E2DDD2</color>
+    <color name="text">#2B2622</color>         <!-- warm near-black ink -->
+    <color name="muted">#8A8178</color>
+    <color name="faint">#B7AFA4</color>
 
-    <!-- Accent: warm terracotta (good contrast on light) -->
+    <!-- Accent: warm terracotta -->
     <color name="sage">#E07A3E</color>
     <color name="sage_deep">#B85C28</color>
     <color name="gold_hi">#F2A968</color>
     <color name="accent_soft">#F6E2CE</color>
     <color name="accent_glow">#E07A3E</color>
-    <color name="accent_text">#B85C28</color>
+    <color name="accent_text">#9A4A1E</color>
     <color name="ink_on_accent">#FFFBF0</color>
 
     <color name="green">#4FA64F</color>
@@ -31,7 +32,7 @@
     <color name="dark_text">#F4ECD8</color>
     <color name="intercept_bg">#241C16</color>
 
-    <color name="white">#FBF6E9</color>
-    <color name="black">#3B2F2A</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#2B2622</color>
     <color name="icon_bg">#2A2018</color>
 </resources>

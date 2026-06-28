@@ -97,9 +97,8 @@ class TodayFragment : BaseFragment() {
         brandRow.addView(View(c).apply { layoutParams = LinearLayout.LayoutParams(0, 1, 1f) })
         brandRow.addView(Ui.eyebrow(c, LocalDate.now().format(DateTimeFormatter.ofPattern("EEE d MMM"))))
         col.addView(brandRow)
-        col.addView(thinLine(c))
 
-        col.addView(Ui.display(c, "Good ${part.lowercase()}.", 40f).also { it.setPadding(0, Ui.dp(c,18),0,0) })
+        col.addView(Ui.display(c, "Good ${part.lowercase()}.", 40f).also { it.setPadding(0, Ui.dp(c,14),0,0) })
 
         // identity — your own words
         col.addView(Ui.eyebrow(c, "You're someone who").also { it.setPadding(0, Ui.dp(c,24),0,0) })
@@ -120,8 +119,7 @@ class TodayFragment : BaseFragment() {
     }
 
     private fun statusRow(c: Context, hour: Int) {
-        col.addView(View(c).apply { setBackgroundColor(Ui.LINE); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(c,1).coerceAtLeast(1)).also { it.topMargin = Ui.dp(c,24) } })
-        val row = Ui.row(c).also { it.setPadding(0, Ui.dp(c,16),0, Ui.dp(c,16)) }
+        val row = Ui.row(c).also { it.setPadding(0, Ui.dp(c,30),0, Ui.dp(c,6)) }
         val nowMin = LocalTime.now().let { it.hour * 60 + it.minute }
         val dow = LocalDate.now().dayOfWeek.value
         val active = Store.rules.count { it.activeNow(nowMin, dow) }
@@ -145,7 +143,6 @@ class TodayFragment : BaseFragment() {
         row.addView(dot); row.addView(tcol)
         if (!ready) row.setOnClickListener { startActivity(Intent(c, OnboardingActivity::class.java)) }
         col.addView(row)
-        col.addView(thinLine(c))
     }
 
     private fun focusSection(c: Context) {
@@ -199,8 +196,14 @@ class TodayFragment : BaseFragment() {
     }
 
     private fun habitsSection(c: Context) {
-        if (Store.habits.isEmpty()) return
-        col.addView(Ui.serifHead(c, "Today's habits", 23f).also { it.setPadding(0, Ui.dp(c,30),0, Ui.dp(c,2)) })
+        col.addView(Ui.serifHead(c, "Today's habits", 23f).also { it.setPadding(0, Ui.dp(c,34),0, Ui.dp(c,2)) })
+        if (Store.habits.isEmpty()) {
+            val hint = Ui.body(c, "No replacement habits yet — tap to add one in Habits. A small thing to do instead.", Ui.MUTED, 14f)
+            hint.setPadding(0, Ui.dp(c,8),0,0)
+            hint.setOnClickListener { (activity as? MainActivity)?.goTab(2) }
+            col.addView(hint)
+            return
+        }
         Store.habits.forEach { h ->
             col.addView(thinLine(c).also { (it.layoutParams as LinearLayout.LayoutParams).topMargin = Ui.dp(c,2) })
             col.addView(habitRow(c, h))
@@ -210,11 +213,10 @@ class TodayFragment : BaseFragment() {
     private fun habitRow(c: Context, h: Habit): View {
         val row = Ui.row(c).also { it.setPadding(0, Ui.dp(c,14),0, Ui.dp(c,14)) }
         val done = Store.isDoneToday(h)
-        val check = TextView(c).apply {
-            text = if (done) "✓" else ""; gravity = Gravity.CENTER; textSize = 13f; setTextColor(Ui.INK)
-            background = ContextCompat.getDrawable(c, if (done) R.drawable.circle else R.drawable.ring)
-            if (done) backgroundTintList = ColorStateList.valueOf(Ui.SAGE)
-            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,22), Ui.dp(c,22)).also { it.marginEnd = Ui.dp(c,14) }
+        val check = View(c).apply {
+            background = ContextCompat.getDrawable(c, if (done) R.drawable.check_on else R.drawable.ring)
+            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,24), Ui.dp(c,24)).also { it.marginEnd = Ui.dp(c,14) }
+            isClickable = true
             setOnClickListener { Ui.haptic(this); Store.toggleToday(h); refresh() }
         }
         val tcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
@@ -228,15 +230,10 @@ class TodayFragment : BaseFragment() {
     }
 
     private fun reflectionSection(c: Context) {
-        val card = LinearLayout(c).apply {
-            orientation = LinearLayout.VERTICAL
-            background = ContextCompat.getDrawable(c, R.drawable.card_dark)
-            setPadding(Ui.dp(c,22), Ui.dp(c,22), Ui.dp(c,22), Ui.dp(c,22))
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).also { it.topMargin = Ui.dp(c,28) }
-        }
+        val card = Ui.card(c).also { (it.layoutParams as LinearLayout.LayoutParams).topMargin = Ui.dp(c,28) }
         val existing = Store.dayNoteFor(Store.today())
-        card.addView(Ui.eyebrow(c, "Tonight - 10 seconds").also { it.setTextColor(Ui.ACC_GLOW) })
-        card.addView(Ui.serifQuote(c, "How close was today to who you're becoming?", Ui.DARK_TEXT, 21f).also { it.setPadding(0, Ui.dp(c,11),0, Ui.dp(c,16)) })
+        card.addView(Ui.eyebrow(c, "Tonight - 10 seconds").also { it.setTextColor(Ui.ACC_TEXT) })
+        card.addView(Ui.serifQuote(c, "How close was today to who you're becoming?", Ui.TEXT, 21f).also { it.setPadding(0, Ui.dp(c,11),0, Ui.dp(c,16)) })
 
         var sel = existing?.alignment ?: -1
         val labels = listOf("Not yet", "Closer", "There")
@@ -245,9 +242,8 @@ class TodayFragment : BaseFragment() {
         fun restyle() {
             pills.forEachIndexed { i, p ->
                 val on = i == sel
-                // On the dark reflection card: selected = light fill + dark ink; unselected = warm-dark pill + soft text.
-                p.setTextColor(if (on) Ui.TEXT else 0xFFC2A87E.toInt())
-                p.backgroundTintList = ColorStateList.valueOf(if (on) Ui.SELECT else 0xFF4A3B2C.toInt())
+                p.setTextColor(if (on) Ui.ACC_TEXT else Ui.MUTED)
+                p.backgroundTintList = ColorStateList.valueOf(if (on) Ui.SELECT else Ui.SURFACE2)
             }
         }
         labels.forEachIndexed { i, l ->
@@ -425,11 +421,10 @@ class HabitsFragment : BaseFragment() {
         tcol.addView(Ui.title(c, h.name, 16f))
         if (h.anchor.isNotEmpty()) tcol.addView(Ui.body(c, "After I ${h.anchor}", Ui.MUTED, 12f))
         val done = Store.isDoneToday(h)
-        val check = TextView(c).apply {
-            text = if (done) "✓" else ""; gravity = Gravity.CENTER; textSize = 15f; setTextColor(Ui.INK)
-            background = ContextCompat.getDrawable(c, if (done) R.drawable.circle else R.drawable.ring)
-            if (done) backgroundTintList = ColorStateList.valueOf(Ui.SAGE)
-            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,26), Ui.dp(c,26))
+        val check = View(c).apply {
+            background = ContextCompat.getDrawable(c, if (done) R.drawable.check_on else R.drawable.ring)
+            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,28), Ui.dp(c,28))
+            isClickable = true
             setOnClickListener { Ui.haptic(this); Store.toggleToday(h); refresh() }
         }
         header.addView(tcol); header.addView(check)

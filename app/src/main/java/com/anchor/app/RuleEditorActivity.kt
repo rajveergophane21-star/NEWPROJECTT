@@ -96,7 +96,7 @@ class RuleEditorActivity : AppCompatActivity() {
     private fun buildChrome(): View {
         val rootV = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(0xFFEFE5CD.toInt())
+            setBackgroundColor(0xFFFFFFFF.toInt())
             fitsSystemWindows = true
             setPadding(Ui.dp(this@RuleEditorActivity,20), Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,20), Ui.dp(this@RuleEditorActivity,16))
         }
@@ -353,9 +353,10 @@ class RuleEditorActivity : AppCompatActivity() {
         }
         val head = Ui.row(this)
         head.addView(Ui.title(this, title, 15.5f).also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
-        val radio = TextView(this).apply {
-            text = "✓"; gravity = Gravity.CENTER; textSize = 11f; setTextColor(Ui.INK)
+        val radio = android.widget.ImageView(this).apply {
+            setImageDrawable(ContextCompat.getDrawable(this@RuleEditorActivity, R.drawable.ic_check_px))
             background = ContextCompat.getDrawable(this@RuleEditorActivity, R.drawable.circle)
+            val pad = Ui.dp(this@RuleEditorActivity,3); setPadding(pad,pad,pad,pad)
             layoutParams = LinearLayout.LayoutParams(Ui.dp(this@RuleEditorActivity,18), Ui.dp(this@RuleEditorActivity,18))
         }
         head.addView(radio)

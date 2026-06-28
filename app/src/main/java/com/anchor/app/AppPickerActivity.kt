@@ -87,7 +87,7 @@ class AppPickerActivity : AppCompatActivity() {
             val slot: FrameLayout = v.findViewById(R.id.slot)
             val icon: ImageView = v.findViewById(R.id.icon)
             val name: TextView = v.findViewById(R.id.name)
-            val check: TextView = v.findViewById(R.id.check)
+            val check: ImageView = v.findViewById(R.id.check)
         }
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH =
             VH(LayoutInflater.from(parent.context).inflate(R.layout.item_app, parent, false))

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A filled "done" check: terracotta disc + crisp pixel check. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><shape android:shape="oval"><solid android:color="@color/sage"/></shape></item>
+    <item android:drawable="@drawable/ic_check_px" android:gravity="center" android:width="13dp" android:height="13dp" />
+</layer-list>

@@ -235,7 +235,7 @@ class InterceptActivity : AppCompatActivity() {
         const val EXTRA_LEFT = "left"
         const val EXTRA_RULE = "rule"
         const val EXTRA_REASON = "reason"
-        private const val PAUSE_SECONDS = 12
+        private const val PAUSE_SECONDS = 8
         private const val GRANT_MINUTES = 3
     }
 }
