@@ -10,3 +10,8 @@ captures/
 
 # Keep distributable APKs in dist/
 !dist/
+
+# Signing material — never commit
+keystore.properties
+*.jks
+*.keystore

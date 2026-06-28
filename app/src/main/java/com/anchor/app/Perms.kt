@@ -53,7 +53,7 @@ object Perms {
     fun overlayIntent(ctx: Context) =
         Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${ctx.packageName}"))
 
-    @Suppress("BatteryLife")
-    fun batteryIntent(ctx: Context) =
-        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${ctx.packageName}"))
+    // Opens the full battery-optimisation list (the user finds Margin). This avoids the
+    // Play-restricted REQUEST_IGNORE_BATTERY_OPTIMIZATIONS permission + direct-request intent.
+    fun batteryIntent(ctx: Context) = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
 }
