@@ -64,11 +64,17 @@ class AppPickerActivity : AppCompatActivity() {
             val pm = packageManager
             val launch = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
             val resolved = pm.queryIntentActivities(launch, 0)
+            // Don't offer apps that would trap the user if blocked: Margin itself, the home
+            // launcher, the system Settings, or the phone dialer.
+            val protectedPkgs = hashSetOf(packageName)
+            try { pm.resolveActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), 0)?.activityInfo?.packageName?.let { protectedPkgs.add(it) } } catch (_: Exception) {}
+            try { pm.resolveActivity(Intent(android.provider.Settings.ACTION_SETTINGS), 0)?.activityInfo?.packageName?.let { protectedPkgs.add(it) } } catch (_: Exception) {}
+            try { (getSystemService(TELECOM_SERVICE) as? android.telecom.TelecomManager)?.defaultDialerPackage?.let { protectedPkgs.add(it) } } catch (_: Exception) {}
             val seen = hashSetOf<String>()
             val loaded = mutableListOf<AppItem>()
             for (ri in resolved) {
                 val pkg = ri.activityInfo.packageName
-                if (pkg == packageName || !seen.add(pkg)) continue
+                if (pkg in protectedPkgs || !seen.add(pkg)) continue
                 val label = ri.loadLabel(pm).toString()
                 val icon = ri.loadIcon(pm)
                 loaded.add(AppItem(pkg, label, icon))

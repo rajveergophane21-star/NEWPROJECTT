@@ -16,10 +16,13 @@ import android.content.Intent
 object Enforcer {
     @Volatile private var lastPkg = ""
     @Volatile private var lastAt = 0L
+    @Volatile private var homePkg: String? = null
     private const val DEBOUNCE_MS = 1500L
 
     fun handle(ctx: Context, pkg: String?) {
         if (pkg.isNullOrEmpty() || pkg == ctx.packageName) return
+        // Never intercept the home launcher — blocking it would trap the user on every Home press.
+        if (pkg == homePackage(ctx)) return
         if (Store.hasPass(pkg)) return
         val decision = Store.decisionFor(pkg) ?: return
 
@@ -39,4 +42,14 @@ object Enforcer {
 
     /** Allow the next appearance of the same app to re-trigger immediately. */
     fun reset() { lastPkg = ""; lastAt = 0L }
+
+    /** The current home/launcher package (cached). */
+    private fun homePackage(ctx: Context): String? {
+        homePkg?.let { return it }
+        return try {
+            val r = ctx.packageManager.resolveActivity(
+                Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), 0)
+            r?.activityInfo?.packageName?.also { homePkg = it }
+        } catch (_: Exception) { null }
+    }
 }

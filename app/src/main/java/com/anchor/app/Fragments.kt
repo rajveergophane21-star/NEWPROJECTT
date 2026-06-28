@@ -109,6 +109,7 @@ class BlocksFragment : BaseFragment() {
 
 class HabitsFragment : BaseFragment() {
     private var pendingAdd = ""
+    private val notifPerm = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) {}
 
     override fun render() {
         val c = requireContext()
@@ -248,7 +249,10 @@ class HabitsFragment : BaseFragment() {
             AlertDialog.Builder(c).setTitle("Reminder · ${fmtTime(rem)}")
                 .setItems(arrayOf("Change time", "Remove reminder")) { _, which ->
                     if (which == 0) pickReminderTime(c, h, rem)
-                    else { Store.setReminder(h, null); ReminderScheduler.cancel(c, h); refresh() }
+                    else {
+                        Store.setReminder(h, null); ReminderScheduler.cancel(c, h)
+                        androidx.core.app.NotificationManagerCompat.from(c).cancel(h.id.toInt()); refresh()
+                    }
                 }
                 .setNegativeButton("Cancel", null).show()
         }
@@ -258,7 +262,13 @@ class HabitsFragment : BaseFragment() {
         android.app.TimePickerDialog(c, { _, hh, mm ->
             Store.setReminder(h, hh * 60 + mm)
             ReminderScheduler.schedule(c, h)
-            if (!Perms.hasNotifications(c)) Toast.makeText(c, "Turn on notifications to get reminders", Toast.LENGTH_LONG).show()
+            // Make sure reminders can actually show.
+            if (!Perms.hasNotifications(c)) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU)
+                    notifPerm.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                else
+                    Toast.makeText(c, "Turn on notifications in Settings to get reminders", Toast.LENGTH_LONG).show()
+            }
             refresh()
         }, current / 60, current % 60, false).show()
     }
@@ -278,7 +288,11 @@ class HabitsFragment : BaseFragment() {
             .setNeutralButton("Delete") { _, _ ->
                 AlertDialog.Builder(c).setTitle("Delete \"${h.name}\"?")
                     .setMessage("This removes the habit and its history.")
-                    .setPositiveButton("Delete") { _, _ -> ReminderScheduler.cancel(c, h); Store.deleteHabit(h); refresh() }
+                    .setPositiveButton("Delete") { _, _ ->
+                        ReminderScheduler.cancel(c, h)
+                        androidx.core.app.NotificationManagerCompat.from(c).cancel(h.id.toInt())
+                        Store.deleteHabit(h); refresh()
+                    }
                     .setNegativeButton("Cancel", null).show()
             }
             .setNegativeButton("Cancel", null)

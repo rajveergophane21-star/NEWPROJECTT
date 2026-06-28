@@ -17,15 +17,16 @@ class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent?) {
         Store.init(ctx)
         val id = intent?.getLongExtra(EXTRA_ID, -1L) ?: -1L
-        val h = Store.habits.firstOrNull { it.id == id } ?: return
         when (intent?.action) {
-            ACTION_FIRE -> {
-                if (!Store.isDoneToday(h)) notify(ctx, h)
-                ReminderScheduler.schedule(ctx, h)   // chain to tomorrow
-            }
             ACTION_DONE -> {
-                if (!Store.isDoneToday(h)) Store.toggleToday(h)
-                NotificationManagerCompat.from(ctx).cancel(h.id.toInt())
+                // Always clear the notification, even if the habit was deleted (orphaned shade entry).
+                NotificationManagerCompat.from(ctx).cancel(id.toInt())
+                Store.habits.firstOrNull { it.id == id }?.let { if (!Store.isDoneToday(it)) Store.toggleToday(it) }
+            }
+            ACTION_FIRE -> {
+                val h = Store.habits.firstOrNull { it.id == id } ?: return
+                ReminderScheduler.schedule(ctx, h)   // re-arm FIRST so a notify failure can't break the chain
+                if (!Store.isDoneToday(h)) notify(ctx, h)
             }
         }
     }
