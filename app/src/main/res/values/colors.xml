@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Margin "pixel" — based on the Sweetie 16 palette (GrafxKid). Cozy night RPG. -->
-    <color name="bg">#1A1C2C</color>           <!-- night -->
-    <color name="surface">#333C57</color>       <!-- panel face -->
-    <color name="surface2">#29366F</color>      <!-- recessed (inputs) -->
-    <color name="panel_hi">#566C86</color>      <!-- bevel highlight -->
-    <color name="panel_sh">#1A1C2C</color>      <!-- bevel shadow -->
-    <color name="line">#566C86</color>
-    <color name="card_border">#1A1C2C</color>
-    <color name="text">#F4F4F4</color>
-    <color name="muted">#94B0C2</color>
-    <color name="faint">#566C86</color>
+    <!-- Margin "pixel · daylight" — warm parchment, cozy daytime RPG. -->
+    <color name="bg">#EFE5CD</color>          <!-- parchment -->
+    <color name="surface">#FBF6E9</color>      <!-- panel face (raised, lighter) -->
+    <color name="surface2">#E4D6B8</color>     <!-- recessed (inputs/tiles) -->
+    <color name="panel_hi">#FFFDF5</color>     <!-- bevel highlight -->
+    <color name="panel_sh">#C2A87E</color>     <!-- bevel shadow -->
+    <color name="line">#B59B73</color>
+    <color name="card_border">#C2A87E</color>
+    <color name="text">#3B2F2A</color>         <!-- warm dark ink -->
+    <color name="muted">#8A7459</color>
+    <color name="faint">#B59B73</color>
 
-    <!-- Accent: warm gold -->
-    <color name="sage">#FFCD75</color>
-    <color name="sage_deep">#C79A3E</color>
-    <color name="gold_hi">#FFE9A8</color>
-    <color name="accent_soft">#3E3A2A</color>
-    <color name="accent_glow">#FFCD75</color>
-    <color name="accent_text">#FFCD75</color>
-    <color name="ink_on_accent">#1A1C2C</color>
+    <!-- Accent: warm terracotta (good contrast on light) -->
+    <color name="sage">#E07A3E</color>
+    <color name="sage_deep">#B85C28</color>
+    <color name="gold_hi">#F2A968</color>
+    <color name="accent_soft">#F6E2CE</color>
+    <color name="accent_glow">#E07A3E</color>
+    <color name="accent_text">#B85C28</color>
+    <color name="ink_on_accent">#FFFBF0</color>
 
-    <!-- Status colours from the palette -->
-    <color name="green">#A7F070</color>
-    <color name="blue">#41A6F6</color>
-    <color name="clay">#B13E53</color>        <!-- danger -->
-    <color name="terra">#EF7D57</color>       <!-- orange / friction -->
+    <color name="green">#4FA64F</color>
+    <color name="blue">#3E8FD0</color>
+    <color name="clay">#C8485B</color>        <!-- danger -->
+    <color name="terra">#D98E3E</color>       <!-- amber / friction -->
 
-    <color name="dark_card">#29366F</color>
-    <color name="dark_text">#F4F4F4</color>
-    <color name="intercept_bg">#1A1C2C</color>
+    <!-- A warm-dark card / the intercept modal -->
+    <color name="dark_card">#2A2018</color>
+    <color name="dark_text">#F4ECD8</color>
+    <color name="intercept_bg">#241C16</color>
 
-    <color name="white">#F4F4F4</color>
-    <color name="black">#1A1C2C</color>
-    <color name="icon_bg">#1A1C2C</color>
+    <color name="white">#FBF6E9</color>
+    <color name="black">#3B2F2A</color>
+    <color name="icon_bg">#2A2018</color>
 </resources>

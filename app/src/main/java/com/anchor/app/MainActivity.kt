@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
     private val labels = mutableListOf<TextView>()
     private val dueDots = mutableListOf<View>()
     private var current = 0
+    private var firstResume = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                 layoutParams = FrameLayout.LayoutParams(Ui.dp(this@MainActivity, 20), Ui.dp(this@MainActivity, 2), Gravity.TOP or Gravity.CENTER_HORIZONTAL)
             }
             val label = TextView(this).apply {
-                text = name.uppercase(); textSize = 9.5f; letterSpacing = 0.1f
+                text = name.uppercase(); textSize = 10f; letterSpacing = 0.08f
                 typeface = Ui.monoMed(this@MainActivity)
                 layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER)
             }
@@ -91,7 +92,12 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         if (Perms.coreReady(this) && (Store.rules.any { it.enabled } || Store.focusActive())) MonitorService.start(this)
         if (dueDots.size >= 4) dueDots[3].visibility = if (Store.reviewDue()) View.VISIBLE else View.GONE
-        (supportFragmentManager.findFragmentById(R.id.container) as? Refreshable)?.refresh()
+        // Skip the post-create double-render; only refresh when genuinely returning to a
+        // live screen, so typed-but-unsaved input (Review/Habits) isn't blown away.
+        if (!firstResume) {
+            (supportFragmentManager.findFragmentById(R.id.container) as? Refreshable)?.refresh()
+        }
+        firstResume = false
     }
 
     private fun show(f: Fragment) {

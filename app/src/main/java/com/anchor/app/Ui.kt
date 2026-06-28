@@ -1,7 +1,6 @@
 package com.anchor.app
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.os.Build
 import android.view.Gravity
@@ -13,30 +12,29 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import com.google.android.material.button.MaterialButton
 
 /** The Margin editorial design kit: warm paper, evergreen accent, serif + mono + sans. */
 object Ui {
-    // palette — Sweetie 16 (cozy pixel night)
-    const val TEXT = 0xFFF4F4F4.toInt()
-    const val MUTED = 0xFF94B0C2.toInt()
-    const val FAINT = 0xFF566C86.toInt()
-    const val SAGE = 0xFFFFCD75.toInt()        // gold accent (the lantern glow)
-    const val GREEN = 0xFFA7F070.toInt()       // success / done
-    const val BLUE = 0xFF41A6F6.toInt()        // info
-    const val ACC_SOFT = 0xFF29366F.toInt()
-    const val ACC_TEXT = 0xFFFFCD75.toInt()
-    const val ACC_GLOW = 0xFFFFCD75.toInt()
-    const val INK = 0xFF1A1C2C.toInt()         // dark text on accent / on light
-    const val SURFACE = 0xFF333C57.toInt()
-    const val SURFACE2 = 0xFF29366F.toInt()
-    const val LINE = 0xFF566C86.toInt()
-    const val CARD_BORDER = 0xFF1A1C2C.toInt()
-    const val SELECT = 0xFF3E3A2A.toInt()
-    const val CLAY = 0xFFB13E53.toInt()        // danger
-    const val TERRA = 0xFFEF7D57.toInt()       // orange / friction
-    const val DARK = 0xFF29366F.toInt()
-    const val DARK_TEXT = 0xFFF4F4F4.toInt()
+    // palette — pixel · daylight (warm parchment)
+    const val TEXT = 0xFF3B2F2A.toInt()
+    const val MUTED = 0xFF8A7459.toInt()
+    const val FAINT = 0xFFB59B73.toInt()
+    const val SAGE = 0xFFE07A3E.toInt()        // terracotta accent
+    const val GREEN = 0xFF4FA64F.toInt()       // success / done
+    const val BLUE = 0xFF3E8FD0.toInt()        // info
+    const val ACC_SOFT = 0xFFF6E2CE.toInt()
+    const val ACC_TEXT = 0xFFB85C28.toInt()
+    const val ACC_GLOW = 0xFFE07A3E.toInt()
+    const val INK = 0xFFFFFBF0.toInt()         // light text on accent
+    const val SURFACE = 0xFFFBF6E9.toInt()
+    const val SURFACE2 = 0xFFE4D6B8.toInt()
+    const val LINE = 0xFFB59B73.toInt()
+    const val CARD_BORDER = 0xFFC2A87E.toInt()
+    const val SELECT = 0xFFF6E2CE.toInt()
+    const val CLAY = 0xFFC8485B.toInt()        // danger
+    const val TERRA = 0xFFD98E3E.toInt()       // amber / friction
+    const val DARK = 0xFF2A2018.toInt()        // warm-dark card
+    const val DARK_TEXT = 0xFFF4ECD8.toInt()
 
     // fonts (cached) — pixel set: Pixelify Sans (display/body), Silkscreen (labels),
     // VT323 (numerals/timers), Press Start 2P (logo wordmark).
@@ -187,14 +185,8 @@ object Ui {
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(c, h))
     }
 
-    /** A switch tinted to the palette instead of stock Material. */
-    fun switch(c: Context): com.google.android.material.materialswitch.MaterialSwitch =
-        com.google.android.material.materialswitch.MaterialSwitch(c).apply {
-            val st = arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf())
-            thumbTintList = ColorStateList(st, intArrayOf(INK, 0xFFFFFFFF.toInt()))
-            trackTintList = ColorStateList(st, intArrayOf(SAGE, 0xFF566C86.toInt()))
-            trackDecorationTintList = ColorStateList.valueOf(0x00000000)
-        }
+    /** A hard-edged pixel toggle that matches the bevel kit. */
+    fun switch(c: Context): PixelToggle = PixelToggle(c)
 
     // ---- Motion (restrained) ---------------------------------------------
     fun haptic(v: View) = v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING)

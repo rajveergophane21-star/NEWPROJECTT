@@ -104,8 +104,13 @@ class AppPickerActivity : AppCompatActivity() {
             h.name.text = item.label
             paint(h, selected.contains(item.pkg))
             h.itemView.setOnClickListener {
-                val nowOn = !selected.contains(item.pkg)
-                if (nowOn) selected.add(item.pkg) else selected.remove(item.pkg)
+                // Re-resolve the item from the holder's current position — a captured
+                // reference can point at the wrong row after a fast scroll/recycle.
+                val pos = h.bindingAdapterPosition
+                if (pos == RecyclerView.NO_POSITION) return@setOnClickListener
+                val it2 = shown[pos]
+                val nowOn = !selected.contains(it2.pkg)
+                if (nowOn) selected.add(it2.pkg) else selected.remove(it2.pkg)
                 Ui.haptic(it); paint(h, nowOn)
             }
         }

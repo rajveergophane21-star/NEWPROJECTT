@@ -1,6 +1,5 @@
 package com.anchor.app
 
-import android.app.TimePickerDialog
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -20,7 +19,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.google.android.material.materialswitch.MaterialSwitch
 
 /**
  * Guided, three-step rule creation: Apps -> Schedule -> Response.
@@ -98,7 +96,7 @@ class RuleEditorActivity : AppCompatActivity() {
     private fun buildChrome(): View {
         val rootV = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(0xFF1A1C2C.toInt())
+            setBackgroundColor(0xFFEFE5CD.toInt())
             fitsSystemWindows = true
             setPadding(Ui.dp(this@RuleEditorActivity,20), Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,20), Ui.dp(this@RuleEditorActivity,16))
         }
@@ -143,11 +141,11 @@ class RuleEditorActivity : AppCompatActivity() {
 
         val footer = Ui.row(this).also { it.setPadding(0, Ui.dp(this,8),0,0) }
         backBtn = Ui.ghost(this, "Back").apply {
-            layoutParams = LinearLayout.LayoutParams(0, Ui.dp(this@RuleEditorActivity,52), 1f).also { it.marginEnd = Ui.dp(this@RuleEditorActivity,10) }
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { it.marginEnd = Ui.dp(this@RuleEditorActivity,10) }
             setOnClickListener { Ui.haptic(this); goBack() }
         }
         nextBtn = Ui.primary(this, "Next").apply {
-            layoutParams = LinearLayout.LayoutParams(0, Ui.dp(this@RuleEditorActivity,52), 1.4f)
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.4f)
             setOnClickListener { Ui.haptic(this); goNext() }
         }
         footer.addView(backBtn); footer.addView(nextBtn)
@@ -189,7 +187,7 @@ class RuleEditorActivity : AppCompatActivity() {
             if (windows.size > 1) "${windows.size} time slots" else w.label()
         } ?: "No schedule"
         val mode = if (modeBlock) "Block" else "Friction"
-        return "$apps  ·  $sched  ·  $mode"
+        return "$apps  /  $sched  /  $mode"
     }
 
     // ------------------------------------------------------------- step 0
@@ -275,7 +273,7 @@ class RuleEditorActivity : AppCompatActivity() {
             }
             card.addView(dayRow)
             if (w.endMin == w.startMin) card.addView(Ui.body(this, "Start and end can't be the same time.", Ui.CLAY, 12f).also { it.setPadding(0, Ui.dp(this,8),0,0) })
-            else if (w.overnight) card.addView(Ui.mono(this, "Overnight · ends next morning", Ui.FAINT, 10f).also { it.setPadding(0, Ui.dp(this,8),0,0) })
+            else if (w.overnight) card.addView(Ui.mono(this, "Overnight - ends next morning", Ui.FAINT, 10f).also { it.setPadding(0, Ui.dp(this,8),0,0) })
             box.addView(card)
         }
     }
@@ -372,8 +370,8 @@ class RuleEditorActivity : AppCompatActivity() {
             box ?: return
             box.backgroundTintList = ColorStateList.valueOf(when {
                 !on -> Ui.SURFACE2
-                block -> 0xFF29366F.toInt()    // green tint
-                else -> 0xFF29366F.toInt()      // ochre tint
+                block -> 0xFFF6E2CE.toInt()    // terracotta wash — Block
+                else -> 0xFFF3E6C6.toInt()     // amber wash — Friction
             })
             val head = box.getChildAt(0) as LinearLayout
             (head.getChildAt(0) as TextView).setTextColor(if (!on) Ui.TEXT else if (block) Ui.SAGE else Ui.TERRA)
@@ -452,7 +450,8 @@ class RuleEditorActivity : AppCompatActivity() {
     private fun pickTime(currentMin: Int, onSet: (Int) -> Unit) {
         val c = this
         var h = (currentMin / 60).coerceIn(0, 23)
-        var m = ((currentMin % 60) / 5 * 5).coerceIn(0, 55)
+        // Round to the nearest 5 (not floor) so opening the picker doesn't silently shift the window.
+        var m = (((currentMin % 60) + 2) / 5 * 5).coerceIn(0, 55)
         val hh = Ui.numeral(c, "", 46f).apply { gravity = Gravity.CENTER }
         val mm = Ui.numeral(c, "", 46f).apply { gravity = Gravity.CENTER }
         fun upd() { hh.text = "%02d".format(h); mm.text = "%02d".format(m) }

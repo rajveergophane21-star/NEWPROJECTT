@@ -65,8 +65,7 @@ class InterceptActivity : AppCompatActivity() {
 
     /** Editorial dark styling: serif + mono on warm-black paper. */
     private fun styleDark() {
-        val cream = 0xFFFFCD75.toInt(); val ink = 0xFF1A1C2C.toInt(); val soft = 0xFF94B0C2.toInt()
-        b.mark.visibility = View.GONE
+        val cream = 0xFFFFCD75.toInt(); val ink = 0xFF1A1C2C.toInt(); val soft = 0xFFC2A87E.toInt()
         b.eyebrow.typeface = Ui.monoMed(this); b.eyebrow.setTextColor(Ui.ACC_GLOW)
         b.headline.typeface = Ui.serif(this); b.headline.setTextColor(Ui.DARK_TEXT); b.headline.textSize = 32f
         b.appLine.typeface = Ui.sans(this); b.appLine.setTextColor(soft)
@@ -114,7 +113,7 @@ class InterceptActivity : AppCompatActivity() {
         val h = Store.firstUndoneToday()
         if (h == null) { b.btnReplace.visibility = View.GONE; return }
         b.btnReplace.visibility = View.VISIBLE
-        b.btnReplace.text = "Instead, ${h.name} →"
+        b.btnReplace.text = "Instead, ${h.name}  >"
         b.btnReplace.setOnClickListener {
             Ui.haptic(b.btnReplace)
             Store.toggleToday(h)        // mark the replacement done
@@ -189,7 +188,9 @@ class InterceptActivity : AppCompatActivity() {
     // ----------------------------------------------------------------- exits
     private fun leave(logWin: Boolean) {
         if (logWin) Store.logInterception(pkg, proceeded = false)
-        Enforcer.reset()
+        // Do NOT reset the debounce here — let it lapse naturally. Resetting would let the
+        // HOME/teardown window events for this same blocked app immediately re-launch a
+        // second intercept (visible flicker / re-shown wall).
         cleanup()
         // Send the user to the home screen rather than back into the blocked app.
         val home = Intent(Intent.ACTION_MAIN).apply {

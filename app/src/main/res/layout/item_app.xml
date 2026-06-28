@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center"
-    android:paddingHorizontal="4dp"
+    android:paddingHorizontal="2dp"
     android:paddingVertical="8dp">
 
     <FrameLayout
@@ -25,6 +25,7 @@
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:layout_gravity="bottom|end"
+            android:layout_margin="2dp"
             android:gravity="center"
             android:text="✓"
             android:textSize="11sp"
@@ -35,13 +36,14 @@
 
     <TextView
         android:id="@+id/name"
-        android:layout_width="64dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="7dp"
         android:gravity="center"
-        android:maxLines="1"
+        android:maxLines="2"
         android:ellipsize="end"
-        android:textSize="8sp"
-        android:fontFamily="@font/silkscreen"
+        android:textSize="11sp"
+        android:lineSpacingMultiplier="0.95"
+        android:fontFamily="@font/pixelify_sans"
         android:textColor="@color/muted" />
 </LinearLayout>

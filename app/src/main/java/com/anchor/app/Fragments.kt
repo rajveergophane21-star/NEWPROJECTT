@@ -13,7 +13,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import com.google.android.material.materialswitch.MaterialSwitch
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -87,7 +86,7 @@ class TodayFragment : BaseFragment() {
 
         // masthead row
         val dateRow = Ui.row(c).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,12)) }
-        dateRow.addView(Ui.eyebrow(c, LocalDate.now().format(DateTimeFormatter.ofPattern("EEE · d MMM"))))
+        dateRow.addView(Ui.eyebrow(c, LocalDate.now().format(DateTimeFormatter.ofPattern("EEE d MMM"))))
         dateRow.addView(View(c).apply { layoutParams = LinearLayout.LayoutParams(0, 1, 1f) })
         dateRow.addView(Ui.eyebrow(c, part))
         col.addView(dateRow)
@@ -130,7 +129,7 @@ class TodayFragment : BaseFragment() {
         }
         val dot = View(c).apply {
             background = ContextCompat.getDrawable(c, R.drawable.circle)
-            backgroundTintList = ColorStateList.valueOf(if (armed) Ui.SAGE else 0xFF566C86.toInt())
+            backgroundTintList = ColorStateList.valueOf(if (armed) Ui.SAGE else 0xFFB59B73.toInt())
             layoutParams = LinearLayout.LayoutParams(Ui.dp(c,8), Ui.dp(c,8)).also { it.marginEnd = Ui.dp(c,14) }
         }
         val tcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
@@ -215,7 +214,7 @@ class TodayFragment : BaseFragment() {
         tcol.addView(Ui.title(c, h.name, 15f))
         tcol.addView(Ui.mono(c, if (h.anchor.isNotEmpty()) "after ${h.anchor}" else "replacement habit", Ui.FAINT, 10f).also { it.setPadding(0, Ui.dp(c,3),0,0) })
         val streak = Ui.numeral(c, "${Store.currentStreak(h)}", 21f)
-        val d = Ui.mono(c, "d", Ui.FAINT, 9.5f)
+        val d = Ui.mono(c, "d", Ui.FAINT, 10f)
         val sRow = Ui.row(c); sRow.addView(streak); sRow.addView(d)
         row.addView(check); row.addView(tcol); row.addView(sRow)
         return row
@@ -229,7 +228,7 @@ class TodayFragment : BaseFragment() {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).also { it.topMargin = Ui.dp(c,28) }
         }
         val existing = Store.dayNoteFor(Store.today())
-        card.addView(Ui.eyebrow(c, "Tonight · 10 seconds").also { it.setTextColor(Ui.ACC_GLOW) })
+        card.addView(Ui.eyebrow(c, "Tonight - 10 seconds").also { it.setTextColor(Ui.ACC_GLOW) })
         card.addView(Ui.serifQuote(c, "How close was today to who you're becoming?", Ui.DARK_TEXT, 21f).also { it.setPadding(0, Ui.dp(c,11),0, Ui.dp(c,16)) })
 
         var sel = existing?.alignment ?: -1
@@ -239,8 +238,8 @@ class TodayFragment : BaseFragment() {
         fun restyle() {
             pills.forEachIndexed { i, p ->
                 val on = i == sel
-                p.setTextColor(if (on) Ui.DARK_TEXT else 0xFF94B0C2.toInt())
-                p.backgroundTintList = ColorStateList.valueOf(if (on) 0xFF333C57.toInt() else 0xFF29366F.toInt())
+                p.setTextColor(if (on) Ui.DARK_TEXT else 0xFF8A7459.toInt())
+                p.backgroundTintList = ColorStateList.valueOf(if (on) 0xFFE4D6B8.toInt() else 0xFFE4D6B8.toInt())
             }
         }
         labels.forEachIndexed { i, l ->
@@ -251,7 +250,9 @@ class TodayFragment : BaseFragment() {
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { if (i>0) it.marginStart = Ui.dp(c,9) }
                 setOnClickListener {
                     Ui.haptic(this); sel = i; restyle()
-                    Store.setDayNote(Store.today(), sel, existing?.note ?: "")
+                    // Re-read the saved note at click time so we never clobber it with a stale value.
+                    val keepNote = Store.dayNoteFor(Store.today())?.note ?: ""
+                    Store.setDayNote(Store.today(), sel, keepNote)
                 }
             }
             pills.add(p); pillRow.addView(p)
@@ -326,12 +327,12 @@ class ShieldFragment : BaseFragment() {
         tcol.addView(titleRow)
         val isBlock = r.mode == Mode.BLOCK
         val modeChip = TextView(c).apply {
-            text = (if (isBlock) "Block · hard stop" else "Friction · 12s pause").uppercase()
-            textSize = 9f; letterSpacing = 0.08f; typeface = Ui.monoMed(c)
+            text = (if (isBlock) "Block - hard stop" else "Friction - 12s pause").uppercase()
+            textSize = 10f; letterSpacing = 0.06f; typeface = Ui.monoMed(c)
             setTextColor(if (isBlock) Ui.SAGE else Ui.TERRA)
             setPadding(Ui.dp(c,11), Ui.dp(c,6), Ui.dp(c,11), Ui.dp(c,6))
             background = ContextCompat.getDrawable(c, R.drawable.pill)
-            backgroundTintList = ColorStateList.valueOf(if (isBlock) 0xFF29366F.toInt() else 0xFF29366F.toInt())
+            backgroundTintList = ColorStateList.valueOf(if (isBlock) 0xFFF6E2CE.toInt() else 0xFFF3E6C6.toInt())
         }
         tcol.addView(LinearLayout(c).apply { setPadding(0, Ui.dp(c,6),0,0); addView(modeChip) })
 
@@ -483,7 +484,7 @@ class ReviewFragment : BaseFragment() {
         val day = java.time.DayOfWeek.of(Store.reviewDow).getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault())
         val row = Ui.row(c)
         row.addView(Ui.mono(c, "Review day", Ui.FAINT, 10.5f).also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
-        row.addView(Ui.mono(c, "$day  ›".uppercase(), Ui.MUTED, 10.5f))
+        row.addView(Ui.mono(c, "$day  >".uppercase(), Ui.MUTED, 10.5f))
         row.setOnClickListener {
             val names = java.time.DayOfWeek.values().map { it.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault()) }.toTypedArray()
             AlertDialog.Builder(c).setTitle("Look back on…")
@@ -677,7 +678,7 @@ class InsightsFragment : BaseFragment() {
                     .also { it.marginStart = Ui.dp(c,2); it.marginEnd = Ui.dp(c,2) }
             }
             colmn.addView(View(c).apply { layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, (max - total).toFloat()) })
-            if (proceeded[i] > 0) colmn.addView(View(c).apply { setBackgroundColor(0xFF566C86.toInt()); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, proceeded[i].toFloat()) })
+            if (proceeded[i] > 0) colmn.addView(View(c).apply { setBackgroundColor(0xFFB59B73.toInt()); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, proceeded[i].toFloat()) })
             if (resisted[i] > 0) colmn.addView(View(c).apply { setBackgroundColor(Ui.SAGE); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, resisted[i].toFloat()) })
             row.addView(colmn)
         }

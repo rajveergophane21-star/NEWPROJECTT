@@ -17,16 +17,16 @@ class RingView @JvmOverloads constructor(
     private var progress = 0f
     private var centerText = ""
     private var subText = ""
-    private var activeColor = 0xFFFFCD75.toInt()
-    private val trackColor = 0xFF333C57.toInt()
+    private var activeColor = 0xFFE07A3E.toInt()
+    private val trackColor = 0xFFE4D6B8.toInt()
 
     private val trackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
     private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
     private val centerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFFF4F4F4.toInt(); textAlign = Paint.Align.CENTER
+        color = 0xFF3B2F2A.toInt(); textAlign = Paint.Align.CENTER
         typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
     }
-    private val subPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF94B0C2.toInt(); textAlign = Paint.Align.CENTER }
+    private val subPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF8A7459.toInt(); textAlign = Paint.Align.CENTER }
     private val rect = RectF()
 
     fun setProgress(p: Float) { progress = p.coerceIn(0f, 1f); invalidate() }

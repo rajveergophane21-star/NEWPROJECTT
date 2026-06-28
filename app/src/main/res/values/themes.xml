@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.Anchor" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Theme.Anchor" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/sage</item>
         <item name="colorOnPrimary">@color/ink_on_accent</item>
         <item name="colorSecondary">@color/terra</item>
@@ -10,7 +10,8 @@
         <item name="colorOnSurface">@color/text</item>
         <item name="android:statusBarColor">@color/bg</item>
         <item name="android:navigationBarColor">@color/bg</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
         <item name="android:textColorPrimary">@color/text</item>
         <item name="android:textColorSecondary">@color/muted</item>
     </style>
@@ -19,12 +20,13 @@
         <item name="android:windowBackground">@color/intercept_bg</item>
         <item name="android:statusBarColor">@color/intercept_bg</item>
         <item name="android:navigationBarColor">@color/intercept_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowAnimationStyle">@null</item>
     </style>
 
     <style name="Label.Eyebrow" parent="">
         <item name="android:textColor">@color/muted</item>
-        <item name="android:textSize">9sp</item>
+        <item name="android:textSize">10sp</item>
         <item name="android:letterSpacing">0.12</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:fontFamily">@font/silkscreen</item>

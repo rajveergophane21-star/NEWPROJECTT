@@ -15,10 +15,9 @@
 
         <ImageView
             android:id="@+id/mark"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:src="@drawable/ic_launcher_foreground"
-            android:alpha="0.9"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_pixel_logo"
             android:contentDescription="Margin" />
 
         <TextView
@@ -26,7 +25,8 @@
             style="@style/Label.Eyebrow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="18dp"
+            android:textColor="@color/dark_text"
             android:text="FOCUS" />
 
         <TextView
@@ -36,7 +36,7 @@
             android:layout_marginTop="10dp"
             android:gravity="center"
             android:text="Not now."
-            android:textColor="@color/text"
+            android:textColor="@color/dark_text"
             android:textSize="34sp"
             android:letterSpacing="-0.01" />
 
@@ -46,7 +46,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:gravity="center"
-            android:textColor="@color/muted"
+            android:textColor="@color/panel_sh"
             android:textSize="15sp"
             android:lineSpacingExtra="3dp" />
 
@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
             android:gravity="center"
-            android:textColor="@color/faint"
+            android:textColor="@color/gold_hi"
             android:textSize="13sp"
             android:lineSpacingExtra="4dp" />
 

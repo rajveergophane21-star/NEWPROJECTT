@@ -104,7 +104,7 @@ object Store {
     }
     fun focusActive() = System.currentTimeMillis() < focusUntil && focusPackages.isNotEmpty()
     fun focusRemainingMs() = (focusUntil - System.currentTimeMillis()).coerceAtLeast(0)
-    fun stopFocus() { focusUntil = 0L; focusPackages.clear(); save() }
+    fun stopFocus() { focusUntil = 0L; focusTotalMs = 0L; focusPackages.clear(); save() }
 
     // ---- Interceptions ----------------------------------------------------
 
@@ -186,8 +186,12 @@ object Store {
         return day - (dow - 1)
     }
     fun reviewFor(weekStart: Long): WeeklyReview? = reviews.firstOrNull { it.weekStart == weekStart }
-    fun lastReview(): WeeklyReview? =
-        reviewFor(weekStartOf(today()) - 7) ?: reviews.maxByOrNull { it.weekStart }
+    fun lastReview(): WeeklyReview? {
+        val thisWs = weekStartOf(today())
+        // The most recent review from a week strictly before this one — never this
+        // week's own (in-progress) record, and never a stale fallback misread as "last week".
+        return reviews.filter { it.weekStart < thisWs }.maxByOrNull { it.weekStart }
+    }
     fun saveReview(weekStart: Long, noticed: String, focus: String, lastOutcome: Int) {
         val ex = reviewFor(weekStart)
         if (ex != null) { ex.noticed = noticed.trim(); ex.focus = focus.trim(); ex.lastFocusOutcome = lastOutcome }

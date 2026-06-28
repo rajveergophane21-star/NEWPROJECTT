@@ -41,7 +41,7 @@ class OnboardingActivity : AppCompatActivity() {
     override fun onResume() { super.onResume(); render() }
 
     private fun build() {
-        root.addView(Ui.eyebrow(this, "Welcome to Margin · 1 of 2"))
+        root.addView(Ui.eyebrow(this, "Welcome to Margin - 1 of 2"))
         root.addView(Ui.display(this, "Who are you becoming?", 34f).also { it.setPadding(0, Ui.dp(this,12),0, Ui.dp(this,10)) })
         root.addView(Ui.body(this,
             "Margin isn't about using your phone less — it's about becoming someone in particular. Say it in your own words; every boundary points back to it.")
@@ -72,7 +72,7 @@ class OnboardingActivity : AppCompatActivity() {
         idCard.addView(chips)
         root.addView(idCard)
 
-        root.addView(Ui.eyebrow(this, "Permissions that make blocking work · 2 of 2").also { it.setPadding(0, Ui.dp(this,12),0, Ui.dp(this,6)) })
+        root.addView(Ui.eyebrow(this, "Permissions that make blocking work - 2 of 2").also { it.setPadding(0, Ui.dp(this,12),0, Ui.dp(this,6)) })
         root.addView(Ui.body(this,
             "Blocking without rooting means borrowing a few of Android's own controls. Margin only reads which app is in front — never your content.")
             .also { it.setPadding(0, 0,0, Ui.dp(this,16)) })
@@ -104,7 +104,9 @@ class OnboardingActivity : AppCompatActivity() {
             Ui.haptic(it)
             identityInput?.text?.toString()?.let { s -> if (s.isNotBlank()) Store.updateIdentity(s) }
             getSharedPreferences("anchor_flags", MODE_PRIVATE).edit().putBoolean("onboarded", true).apply()
-            if (Store.rules.any { it.enabled }) MonitorService.start(this)
+            // Start the shield's foreground service as soon as permissions are in place, so the
+            // user gets immediate confirmation it's alive even before the first rule exists.
+            if (Perms.coreReady(this)) MonitorService.start(this)
             // Land the user straight in their first block — the activation moment.
             if (Store.rules.isEmpty()) {
                 startActivity(Intent(this, RuleEditorActivity::class.java)
@@ -178,7 +180,7 @@ class OnboardingActivity : AppCompatActivity() {
             val ok = granted()
             chip.text = if (ok) "Granted" else if (optional) "Optional" else "Needed"
             chip.setTextColor(if (ok) Ui.SAGE else Ui.MUTED)
-            chip.backgroundTintList = ColorStateList.valueOf(if (ok) 0xFF29366F.toInt() else Ui.SURFACE2)
+            chip.backgroundTintList = ColorStateList.valueOf(if (ok) 0xFFE4D6B8.toInt() else Ui.SURFACE2)
             btn.visibility = if (ok) View.GONE else View.VISIBLE
         }
     }
