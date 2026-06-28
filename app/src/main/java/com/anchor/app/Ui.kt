@@ -175,6 +175,15 @@ object Ui {
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(c, h))
     }
 
+    /** A switch tinted to the palette instead of stock Material. */
+    fun switch(c: Context): com.google.android.material.materialswitch.MaterialSwitch =
+        com.google.android.material.materialswitch.MaterialSwitch(c).apply {
+            val st = arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf())
+            thumbTintList = ColorStateList(st, intArrayOf(INK, 0xFFFFFFFF.toInt()))
+            trackTintList = ColorStateList(st, intArrayOf(SAGE, 0xFFD8CFC4.toInt()))
+            trackDecorationTintList = ColorStateList.valueOf(0x00000000)
+        }
+
     // ---- Motion (restrained) ---------------------------------------------
     fun haptic(v: View) = v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING)
     fun pop(v: View, then: (() -> Unit)? = null) { then?.invoke() }

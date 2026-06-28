@@ -98,15 +98,14 @@ class RuleEditorActivity : AppCompatActivity() {
     private fun buildChrome(): View {
         val rootV = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(0xFFFFFFFF.toInt())
+            setBackgroundColor(0xFFF4EFE5.toInt())
             fitsSystemWindows = true
             setPadding(Ui.dp(this@RuleEditorActivity,20), Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,20), Ui.dp(this@RuleEditorActivity,16))
         }
 
         // top: cancel + step dots
         val top = Ui.row(this)
-        val cancel = TextView(this).apply {
-            text = if (firstRun) "Skip" else "Cancel"; setTextColor(Ui.MUTED); textSize = 14f
+        val cancel = (if (firstRun) Ui.eyebrow(this, "Skip") else Ui.eyebrow(this, "Cancel")).apply {
             setOnClickListener { finish() }
         }
         dots = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER }
@@ -121,18 +120,20 @@ class RuleEditorActivity : AppCompatActivity() {
         top.addView(cancel); top.addView(spacerV); top.addView(dots)
         rootV.addView(top)
 
-        stepTitle = Ui.title(this, "", 26f).also { it.setPadding(0, Ui.dp(this,18),0,0) }
+        stepTitle = Ui.serifHead(this, "", 30f).also { it.setPadding(0, Ui.dp(this,18),0,0) }
         stepSub = Ui.body(this, "").also { it.setPadding(0, Ui.dp(this,6),0,0) }
         rootV.addView(stepTitle); rootV.addView(stepSub)
 
-        preview = TextView(this).apply {
-            setTextColor(Ui.SAGE); textSize = 12f; letterSpacing = 0.02f
-            setPadding(Ui.dp(this@RuleEditorActivity,12), Ui.dp(this@RuleEditorActivity,10), Ui.dp(this@RuleEditorActivity,12), Ui.dp(this@RuleEditorActivity,10))
-            background = ContextCompat.getDrawable(this@RuleEditorActivity, R.drawable.card2)
+        preview = Ui.mono(this, "", Ui.SAGE, 11f).apply {
+            letterSpacing = 0.08f
+            setPadding(0, Ui.dp(this@RuleEditorActivity,14), 0, Ui.dp(this@RuleEditorActivity,2))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                .also { it.topMargin = Ui.dp(this@RuleEditorActivity,16) }
         }
         rootV.addView(preview)
+        rootV.addView(View(this).apply {
+            setBackgroundColor(Ui.LINE)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this@RuleEditorActivity,1).coerceAtLeast(1))
+        })
 
         container = FrameLayout(this).apply {
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
@@ -175,7 +176,7 @@ class RuleEditorActivity : AppCompatActivity() {
             else -> { stepTitle.text = "And when you reach for it?"; stepSub.text = "Choose how Margin steps in — and lock it if you mean it." }
         }
         for (d in 0 until dots.childCount) {
-            dots.getChildAt(d).backgroundTintList = ColorStateList.valueOf(if (d == step) Ui.SAGE else 0xFFE7E4DD.toInt())
+            dots.getChildAt(d).backgroundTintList = ColorStateList.valueOf(if (d == step) Ui.SAGE else Ui.LINE)
         }
         backBtn.visibility = if (step == 0) View.INVISIBLE else View.VISIBLE
         nextBtn.text = if (step == 2) (if (editing == null) "Arm this rule" else "Save rule") else "Next"
@@ -247,7 +248,7 @@ class RuleEditorActivity : AppCompatActivity() {
             val card = Ui.card(this).also { (it.layoutParams as LinearLayout.LayoutParams).bottomMargin = Ui.dp(this,10) }
             val timeRow = Ui.row(this)
             timeRow.addView(timeChip(TimeWindow.fmt(w.startMin)) { pickTime(w.startMin) { w.startMin = it; renderWindows(); updateChrome() } })
-            timeRow.addView(TextView(this).apply { text = "  to  "; setTextColor(Ui.MUTED) })
+            timeRow.addView(Ui.mono(this, "  until  ", Ui.FAINT, 10f))
             timeRow.addView(timeChip(TimeWindow.fmt(w.endMin)) { pickTime(w.endMin) { w.endMin = it; renderWindows(); updateChrome() } })
             timeRow.addView(View(this).apply { layoutParams = LinearLayout.LayoutParams(0, 1, 1f) })
             if (windows.size > 1) timeRow.addView(TextView(this).apply {
@@ -261,10 +262,10 @@ class RuleEditorActivity : AppCompatActivity() {
             for (d in 1..7) {
                 val on = w.days.contains(d)
                 dayRow.addView(TextView(this).apply {
-                    text = names[d-1]; gravity = Gravity.CENTER; textSize = 13f
+                    text = names[d-1]; gravity = Gravity.CENTER; textSize = 12f; typeface = Ui.monoMed(this@RuleEditorActivity)
                     setTextColor(if (on) Ui.INK else Ui.MUTED)
                     background = ContextCompat.getDrawable(this@RuleEditorActivity, R.drawable.circle_stroke)
-                    backgroundTintList = ColorStateList.valueOf(if (on) Ui.SAGE else 0xFFF4F2ED.toInt())
+                    backgroundTintList = ColorStateList.valueOf(if (on) Ui.SAGE else Ui.SURFACE2)
                     layoutParams = LinearLayout.LayoutParams(Ui.dp(this@RuleEditorActivity,34), Ui.dp(this@RuleEditorActivity,34)).also { it.marginEnd = Ui.dp(this@RuleEditorActivity,7) }
                     setOnClickListener {
                         if (w.days.contains(d)) w.days.remove(d) else w.days.add(d)
@@ -313,7 +314,7 @@ class RuleEditorActivity : AppCompatActivity() {
         val sc = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
         sc.addView(Ui.title(this, "Commitment lock", 16f))
         sc.addView(Ui.body(this, "While active, this rule can't be turned off or edited. A contract with your future self.").also { it.setPadding(0, Ui.dp(this,4),0,0) })
-        val sw = MaterialSwitch(this).apply { isChecked = strict; setOnCheckedChangeListener { _, c -> strict = c; updateChrome() } }
+        val sw = Ui.switch(this).apply { isChecked = strict; setOnCheckedChangeListener { _, c -> strict = c; updateChrome() } }
         sr.addView(sc); sr.addView(sw)
         strictCard.addView(sr)
         v.addView(strictCard)
@@ -349,21 +350,37 @@ class RuleEditorActivity : AppCompatActivity() {
         val box = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             background = ContextCompat.getDrawable(this@RuleEditorActivity, R.drawable.card2)
-            setPadding(Ui.dp(this@RuleEditorActivity,14), Ui.dp(this@RuleEditorActivity,12), Ui.dp(this@RuleEditorActivity,14), Ui.dp(this@RuleEditorActivity,12))
+            setPadding(Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,14), Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,14))
         }
-        box.addView(Ui.title(this, title, 15f))
-        box.addView(Ui.body(this, desc).also { it.setPadding(0, Ui.dp(this,4),0,0) })
+        val head = Ui.row(this)
+        head.addView(Ui.title(this, title, 15.5f).also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
+        val radio = TextView(this).apply {
+            text = "✓"; gravity = Gravity.CENTER; textSize = 11f; setTextColor(Ui.INK)
+            background = ContextCompat.getDrawable(this@RuleEditorActivity, R.drawable.circle)
+            layoutParams = LinearLayout.LayoutParams(Ui.dp(this@RuleEditorActivity,18), Ui.dp(this@RuleEditorActivity,18))
+        }
+        head.addView(radio)
+        box.addView(head)
+        box.addView(Ui.body(this, desc).also { it.setPadding(0, Ui.dp(this,5),0,0) })
         box.setOnClickListener { Ui.haptic(it); modeBlock = (title == "Block"); applyModeSelection(); updateChrome() }
         return box
     }
 
     private fun applyModeSelection() {
-        fun mark(box: LinearLayout?, on: Boolean) {
+        fun mark(box: LinearLayout?, on: Boolean, block: Boolean) {
             box ?: return
-            box.backgroundTintList = ColorStateList.valueOf(if (on) 0xFFF3E3DB.toInt() else 0xFFF4F2ED.toInt())
-            (box.getChildAt(0) as TextView).setTextColor(if (on) Ui.SAGE else Ui.TEXT)
+            box.backgroundTintList = ColorStateList.valueOf(when {
+                !on -> Ui.SURFACE2
+                block -> 0xFFE8EDE2.toInt()    // green tint
+                else -> 0xFFF2E7D4.toInt()      // ochre tint
+            })
+            val head = box.getChildAt(0) as LinearLayout
+            (head.getChildAt(0) as TextView).setTextColor(if (!on) Ui.TEXT else if (block) Ui.SAGE else Ui.TERRA)
+            val radio = head.getChildAt(1)
+            radio.backgroundTintList = ColorStateList.valueOf(if (on) (if (block) Ui.SAGE else Ui.TERRA) else 0x00000000)
+            radio.visibility = if (on) View.VISIBLE else View.INVISIBLE
         }
-        mark(blockOpt, modeBlock); mark(frictionOpt, !modeBlock)
+        mark(blockOpt, modeBlock, true); mark(frictionOpt, !modeBlock, false)
     }
 
     // ------------------------------------------------------------- nav
@@ -424,10 +441,9 @@ class RuleEditorActivity : AppCompatActivity() {
 
     // ------------------------------------------------------------- helpers
     private fun timeChip(text: String, onClick: () -> Unit) = TextView(this).apply {
-        this.text = text; setTextColor(Ui.TEXT); textSize = 16f
-        typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+        this.text = text; setTextColor(Ui.TEXT); textSize = 22f; typeface = Ui.serif(this@RuleEditorActivity)
         background = ContextCompat.getDrawable(this@RuleEditorActivity, R.drawable.pill)
-        setPadding(Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,8), Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,8))
+        setPadding(Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,6), Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,6))
         setOnClickListener { onClick() }
     }
 

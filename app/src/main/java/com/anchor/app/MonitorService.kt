@@ -41,7 +41,13 @@ class MonitorService : Service() {
         super.onCreate()
         Store.init(this)
         usm = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        startForeground(NOTIF_ID, buildNotification())
+        // On Android 12+ a background/boot start can be disallowed. The AccessibilityService
+        // is the real enforcer, so degrade gracefully rather than crash.
+        try {
+            startForeground(NOTIF_ID, buildNotification())
+        } catch (_: Exception) {
+            stopSelf(); return
+        }
         handler.post(tick)
     }
 
@@ -113,11 +119,13 @@ class MonitorService : Service() {
 
         fun start(ctx: Context) {
             val i = Intent(ctx, MonitorService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ctx.startForegroundService(i)
-            else ctx.startService(i)
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ctx.startForegroundService(i)
+                else ctx.startService(i)
+            } catch (_: Exception) { /* accessibility service still enforces */ }
         }
         fun stop(ctx: Context) {
-            ctx.stopService(Intent(ctx, MonitorService::class.java))
+            try { ctx.stopService(Intent(ctx, MonitorService::class.java)) } catch (_: Exception) {}
         }
     }
 }

@@ -38,8 +38,6 @@
             android:text="Not now."
             android:textColor="@color/text"
             android:textSize="34sp"
-            android:fontFamily="sans-serif"
-            android:textStyle="bold"
             android:letterSpacing="-0.01" />
 
         <TextView
@@ -74,7 +72,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:textColor="@color/ink_on_accent"
-                android:textStyle="bold"
                 android:textSize="30sp" />
         </FrameLayout>
 

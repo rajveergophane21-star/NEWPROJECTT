@@ -24,6 +24,7 @@ class HeatmapView @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val w = MeasureSpec.getSize(widthMeasureSpec)
+        if (weeks <= 0) { setMeasuredDimension(w, 0); return }
         val gap = dp(3f)
         val cell = (w - gap * (weeks - 1)) / weeks
         setMeasuredDimension(w, (cell * 7 + gap * 6).toInt())

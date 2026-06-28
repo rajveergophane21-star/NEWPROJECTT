@@ -67,9 +67,9 @@ class TodayFragment : BaseFragment() {
             val remain = Store.focusRemainingMs(); val total = Store.focusTotalMs.coerceAtLeast(1)
             focusLabel?.text = mmss(remain)
             val pct = (total - remain).toFloat() / total
-            focusFill?.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, pct.coerceIn(0.0001f, 1f))
-            focusEmpty?.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, (1f - pct).coerceIn(0.0001f, 1f))
-            focusFill?.requestLayout()
+            (focusFill?.layoutParams as? LinearLayout.LayoutParams)?.weight = pct.coerceIn(0.0001f, 1f)
+            (focusEmpty?.layoutParams as? LinearLayout.LayoutParams)?.weight = (1f - pct).coerceIn(0.0001f, 1f)
+            (focusFill?.parent as? View)?.requestLayout()
             handler.postDelayed(this, 1000)
         }
     }
@@ -329,7 +329,7 @@ class ShieldFragment : BaseFragment() {
         }
         tcol.addView(LinearLayout(c).apply { setPadding(0, Ui.dp(c,6),0,0); addView(modeChip) })
 
-        val sw = MaterialSwitch(c).apply {
+        val sw = Ui.switch(c).apply {
             isChecked = r.enabled; isEnabled = !Store.isLocked(r)
             setOnCheckedChangeListener { _, v ->
                 r.enabled = v; Store.save()

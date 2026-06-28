@@ -41,27 +41,38 @@ class OnboardingActivity : AppCompatActivity() {
     override fun onResume() { super.onResume(); render() }
 
     private fun build() {
-        root.addView(Ui.eyebrow(this, "Setup"))
-        root.addView(Ui.display(this, "First, the point of all this.").also { it.setPadding(0, Ui.dp(this,8),0, Ui.dp(this,16)) })
+        root.addView(Ui.eyebrow(this, "Welcome to Margin · 1 of 2"))
+        root.addView(Ui.display(this, "Who are you becoming?", 34f).also { it.setPadding(0, Ui.dp(this,12),0, Ui.dp(this,10)) })
+        root.addView(Ui.body(this,
+            "Margin isn't about using your phone less — it's about becoming someone in particular. Say it in your own words; every boundary points back to it.")
+            .also { it.setPadding(0,0,0, Ui.dp(this,16)) })
 
-        // Motivation before machinery: name the identity first.
         val idCard = Ui.card(this)
-        idCard.addView(Ui.eyebrow(this, "Who are you becoming?"))
-        idCard.addView(Ui.body(this,
-            "Margin isn't about using your phone less — it's about becoming someone in particular. Name that person; every boundary will point back to it.")
-            .also { it.setPadding(0, Ui.dp(this,8),0, Ui.dp(this,4)) })
+        idCard.addView(Ui.eyebrow(this, "I'm someone who…"))
         val idField = android.widget.EditText(this).apply {
             setText(Store.identity)
-            hint = "I'm someone who…"; setHintTextColor(Ui.FAINT); setTextColor(Ui.TEXT); textSize = 16f
-            background = ContextCompat.getDrawable(this@OnboardingActivity, R.drawable.input)
-            setPadding(Ui.dp(this@OnboardingActivity,14), Ui.dp(this@OnboardingActivity,12), Ui.dp(this@OnboardingActivity,14), Ui.dp(this@OnboardingActivity,12))
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).also { it.topMargin = Ui.dp(this@OnboardingActivity,8) }
+            hint = "reads a few pages before bed…"; setHintTextColor(Ui.FAINT); setTextColor(Ui.TEXT); textSize = 21f
+            typeface = Ui.serifItalic(this@OnboardingActivity)
+            background = null; setPadding(0, Ui.dp(this@OnboardingActivity,10), 0, 0)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
         }
         identityInput = idField
         idCard.addView(idField)
+        // example chips
+        val chips = Ui.row(this).also { it.setPadding(0, Ui.dp(this,14),0,0) }
+        listOf("is present with my kids", "makes things", "sleeps before midnight").forEach { ex ->
+            chips.addView(TextView(this).apply {
+                text = ex; textSize = 12f; typeface = Ui.sans(this@OnboardingActivity); setTextColor(Ui.MUTED)
+                background = ContextCompat.getDrawable(this@OnboardingActivity, R.drawable.pill)
+                setPadding(Ui.dp(this@OnboardingActivity,12), Ui.dp(this@OnboardingActivity,7), Ui.dp(this@OnboardingActivity,12), Ui.dp(this@OnboardingActivity,7))
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).also { it.marginEnd = Ui.dp(this@OnboardingActivity,8) }
+                setOnClickListener { idField.setText("I $ex"); idField.setSelection(idField.text.length) }
+            })
+        }
+        idCard.addView(chips)
         root.addView(idCard)
 
-        root.addView(Ui.eyebrow(this, "Now, the keys to the gate").also { it.setPadding(0, Ui.dp(this,8),0, Ui.dp(this,6)) })
+        root.addView(Ui.eyebrow(this, "Permissions that make blocking work · 2 of 2").also { it.setPadding(0, Ui.dp(this,12),0, Ui.dp(this,6)) })
         root.addView(Ui.body(this,
             "Blocking without rooting means borrowing a few of Android's own controls. Margin only reads which app is in front — never your content.")
             .also { it.setPadding(0, 0,0, Ui.dp(this,16)) })
@@ -167,7 +178,7 @@ class OnboardingActivity : AppCompatActivity() {
             val ok = granted()
             chip.text = if (ok) "Granted" else if (optional) "Optional" else "Needed"
             chip.setTextColor(if (ok) Ui.SAGE else Ui.MUTED)
-            chip.backgroundTintList = ColorStateList.valueOf(if (ok) 0xFFF3E3DB.toInt() else 0xFFF4F2ED.toInt())
+            chip.backgroundTintList = ColorStateList.valueOf(if (ok) 0xFFE8EDE2.toInt() else Ui.SURFACE2)
             btn.visibility = if (ok) View.GONE else View.VISIBLE
         }
     }

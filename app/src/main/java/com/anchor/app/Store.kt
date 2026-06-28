@@ -82,8 +82,11 @@ object Store {
             if (!r.enabled || !r.packages.contains(pkg)) continue
             if (!r.activeNow(nowMin, dow)) continue
             val left = r.minutesLeft(nowMin, dow)
-            // BLOCK wins over FRICTION if multiple rules apply
-            if (best == null || (r.mode == Mode.BLOCK && best.mode == Mode.FRICTION)) {
+            // BLOCK wins over FRICTION; among same-mode rules, the longer window wins
+            // so the intercept reports the correct "closed until" time.
+            if (best == null ||
+                (r.mode == Mode.BLOCK && best.mode == Mode.FRICTION) ||
+                (r.mode == best.mode && left > best.minutesLeft)) {
                 best = Decision(r.mode, left, r.name, r.id, r.reason)
             }
         }
@@ -182,17 +185,20 @@ object Store {
         return day - (dow - 1)
     }
     fun reviewFor(weekStart: Long): WeeklyReview? = reviews.firstOrNull { it.weekStart == weekStart }
-    fun lastReview(): WeeklyReview? = reviews.maxByOrNull { it.weekStart }
+    fun lastReview(): WeeklyReview? =
+        reviewFor(weekStartOf(today()) - 7) ?: reviews.maxByOrNull { it.weekStart }
     fun saveReview(weekStart: Long, noticed: String, focus: String, lastOutcome: Int) {
         val ex = reviewFor(weekStart)
         if (ex != null) { ex.noticed = noticed.trim(); ex.focus = focus.trim(); ex.lastFocusOutcome = lastOutcome }
         else reviews.add(WeeklyReview(weekStart, noticed.trim(), focus.trim(), lastOutcome))
         save()
     }
-    /** Review is due once the chosen day has arrived this week and it isn't done yet. */
+    /** Review is due once the chosen day has arrived, it isn't done, and there's something to review. */
     fun reviewDue(): Boolean {
         val ws = weekStartOf(today())
-        return reviewFor(ws) == null && LocalDate.now().dayOfWeek.value >= reviewDow
+        if (reviewFor(ws) != null) return false
+        if (interceptions.isEmpty() && dayNotes.isEmpty() && identity.isEmpty()) return false
+        return LocalDate.now().dayOfWeek.value >= reviewDow
     }
     fun reviewsCount() = reviews.size
 
