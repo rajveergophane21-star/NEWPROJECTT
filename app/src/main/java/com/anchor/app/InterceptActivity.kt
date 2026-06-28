@@ -219,9 +219,13 @@ class InterceptActivity : AppCompatActivity() {
         breathAnimator?.cancel(); breathAnimator = null
     }
 
-    private fun untilTime(): String =
-        LocalTime.now().plusMinutes(minutesLeft.toLong()).withSecond(0)
+    private fun untilTime(): String {
+        val now = LocalTime.now()
+        val hhmm = now.plusMinutes(minutesLeft.toLong()).withSecond(0)
             .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+        val crossesMidnight = now.toSecondOfDay() + minutesLeft * 60 >= 86400
+        return if (crossesMidnight) "tomorrow $hhmm" else hhmm
+    }
 
     override fun onDestroy() { cleanup(); super.onDestroy() }
 

@@ -130,7 +130,7 @@ class OnboardingActivity : AppCompatActivity() {
     private fun render() {
         steps.forEach { it.update() }
         val readyCount = listOf(Perms.hasAccessibility(this), Perms.canDrawOverlays(this), Perms.hasNotifications(this)).count { it }
-        progressText?.text = if (readyCount == 3) "All set — your shield is ready" else "$readyCount of 3 essentials ready"
+        progressText?.text = if (readyCount == 3) "All set — your shield is ready" else "Grant the three essentials below"
         progressText?.setTextColor(if (readyCount == 3) Ui.SAGE else Ui.MUTED)
         if (::doneBtn.isInitialized) {
             val core = readyCount == 3

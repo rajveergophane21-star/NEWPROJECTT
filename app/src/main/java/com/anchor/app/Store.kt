@@ -100,10 +100,11 @@ object Store {
         focusPackages.clear(); focusPackages.addAll(pkgs)
         focusTotalMs = minutes * 60_000L
         focusUntil = System.currentTimeMillis() + focusTotalMs
+        save()
     }
     fun focusActive() = System.currentTimeMillis() < focusUntil && focusPackages.isNotEmpty()
     fun focusRemainingMs() = (focusUntil - System.currentTimeMillis()).coerceAtLeast(0)
-    fun stopFocus() { focusUntil = 0L; focusPackages.clear() }
+    fun stopFocus() { focusUntil = 0L; focusPackages.clear(); save() }
 
     // ---- Interceptions ----------------------------------------------------
 
@@ -317,6 +318,11 @@ object Store {
             identitySetDay = root.optLong("identitySet", 0L)
             reviewDow = root.optInt("reviewDow", 7)
 
+            focusUntil = root.optLong("focusUntil", 0L)
+            focusTotalMs = root.optLong("focusTotalMs", 0L)
+            focusPackages.clear()
+            root.optJSONArray("focusPkgs")?.let { for (i in 0 until it.length()) focusPackages.add(it.getString(i)) }
+
             dayNotes.clear()
             val dna = root.optJSONArray("dayNotes") ?: JSONArray()
             for (i in 0 until dna.length()) {
@@ -374,6 +380,11 @@ object Store {
         root.put("identity", identity)
         root.put("identitySet", identitySetDay)
         root.put("reviewDow", reviewDow)
+
+        // Persist an in-flight focus session so a process kill never silently un-blocks.
+        root.put("focusUntil", focusUntil)
+        root.put("focusTotalMs", focusTotalMs)
+        val fp = JSONArray(); focusPackages.forEach { fp.put(it) }; root.put("focusPkgs", fp)
 
         val dna = JSONArray()
         for (n in dayNotes.values) {

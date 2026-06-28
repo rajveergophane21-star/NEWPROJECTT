@@ -26,7 +26,8 @@ class MainActivity : AppCompatActivity() {
         b = ActivityMainBinding.inflate(layoutInflater)
         setContentView(b.root)
         buildBar()
-        select(0)
+        current = savedInstanceState?.getInt("tab", 0) ?: 0
+        if (savedInstanceState == null) select(current) else chromeOnly(current)
 
         if (!Perms.coreReady(this) && !onboardedFlag()) {
             startActivity(Intent(this, OnboardingActivity::class.java))
@@ -70,14 +71,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun select(i: Int) {
-        current = i
-        ticks.forEachIndexed { idx, t -> t.visibility = if (idx == i) View.VISIBLE else View.INVISIBLE }
-        labels.forEachIndexed { idx, l -> l.setTextColor(if (idx == i) Ui.TEXT else Ui.FAINT) }
+        chromeOnly(i)
         show(when (i) {
             0 -> TodayFragment(); 1 -> ShieldFragment(); 2 -> HabitsFragment()
             3 -> ReviewFragment(); else -> InsightsFragment()
         })
     }
+
+    /** Update the bar indicator only — used when FragmentManager already restored the fragment. */
+    private fun chromeOnly(i: Int) {
+        current = i
+        ticks.forEachIndexed { idx, t -> t.visibility = if (idx == i) View.VISIBLE else View.INVISIBLE }
+        labels.forEachIndexed { idx, l -> l.setTextColor(if (idx == i) Ui.TEXT else Ui.FAINT) }
+    }
+
+    override fun onSaveInstanceState(out: Bundle) { super.onSaveInstanceState(out); out.putInt("tab", current) }
 
     override fun onResume() {
         super.onResume()

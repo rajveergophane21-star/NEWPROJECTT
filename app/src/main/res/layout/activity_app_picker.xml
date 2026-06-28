@@ -24,6 +24,24 @@
             android:textColor="@color/text" android:textSize="22sp" android:textStyle="bold" />
     </LinearLayout>
 
+    <EditText
+        android:id="@+id/search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/input"
+        android:hint="Search apps…"
+        android:textColorHint="@color/faint"
+        android:textColor="@color/text"
+        android:textSize="15sp"
+        android:inputType="text"
+        android:imeOptions="actionSearch"
+        android:maxLines="1"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="11dp" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="match_parent"

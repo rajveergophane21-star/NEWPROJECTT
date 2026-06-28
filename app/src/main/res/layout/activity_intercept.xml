@@ -19,7 +19,7 @@
             android:layout_height="56dp"
             android:src="@drawable/ic_launcher_foreground"
             android:alpha="0.9"
-            android:contentDescription="Anchor" />
+            android:contentDescription="Margin" />
 
         <TextView
             android:id="@+id/eyebrow"

@@ -97,7 +97,7 @@ class TodayFragment : BaseFragment() {
 
         // identity — your own words
         col.addView(Ui.eyebrow(c, "You're someone who").also { it.setPadding(0, Ui.dp(c,24),0,0) })
-        val idText = if (Store.identity.isEmpty()) "…name who you're becoming." else Store.identity
+        val idText = if (Store.identity.isEmpty()) "still becoming — tap to name it." else Store.identity
         col.addView(Ui.serifQuote(c, idText, Ui.TEXT, 25f).also {
             it.setPadding(0, Ui.dp(c,10),0,0); it.setOnClickListener { identityDialog(c) }
         })
@@ -170,7 +170,10 @@ class TodayFragment : BaseFragment() {
             bar.addView(fill); bar.addView(empty); col.addView(bar)
             handler.removeCallbacks(tick); handler.post(tick)
         } else {
-            col.addView(Ui.body(c, "Hold your distractions back for a stretch.").also { it.setPadding(0, Ui.dp(c,9),0, Ui.dp(c,14)) })
+            val n = Store.rules.flatMap { it.packages }.toSet().size
+            val sub = if (n == 0) "Add a rule first — a focus session holds back the apps in your rules."
+                      else "Holds back your $n blocked ${if (n==1) "app" else "apps"} for a set stretch."
+            col.addView(Ui.body(c, sub).also { it.setPadding(0, Ui.dp(c,9),0, Ui.dp(c,14)) })
             val rowB = Ui.row(c)
             listOf(25, 45, 60).forEachIndexed { i, m ->
                 val btn = LinearLayout(c).apply {
@@ -270,7 +273,10 @@ class TodayFragment : BaseFragment() {
     private fun startFocus(min: Int) {
         val c = requireContext()
         val union = Store.rules.flatMap { it.packages }.toSet()
-        if (union.isEmpty()) { Toast.makeText(c, "Add a rule with some apps first", Toast.LENGTH_SHORT).show(); return }
+        if (union.isEmpty()) {
+            Toast.makeText(c, "First, add a rule with some apps", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(c, RuleEditorActivity::class.java)); return
+        }
         if (!Perms.coreReady(c)) { startActivity(Intent(c, OnboardingActivity::class.java)); return }
         Store.startFocus(union, min); MonitorService.start(c); refresh()
     }
@@ -411,10 +417,10 @@ class HabitsFragment : BaseFragment() {
         if (h.anchor.isNotEmpty()) tcol.addView(Ui.body(c, "After I ${h.anchor}", Ui.MUTED, 12f))
         val done = Store.isDoneToday(h)
         val check = TextView(c).apply {
-            text = if (done) "✓" else ""; gravity = Gravity.CENTER; textSize = 20f; setTextColor(Ui.INK)
-            background = ContextCompat.getDrawable(c, R.drawable.circle)
-            backgroundTintList = ColorStateList.valueOf(if (done) Ui.SAGE else Ui.SURFACE2)
-            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,44), Ui.dp(c,44))
+            text = if (done) "✓" else ""; gravity = Gravity.CENTER; textSize = 15f; setTextColor(Ui.INK)
+            background = ContextCompat.getDrawable(c, if (done) R.drawable.circle else R.drawable.ring)
+            if (done) backgroundTintList = ColorStateList.valueOf(Ui.SAGE)
+            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,26), Ui.dp(c,26))
             setOnClickListener { Ui.haptic(this); Store.toggleToday(h); refresh() }
         }
         header.addView(tcol); header.addView(check)
@@ -425,13 +431,29 @@ class HabitsFragment : BaseFragment() {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             setDays(Store.heatDays(h, 16 * 7), 16)
         })
-        card.setOnLongClickListener {
-            AlertDialog.Builder(c).setTitle("Delete \"${h.name}\"?")
-                .setPositiveButton("Delete") { _, _ -> Store.deleteHabit(h); refresh() }
-                .setNegativeButton("Cancel", null).show()
-            true
-        }
+        card.setOnClickListener { editHabit(c, h) }
+        card.setOnLongClickListener { editHabit(c, h); true }
         return card
+    }
+
+    private fun editHabit(c: Context, h: Habit) {
+        val name = field(c, "Habit name", h.name)
+        val anchor = field(c, "After I… (a routine to attach it to)", h.anchor)
+        val body = LinearLayout(c).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(Ui.dp(c,20), Ui.dp(c,8), Ui.dp(c,20), 0)
+            addView(name); addView(anchor)
+        }
+        AlertDialog.Builder(c)
+            .setTitle("Edit habit")
+            .setView(body)
+            .setPositiveButton("Save") { _, _ ->
+                val n = name.text.toString().trim()
+                if (n.isNotEmpty()) { h.name = n; h.anchor = anchor.text.toString().trim(); Store.save(); refresh() }
+            }
+            .setNeutralButton("Delete") { _, _ -> Store.deleteHabit(h); refresh() }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 }
 
@@ -448,9 +470,27 @@ class ReviewFragment : BaseFragment() {
 
         becomingCard(c)
 
-        if (existing != null) { completedCard(c, existing); return }
-        if (!Store.reviewDue()) { holdingCard(c); return }
-        reviewForm(c, ws)
+        when {
+            existing != null -> completedCard(c, existing)
+            !Store.reviewDue() -> holdingCard(c)
+            else -> reviewForm(c, ws)
+        }
+        reviewDayRow(c)
+    }
+
+    private fun reviewDayRow(c: Context) {
+        col.addView(Ui.hairline(c))
+        val day = java.time.DayOfWeek.of(Store.reviewDow).getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault())
+        val row = Ui.row(c)
+        row.addView(Ui.mono(c, "Review day", Ui.FAINT, 10.5f).also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
+        row.addView(Ui.mono(c, "$day  ›".uppercase(), Ui.MUTED, 10.5f))
+        row.setOnClickListener {
+            val names = java.time.DayOfWeek.values().map { it.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault()) }.toTypedArray()
+            AlertDialog.Builder(c).setTitle("Look back on…")
+                .setItems(names) { _, i -> Store.reviewDow = i + 1; Store.save(); refresh() }
+                .show()
+        }
+        col.addView(row)
     }
 
     private fun becomingCard(c: Context) {

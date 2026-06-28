@@ -24,7 +24,8 @@ class AppPickerActivity : AppCompatActivity() {
 
     private lateinit var b: ActivityAppPickerBinding
     private val selected = linkedSetOf<String>()
-    private val items = mutableListOf<AppItem>()
+    private val items = mutableListOf<AppItem>()        // all apps
+    private val shown = mutableListOf<AppItem>()         // filtered view
     private val adapter = Adapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +41,20 @@ class AppPickerActivity : AppCompatActivity() {
             setResult(RESULT_OK, Intent().putStringArrayListExtra(EXTRA_SELECTED, ArrayList(selected)))
             finish()
         }
+        b.search.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) = filter(s?.toString() ?: "")
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
         loadApps()
+    }
+
+    private fun filter(q: String) {
+        val query = q.trim().lowercase()
+        shown.clear()
+        if (query.isEmpty()) shown.addAll(items)
+        else shown.addAll(items.filter { it.label.lowercase().contains(query) })
+        adapter.notifyDataSetChanged()
     }
 
     private fun loadApps() {
@@ -59,7 +73,9 @@ class AppPickerActivity : AppCompatActivity() {
             }
             loaded.sortBy { it.label.lowercase() }
             Handler(Looper.getMainLooper()).post {
-                items.clear(); items.addAll(loaded); adapter.notifyDataSetChanged()
+                items.clear(); items.addAll(loaded)
+                shown.clear(); shown.addAll(loaded)
+                adapter.notifyDataSetChanged()
             }
         }.start()
     }
@@ -72,9 +88,9 @@ class AppPickerActivity : AppCompatActivity() {
         }
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH =
             VH(LayoutInflater.from(parent.context).inflate(R.layout.item_app, parent, false))
-        override fun getItemCount() = items.size
+        override fun getItemCount() = shown.size
         override fun onBindViewHolder(h: VH, position: Int) {
-            val item = items[position]
+            val item = shown[position]
             h.icon.setImageDrawable(item.icon)
             h.name.text = item.label
             h.check.isChecked = selected.contains(item.pkg)
