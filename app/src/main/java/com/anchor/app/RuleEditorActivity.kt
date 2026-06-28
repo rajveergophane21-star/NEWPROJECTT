@@ -274,7 +274,8 @@ class RuleEditorActivity : AppCompatActivity() {
                 })
             }
             card.addView(dayRow)
-            if (w.endMin <= w.startMin) card.addView(Ui.body(this, "End must be after start.", Ui.CLAY, 12f).also { it.setPadding(0, Ui.dp(this,8),0,0) })
+            if (w.endMin == w.startMin) card.addView(Ui.body(this, "Start and end can't be the same time.", Ui.CLAY, 12f).also { it.setPadding(0, Ui.dp(this,8),0,0) })
+            else if (w.overnight) card.addView(Ui.mono(this, "Overnight · ends next morning", Ui.FAINT, 10f).also { it.setPadding(0, Ui.dp(this,8),0,0) })
             box.addView(card)
         }
     }
@@ -388,7 +389,7 @@ class RuleEditorActivity : AppCompatActivity() {
         when (step) {
             0 -> { if (pkgs.isEmpty()) { toast("Choose at least one app"); return }; showStep(1, true) }
             1 -> {
-                if (windows.none { it.endMin > it.startMin && it.days.isNotEmpty() }) { toast("Add a valid time slot with at least one day"); return }
+                if (windows.none { it.endMin != it.startMin && it.days.isNotEmpty() }) { toast("Add a valid time slot with at least one day"); return }
                 showStep(2, true)
             }
             else -> save()
@@ -405,7 +406,7 @@ class RuleEditorActivity : AppCompatActivity() {
             // sensible default from the first app's label
             try { val pm = packageManager; pm.getApplicationLabel(pm.getApplicationInfo(pkgs.first(), 0)).toString() } catch (_: Exception) { "Blocked apps" }
         }
-        val valid = windows.filter { it.endMin > it.startMin && it.days.isNotEmpty() }
+        val valid = windows.filter { it.endMin != it.startMin && it.days.isNotEmpty() }
         if (pkgs.isEmpty() || valid.isEmpty()) { toast("Add apps and a valid schedule"); return }
         val mode = if (modeBlock) Mode.BLOCK else Mode.FRICTION
 

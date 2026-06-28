@@ -3,14 +3,20 @@ package com.anchor.app
 /** How a rule intervenes when a blocked app is opened. */
 enum class Mode { BLOCK, FRICTION }
 
-/** A recurring time slot, e.g. 09:00–17:00 on weekdays. Same-day only (start < end). */
+/** A recurring time slot, e.g. 09:00–17:00 weekdays, or 22:00–07:00 (overnight). */
 class TimeWindow(
     var startMin: Int,            // minutes from midnight, 0..1439
     var endMin: Int,              // exclusive, 1..1440
-    var days: MutableSet<Int>     // java.time DayOfWeek values: 1=Mon … 7=Sun
+    var days: MutableSet<Int>     // java.time DayOfWeek values: 1=Mon … 7=Sun (the start day)
 ) {
-    fun activeAt(nowMin: Int, dow: Int): Boolean =
-        days.contains(dow) && nowMin >= startMin && nowMin < endMin
+    val overnight: Boolean get() = endMin <= startMin
+
+    fun activeAt(nowMin: Int, dow: Int): Boolean {
+        if (!overnight) return days.contains(dow) && nowMin >= startMin && nowMin < endMin
+        // Wraps midnight: the start day owns the evening; the morning belongs to the next day.
+        val prev = if (dow == 1) 7 else dow - 1
+        return (days.contains(dow) && nowMin >= startMin) || (days.contains(prev) && nowMin < endMin)
+    }
 
     fun label(): String {
         return "${fmt(startMin)}–${fmt(endMin)}  ·  ${daysLabel()}"
@@ -49,7 +55,11 @@ class Rule(
     /** Minutes remaining in the currently-active window, or -1 if none active. */
     fun minutesLeft(nowMin: Int, dow: Int): Int {
         val w = windows.firstOrNull { it.activeAt(nowMin, dow) } ?: return -1
-        return w.endMin - nowMin
+        return when {
+            !w.overnight -> w.endMin - nowMin
+            nowMin >= w.startMin -> (w.endMin + 1440) - nowMin   // evening portion, ends next day
+            else -> w.endMin - nowMin                            // early-morning portion
+        }
     }
 }
 
