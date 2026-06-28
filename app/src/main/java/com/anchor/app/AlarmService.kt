@@ -35,22 +35,24 @@ class AlarmService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Store.init(this)
         when (intent?.action) {
-            ACTION_STOP -> { stopEverything(); return START_NOT_STICKY }
             ACTION_DONE -> {
                 val id = intent.getLongExtra(EXTRA_ID, habitId)
                 Store.habits.firstOrNull { it.id == id }?.let { if (!Store.isDoneToday(it)) Store.toggleToday(it) }
-                stopEverything(); return START_NOT_STICKY
+                stopEverything()
             }
-            else -> {
-                habitId = intent?.getLongExtra(EXTRA_ID, -1L) ?: -1L
+            ACTION_RING -> {
+                habitId = intent.getLongExtra(EXTRA_ID, -1L)
                 val name = Store.habits.firstOrNull { it.id == habitId }?.name ?: "Habit"
                 startForegroundAlarm(name)
                 startRinging()
                 autoStop.removeCallbacksAndMessages(null)
                 autoStop.postDelayed({ stopEverything() }, MAX_RING_MS)
             }
+            // ACTION_STOP, null (sticky restart), or anything else → stop. NOT_STICKY below means
+            // the OS never restarts us with a null intent and rings a phantom alarm.
+            else -> stopEverything()
         }
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     private fun startForegroundAlarm(name: String) {
@@ -95,6 +97,10 @@ class AlarmService : Service() {
     }
 
     private fun startRinging() {
+        // Stop any previous ring first so a second reminder can't stack a second MediaPlayer.
+        try { player?.stop(); player?.release() } catch (_: Exception) {}
+        player = null
+        try { vib?.cancel() } catch (_: Exception) {}
         try {
             val uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
                 ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
@@ -127,6 +133,7 @@ class AlarmService : Service() {
     override fun onDestroy() { stopEverything(); super.onDestroy() }
 
     companion object {
+        const val ACTION_RING = "com.anchor.app.ALARM_RING"
         const val ACTION_STOP = "com.anchor.app.ALARM_STOP"
         const val ACTION_DONE = "com.anchor.app.ALARM_DONE"
         const val EXTRA_ID = "id"
@@ -136,7 +143,7 @@ class AlarmService : Service() {
         private const val MAX_RING_MS = 120_000L   // safety: give up after 2 minutes
 
         fun start(ctx: Context, id: Long) {
-            val i = Intent(ctx, AlarmService::class.java).apply { putExtra(EXTRA_ID, id) }
+            val i = Intent(ctx, AlarmService::class.java).apply { action = ACTION_RING; putExtra(EXTRA_ID, id) }
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ctx.startForegroundService(i) else ctx.startService(i)
             } catch (_: Exception) {}
