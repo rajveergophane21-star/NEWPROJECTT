@@ -65,18 +65,17 @@ class InterceptActivity : AppCompatActivity() {
 
     /** Editorial dark styling: serif + mono on warm-black paper. */
     private fun styleDark() {
-        val cream = 0xFFFFCD75.toInt(); val ink = 0xFF1A1C2C.toInt(); val soft = 0xFFC2A87E.toInt()
+        val cream = 0xFFFFCD75.toInt(); val soft = 0xFFC2A87E.toInt()
         b.eyebrow.typeface = Ui.monoMed(this); b.eyebrow.setTextColor(Ui.ACC_GLOW)
         b.headline.typeface = Ui.serif(this); b.headline.setTextColor(Ui.DARK_TEXT); b.headline.textSize = 32f
         b.appLine.typeface = Ui.sans(this); b.appLine.setTextColor(soft)
         b.sub.typeface = Ui.serifItalic(this); b.sub.setTextColor(cream); b.sub.textSize = 19f
         b.breathCount.typeface = Ui.serif(this); b.breathCount.setTextColor(Ui.DARK_TEXT)
         b.breathOrb.backgroundTintList = ColorStateList.valueOf(Ui.SAGE)
-        b.btnPrimary.backgroundTintList = ColorStateList.valueOf(cream)
-        b.btnPrimary.setTextColor(ink); b.btnPrimary.typeface = Ui.sans(this)
-        b.btnSecondary.setTextColor(Ui.ACC_GLOW); b.btnSecondary.typeface = Ui.sans(this)
-        b.btnReplace.setTextColor(Ui.DARK_TEXT); b.btnReplace.typeface = Ui.sans(this)
-        b.btnReplace.strokeColor = ColorStateList.valueOf(0x33FFFFFF)
+        // Beveled pixel buttons (backgrounds set in XML); just apply the pixel display font.
+        b.btnPrimary.typeface = Ui.serif(this)
+        b.btnSecondary.typeface = Ui.monoMed(this); b.btnSecondary.setTextColor(Ui.ACC_GLOW)
+        b.btnReplace.typeface = Ui.serif(this); b.btnReplace.setTextColor(Ui.TEXT)
     }
 
     private fun appName(): String = try {

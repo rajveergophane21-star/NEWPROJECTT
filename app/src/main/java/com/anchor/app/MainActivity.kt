@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
     private fun chromeOnly(i: Int) {
         current = i
         ticks.forEachIndexed { idx, t -> t.visibility = if (idx == i) View.VISIBLE else View.INVISIBLE }
-        labels.forEachIndexed { idx, l -> l.setTextColor(if (idx == i) Ui.TEXT else Ui.FAINT) }
+        labels.forEachIndexed { idx, l -> l.setTextColor(if (idx == i) Ui.TEXT else Ui.MUTED) }
     }
 
     override fun onSaveInstanceState(out: Bundle) { super.onSaveInstanceState(out); out.putInt("tab", current) }

@@ -36,7 +36,7 @@ class AppPickerActivity : AppCompatActivity() {
         intent.getStringArrayListExtra(EXTRA_SELECTED)?.let { selected.addAll(it) }
 
         b.pickTitle.typeface = Ui.serif(this)
-        b.done.typeface = Ui.serif(this); b.done.cornerRadius = 0; b.done.setTextColor(Ui.INK)
+        b.done.typeface = Ui.serif(this); b.done.setTextColor(Ui.INK)
         b.list.layoutManager = GridLayoutManager(this, 4)
         b.list.adapter = adapter
         b.done.setOnClickListener {
@@ -96,7 +96,7 @@ class AppPickerActivity : AppCompatActivity() {
         private fun paint(h: VH, on: Boolean) {
             h.slot.background = ContextCompat.getDrawable(h.itemView.context, if (on) R.drawable.slot_sel else R.drawable.slot)
             h.check.visibility = if (on) View.VISIBLE else View.GONE
-            h.name.setTextColor(if (on) Ui.SAGE else Ui.MUTED)
+            h.name.setTextColor(if (on) Ui.ACC_TEXT else Ui.TEXT)
         }
         override fun onBindViewHolder(h: VH, position: Int) {
             val item = shown[position]

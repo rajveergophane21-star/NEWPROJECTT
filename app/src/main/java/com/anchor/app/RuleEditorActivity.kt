@@ -122,7 +122,7 @@ class RuleEditorActivity : AppCompatActivity() {
         stepSub = Ui.body(this, "").also { it.setPadding(0, Ui.dp(this,6),0,0) }
         rootV.addView(stepTitle); rootV.addView(stepSub)
 
-        preview = Ui.mono(this, "", Ui.SAGE, 11f).apply {
+        preview = Ui.mono(this, "", Ui.ACC_TEXT, 11f).apply {
             letterSpacing = 0.08f
             setPadding(0, Ui.dp(this@RuleEditorActivity,14), 0, Ui.dp(this@RuleEditorActivity,2))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
@@ -374,7 +374,7 @@ class RuleEditorActivity : AppCompatActivity() {
                 else -> 0xFFF3E6C6.toInt()     // amber wash — Friction
             })
             val head = box.getChildAt(0) as LinearLayout
-            (head.getChildAt(0) as TextView).setTextColor(if (!on) Ui.TEXT else if (block) Ui.SAGE else Ui.TERRA)
+            (head.getChildAt(0) as TextView).setTextColor(if (!on) Ui.TEXT else if (block) Ui.ACC_TEXT else 0xFF9A5A12.toInt())
             val radio = head.getChildAt(1)
             radio.backgroundTintList = ColorStateList.valueOf(if (on) (if (block) Ui.SAGE else Ui.TERRA) else 0x00000000)
             radio.visibility = if (on) View.VISIBLE else View.INVISIBLE

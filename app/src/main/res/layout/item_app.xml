@@ -45,5 +45,5 @@
         android:textSize="11sp"
         android:lineSpacingMultiplier="0.95"
         android:fontFamily="@font/pixelify_sans"
-        android:textColor="@color/muted" />
+        android:textColor="@color/text" />
 </LinearLayout>

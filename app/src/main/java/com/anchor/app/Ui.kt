@@ -80,7 +80,7 @@ object Ui {
 
     /** Mono, uppercase, widely tracked label. */
     fun eyebrow(c: Context, t: String) = TextView(c).apply {
-        text = t.uppercase(); setTextColor(FAINT); textSize = 10f
+        text = t.uppercase(); setTextColor(MUTED); textSize = 10f
         letterSpacing = 0.2f; typeface = monoMed(c); includeFontPadding = false
     }
 

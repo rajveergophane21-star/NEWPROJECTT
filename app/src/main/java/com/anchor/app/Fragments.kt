@@ -45,7 +45,7 @@ private fun field(c: Context, hintText: String, prefill: String = "", lines: Int
 /** A selectable pill, used for reflection ratings. */
 private fun choicePill(c: Context, label: String, selected: Boolean, onTap: () -> Unit): TextView = TextView(c).apply {
     text = label; gravity = Gravity.CENTER; textSize = 13f
-    setTextColor(if (selected) Ui.SAGE else Ui.MUTED)
+    setTextColor(if (selected) Ui.ACC_TEXT else Ui.MUTED)
     background = ContextCompat.getDrawable(c, R.drawable.pill)
     backgroundTintList = ColorStateList.valueOf(if (selected) Ui.SELECT else Ui.SURFACE2)
     setPadding(Ui.dp(c,14), Ui.dp(c,10), Ui.dp(c,14), Ui.dp(c,10))
@@ -219,9 +219,9 @@ class TodayFragment : BaseFragment() {
         }
         val tcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
         tcol.addView(Ui.title(c, h.name, 15f))
-        tcol.addView(Ui.mono(c, if (h.anchor.isNotEmpty()) "after ${h.anchor}" else "replacement habit", Ui.FAINT, 10f).also { it.setPadding(0, Ui.dp(c,3),0,0) })
-        val streak = Ui.numeral(c, "${Store.currentStreak(h)}", 21f)
-        val d = Ui.mono(c, "d", Ui.FAINT, 10f)
+        tcol.addView(Ui.mono(c, if (h.anchor.isNotEmpty()) "after ${h.anchor}" else "replacement habit", Ui.MUTED, 10f).also { it.setPadding(0, Ui.dp(c,3),0,0) })
+        val streak = Ui.numeral(c, "${Store.currentStreak(h)}", 27f)
+        val d = Ui.mono(c, "d", Ui.MUTED, 10f)
         val sRow = Ui.row(c); sRow.addView(streak); sRow.addView(d)
         row.addView(check); row.addView(tcol); row.addView(sRow)
         return row
@@ -245,8 +245,9 @@ class TodayFragment : BaseFragment() {
         fun restyle() {
             pills.forEachIndexed { i, p ->
                 val on = i == sel
-                p.setTextColor(if (on) Ui.DARK_TEXT else 0xFF8A7459.toInt())
-                p.backgroundTintList = ColorStateList.valueOf(if (on) 0xFFE4D6B8.toInt() else 0xFFE4D6B8.toInt())
+                // On the dark reflection card: selected = light fill + dark ink; unselected = warm-dark pill + soft text.
+                p.setTextColor(if (on) Ui.TEXT else 0xFFC2A87E.toInt())
+                p.backgroundTintList = ColorStateList.valueOf(if (on) Ui.SELECT else 0xFF4A3B2C.toInt())
             }
         }
         labels.forEachIndexed { i, l ->
@@ -330,13 +331,13 @@ class ShieldFragment : BaseFragment() {
         }
         val titleRow = Ui.row(c)
         titleRow.addView(Ui.title(c, r.name, 17f))
-        if (Store.isLocked(r)) titleRow.addView(TextView(c).apply { text = "  🔒"; textSize = 13f })
+        if (Store.isLocked(r)) titleRow.addView(Ui.mono(c, "LOCKED", Ui.ACC_TEXT, 10f).also { it.setPadding(Ui.dp(c,8),0,0,0); it.letterSpacing = 0.1f })
         tcol.addView(titleRow)
         val isBlock = r.mode == Mode.BLOCK
         val modeChip = TextView(c).apply {
             text = (if (isBlock) "Block - hard stop" else "Friction - 12s pause").uppercase()
             textSize = 10f; letterSpacing = 0.06f; typeface = Ui.monoMed(c)
-            setTextColor(if (isBlock) Ui.SAGE else Ui.TERRA)
+            setTextColor(if (isBlock) Ui.ACC_TEXT else 0xFF9A5A12.toInt())
             setPadding(Ui.dp(c,11), Ui.dp(c,6), Ui.dp(c,11), Ui.dp(c,6))
             background = ContextCompat.getDrawable(c, R.drawable.pill)
             backgroundTintList = ColorStateList.valueOf(if (isBlock) 0xFFF6E2CE.toInt() else 0xFFF3E6C6.toInt())
@@ -356,7 +357,7 @@ class ShieldFragment : BaseFragment() {
         val apps = if (r.packages.size == 1) "1 app" else "${r.packages.size} apps"
         card.addView(Ui.body(c, apps, Ui.MUTED, 13f).also { it.setPadding(0, Ui.dp(c,10),0, Ui.dp(c,2)) })
         r.windows.forEach { w -> card.addView(Ui.body(c, w.label(), Ui.MUTED, 13f)) }
-        if (r.activeNow(nowMin, dow)) card.addView(Ui.body(c, "● Active now — ${r.minutesLeft(nowMin, dow)} min left", Ui.SAGE, 12f).also { it.setPadding(0, Ui.dp(c,8),0,0) })
+        if (r.activeNow(nowMin, dow)) card.addView(Ui.body(c, "● Active now — ${r.minutesLeft(nowMin, dow)} min left", Ui.ACC_TEXT, 12f).also { it.setPadding(0, Ui.dp(c,8),0,0) })
 
         card.setOnClickListener {
             startActivity(Intent(c, RuleEditorActivity::class.java).putExtra(RuleEditorActivity.EXTRA_RULE_ID, r.id))
@@ -433,7 +434,7 @@ class HabitsFragment : BaseFragment() {
         }
         header.addView(tcol); header.addView(check)
         card.addView(header)
-        card.addView(Ui.body(c, "${Store.currentStreak(h)}-day streak · best ${Store.bestStreak(h)}", Ui.FAINT, 12f)
+        card.addView(Ui.body(c, "${Store.currentStreak(h)}-day streak · best ${Store.bestStreak(h)}", Ui.MUTED, 12f)
             .also { it.setPadding(0, Ui.dp(c,12),0, Ui.dp(c,12)) })
         card.addView(HeatmapView(c).apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
@@ -490,7 +491,7 @@ class ReviewFragment : BaseFragment() {
         col.addView(Ui.hairline(c))
         val day = java.time.DayOfWeek.of(Store.reviewDow).getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault())
         val row = Ui.row(c)
-        row.addView(Ui.mono(c, "Review day", Ui.FAINT, 10.5f).also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
+        row.addView(Ui.mono(c, "Review day", Ui.MUTED, 10.5f).also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
         row.addView(Ui.mono(c, "$day  >".uppercase(), Ui.MUTED, 10.5f))
         row.setOnClickListener {
             val names = java.time.DayOfWeek.values().map { it.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault()) }.toTypedArray()
@@ -506,7 +507,7 @@ class ReviewFragment : BaseFragment() {
         val card = Ui.card(c)
         card.addView(Ui.eyebrow(c, "Becoming"))
         card.addView(Ui.title(c, Store.identity, 18f).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,8)) })
-        card.addView(Ui.body(c, "${Store.alignedDaysTotal()} days that felt like you · ${Store.reviewsCount()} weeks looked back on · ${Store.resistedTotal()} urges turned away in all", Ui.FAINT, 12f))
+        card.addView(Ui.body(c, "${Store.alignedDaysTotal()} days that felt like you · ${Store.reviewsCount()} weeks looked back on · ${Store.resistedTotal()} urges turned away in all", Ui.MUTED, 12f))
         col.addView(card)
     }
 
@@ -517,7 +518,7 @@ class ReviewFragment : BaseFragment() {
         card.addView(Ui.body(c, "Margin gathers the week as you live it. Come back $dayName to look back and choose what's next.")
             .also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,12)) })
         val (resisted, _, aligned, top, _) = weekMirror(c)
-        card.addView(Ui.body(c, "So far: $resisted urges turned away · $aligned ${if (aligned==1) "day" else "days"} that felt like you${if (top != null) " · $top pulled at you most" else ""}", Ui.FAINT, 12f))
+        card.addView(Ui.body(c, "So far: $resisted urges turned away · $aligned ${if (aligned==1) "day" else "days"} that felt like you${if (top != null) " · $top pulled at you most" else ""}", Ui.MUTED, 12f))
         col.addView(card)
     }
 
@@ -552,7 +553,7 @@ class ReviewFragment : BaseFragment() {
             listOf("Drifted","Some of it","Lived it").forEachIndexed { i, l ->
                 val p = choicePill(c, l, false) {
                     lastOutcome = i
-                    pills.forEachIndexed { j, pp -> val on = j==i; pp.setTextColor(if(on) Ui.SAGE else Ui.MUTED); pp.backgroundTintList = ColorStateList.valueOf(if(on) Ui.SELECT else Ui.SURFACE2) }
+                    pills.forEachIndexed { j, pp -> val on = j==i; pp.setTextColor(if(on) Ui.ACC_TEXT else Ui.MUTED); pp.backgroundTintList = ColorStateList.valueOf(if(on) Ui.SELECT else Ui.SURFACE2) }
                 }
                 p.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { if (i>0) it.marginStart = Ui.dp(c,8) }
                 pills.add(p); row.addView(p)
