@@ -84,12 +84,19 @@ class TodayFragment : BaseFragment() {
         val hour = LocalTime.now().hour
         val part = when { hour < 12 -> "Morning"; hour < 18 -> "Afternoon"; else -> "Evening" }
 
-        // masthead row
-        val dateRow = Ui.row(c).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,12)) }
-        dateRow.addView(Ui.eyebrow(c, LocalDate.now().format(DateTimeFormatter.ofPattern("EEE d MMM"))))
-        dateRow.addView(View(c).apply { layoutParams = LinearLayout.LayoutParams(0, 1, 1f) })
-        dateRow.addView(Ui.eyebrow(c, part))
-        col.addView(dateRow)
+        // masthead — lantern + MARGIN wordmark, with the date on the right
+        val brandRow = Ui.row(c).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,12)) }
+        brandRow.addView(android.widget.ImageView(c).apply {
+            setImageDrawable(ContextCompat.getDrawable(c, R.drawable.ic_pixel_logo))
+            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,20), Ui.dp(c,20)).also { it.marginEnd = Ui.dp(c,9) }
+        })
+        brandRow.addView(TextView(c).apply {
+            text = "MARGIN"; typeface = Ui.press(c); textSize = 11f; letterSpacing = 0.06f
+            setTextColor(Ui.TEXT); includeFontPadding = false
+        })
+        brandRow.addView(View(c).apply { layoutParams = LinearLayout.LayoutParams(0, 1, 1f) })
+        brandRow.addView(Ui.eyebrow(c, LocalDate.now().format(DateTimeFormatter.ofPattern("EEE d MMM"))))
+        col.addView(brandRow)
         col.addView(thinLine(c))
 
         col.addView(Ui.display(c, "Good ${part.lowercase()}.", 40f).also { it.setPadding(0, Ui.dp(c,18),0,0) })
