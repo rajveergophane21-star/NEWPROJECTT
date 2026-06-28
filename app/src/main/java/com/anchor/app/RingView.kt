@@ -17,16 +17,19 @@ class RingView @JvmOverloads constructor(
     private var progress = 0f
     private var centerText = ""
     private var subText = ""
-    private var activeColor = 0xFFE07A3E.toInt()
-    private val trackColor = 0xFFE4D6B8.toInt()
+    private var activeColor = 0xFF3E7D5A.toInt()   // evergreen — progress
+    private val trackColor = 0xFFEAE2D4.toInt()    // warm recessed track
 
     private val trackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
     private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
     private val centerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF3B2F2A.toInt(); textAlign = Paint.Align.CENTER
-        typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
+        color = 0xFF2B2622.toInt(); textAlign = Paint.Align.CENTER
+        typeface = androidx.core.content.res.ResourcesCompat.getFont(context, R.font.vt323)
     }
-    private val subPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF8A7459.toInt(); textAlign = Paint.Align.CENTER }
+    private val subPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFF857A6B.toInt(); textAlign = Paint.Align.CENTER
+        typeface = androidx.core.content.res.ResourcesCompat.getFont(context, R.font.silkscreen)
+    }
     private val rect = RectF()
 
     fun setProgress(p: Float) { progress = p.coerceIn(0f, 1f); invalidate() }

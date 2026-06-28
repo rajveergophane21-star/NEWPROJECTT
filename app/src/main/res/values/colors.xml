@@ -22,7 +22,9 @@
     <color name="accent_text">#9A4A1E</color>
     <color name="ink_on_accent">#FFFBF0</color>
 
-    <color name="green">#4FA64F</color>
+    <color name="green">#3E7D5A</color>        <!-- evergreen: done / progress -->
+    <color name="success_text">#2E6047</color>
+    <color name="success_wash">#DCE9DF</color>
     <color name="blue">#3E8FD0</color>
     <color name="clay">#C8485B</color>        <!-- danger -->
     <color name="terra">#D98E3E</color>       <!-- amber / friction -->

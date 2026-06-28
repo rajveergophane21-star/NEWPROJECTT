@@ -14,8 +14,8 @@ class HeatmapView @JvmOverloads constructor(
 
     private var done = BooleanArray(0)
     private var weeks = 16
-    private var activeColor = 0xFF3B5141.toInt()
-    private val emptyColor = 0xFFE4D6B8.toInt()
+    private var activeColor = 0xFF3E7D5A.toInt()   // evergreen — done
+    private val emptyColor = 0xFFEAE2D4.toInt()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val rect = RectF()
 
@@ -34,14 +34,13 @@ class HeatmapView @JvmOverloads constructor(
         if (weeks <= 0) return
         val gap = dp(3f)
         val cell = (width - gap * (weeks - 1)) / weeks
-        val radius = cell * 0.28f
         for (i in 0 until weeks * 7) {
             val col = i / 7; val row = i % 7
             val isDone = i < done.size && done[i]
             paint.color = if (isDone) activeColor else emptyColor
             val left = col * (cell + gap); val top = row * (cell + gap)
-            rect.set(left, top, left + cell, top + cell)
-            canvas.drawRoundRect(rect, radius, radius, paint)
+            // Hard pixel squares — no rounded corners.
+            canvas.drawRect(left, top, left + cell, top + cell, paint)
         }
     }
 

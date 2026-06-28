@@ -47,16 +47,16 @@ class PixelToggle(context: Context) : View(context) {
         val frame = px(2f)
         // recessed track: dark frame, then fill. OFF track is darker than the card so the
         // pale knob reads clearly; ON track is the terracotta accent.
-        paint.color = if (checkedState) Ui.SAGE else 0xFF8A8178.toInt()
+        paint.color = if (checkedState) Ui.SAGE else Ui.CARD_BORDER
         canvas.drawRect(0f, 0f, w, h, paint)
-        paint.color = if (checkedState) Ui.SAGE else 0xFFB7AFA4.toInt()  // grey track when off
+        paint.color = if (checkedState) Ui.SAGE else Ui.SURFACE2  // warm recessed track when off
         canvas.drawRect(frame, frame, w - frame, h - frame, paint)
 
         // raised white knob (square), parked left when off / right when on
         val knob = h - frame * 2
         val left = if (checkedState) w - frame - knob else frame
         val top = frame
-        paint.color = 0xFF8A8178.toInt()                       // knob frame
+        paint.color = Ui.MUTED                                 // knob frame
         canvas.drawRect(left, top, left + knob, top + knob, paint)
         paint.color = 0xFFFFFFFF.toInt()                       // knob face
         canvas.drawRect(left + frame, top + frame, left + knob - frame, top + knob - frame, paint)

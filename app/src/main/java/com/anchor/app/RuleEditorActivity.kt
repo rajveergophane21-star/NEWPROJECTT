@@ -463,9 +463,10 @@ class RuleEditorActivity : AppCompatActivity() {
     /** A pixel "set the clock" stepper, JRPG style — chunky -/+ keys, big VT323 readout. */
     private fun pickTime(currentMin: Int, onSet: (Int) -> Unit) {
         val c = this
-        var h = (currentMin / 60).coerceIn(0, 23)
-        // Round to the nearest 5 (not floor) so opening the picker doesn't silently shift the window.
-        var m = (((currentMin % 60) + 2) / 5 * 5).coerceIn(0, 55)
+        // Support 24:00 (midnight end) so opening the picker on an all-day rule doesn't
+        // silently rewind it to 23:00. Round minutes to nearest 5 instead of flooring.
+        var h = (currentMin / 60).coerceIn(0, 24)
+        var m = if (h >= 24) 0 else (((currentMin % 60) + 2) / 5 * 5).coerceIn(0, 55)
         val hh = Ui.numeral(c, "", 46f).apply { gravity = Gravity.CENTER }
         val mm = Ui.numeral(c, "", 46f).apply { gravity = Gravity.CENTER }
         fun upd() { hh.text = "%02d".format(h); mm.text = "%02d".format(m) }
@@ -500,7 +501,7 @@ class RuleEditorActivity : AppCompatActivity() {
         container.addView(Ui.eyebrow(c, "Set time").also { it.gravity = Gravity.CENTER_HORIZONTAL })
         val grid = Ui.row(c).apply { gravity = Gravity.CENTER; setPadding(0, Ui.dp(c,16), 0, Ui.dp(c,18)) }
         val hcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER }
-        hcol.addView(unit(hh, { h = (h + 23) % 24 }, { h = (h + 1) % 24 }))
+        hcol.addView(unit(hh, { h = (h + 24) % 25 }, { h = (h + 1) % 25 }))
         hcol.addView(Ui.eyebrow(c, "Hour").also { it.gravity = Gravity.CENTER_HORIZONTAL; it.setPadding(0, Ui.dp(c,6),0,0) })
         val mcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER }
         mcol.addView(unit(mm, { m = (m + 55) % 60 }, { m = (m + 5) % 60 }))
@@ -514,7 +515,7 @@ class RuleEditorActivity : AppCompatActivity() {
 
         val dialog = AlertDialog.Builder(c).setView(container).create()
         dialog.window?.setBackgroundDrawableResource(R.drawable.card)
-        ok.setOnClickListener { onSet(h * 60 + m); dialog.dismiss() }
+        ok.setOnClickListener { onSet((h * 60 + m).coerceIn(0, 1440)); dialog.dismiss() }
         dialog.show()
     }
 

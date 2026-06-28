@@ -52,13 +52,16 @@ class Rule(
     fun activeNow(nowMin: Int, dow: Int): Boolean =
         enabled && windows.any { it.activeAt(nowMin, dow) }
 
-    /** Minutes remaining in the currently-active window, or -1 if none active. */
+    /** Minutes remaining — the longest across all currently-active windows, or -1 if none. */
     fun minutesLeft(nowMin: Int, dow: Int): Int {
-        val w = windows.firstOrNull { it.activeAt(nowMin, dow) } ?: return -1
-        return when {
-            !w.overnight -> w.endMin - nowMin
-            nowMin >= w.startMin -> (w.endMin + 1440) - nowMin   // evening portion, ends next day
-            else -> w.endMin - nowMin                            // early-morning portion
+        val active = windows.filter { it.activeAt(nowMin, dow) }
+        if (active.isEmpty()) return -1
+        return active.maxOf { w ->
+            when {
+                !w.overnight -> w.endMin - nowMin
+                nowMin >= w.startMin -> (w.endMin + 1440) - nowMin   // evening portion, ends next day
+                else -> w.endMin - nowMin                            // early-morning portion
+            }
         }
     }
 }

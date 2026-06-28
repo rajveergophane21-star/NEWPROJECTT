@@ -19,8 +19,10 @@ object Ui {
     const val TEXT = 0xFF2B2622.toInt()
     const val MUTED = 0xFF857A6B.toInt()
     const val FAINT = 0xFFABA08E.toInt()
-    const val SAGE = 0xFFE07A3E.toInt()        // terracotta accent (fills/dots only)
-    const val GREEN = 0xFF4FA64F.toInt()       // success / done
+    const val SAGE = 0xFFE07A3E.toInt()        // terracotta accent — intention / brand / active
+    const val GREEN = 0xFF3E7D5A.toInt()       // evergreen — done / progress / momentum
+    const val GREEN_TEXT = 0xFF2E6047.toInt()  // green for small text on light
+    const val GREEN_WASH = 0xFFDCE9DF.toInt()  // green selected pill wash
     const val BLUE = 0xFF3E8FD0.toInt()        // info
     const val ACC_SOFT = 0xFFF6E2CE.toInt()
     const val ACC_TEXT = 0xFF9A4A1E.toInt()    // accent for small text — passes on light washes
@@ -43,10 +45,17 @@ object Ui {
     private var silkBoldT: Typeface? = null
     private var vtT: Typeface? = null
     private var pressT: Typeface? = null
+    private var sansT: Typeface? = null
+    private var sansMedT: Typeface? = null
+    private var serifItT: Typeface? = null
 
+    // Pixelify is the display/character face (screen headlines, button labels, wordmark).
     fun serif(c: Context): Typeface = pixT ?: ResourcesCompat.getFont(c, R.font.pixelify_sans)!!.also { pixT = it }
-    fun serifItalic(c: Context): Typeface = serif(c)
-    fun sans(c: Context): Typeface = serif(c)
+    // Clean humanist sans for body + titles — the readable base under the pixel accents.
+    fun sans(c: Context): Typeface = sansT ?: Typeface.create("sans-serif", Typeface.NORMAL).also { sansT = it }
+    fun sansMed(c: Context): Typeface = sansMedT ?: Typeface.create("sans-serif-medium", Typeface.NORMAL).also { sansMedT = it }
+    // Editorial serif italic for the user's own words (identity, why, reflection prompts).
+    fun serifItalic(c: Context): Typeface = serifItT ?: Typeface.create("serif", Typeface.ITALIC).also { serifItT = it }
     fun mono(c: Context): Typeface = silkT ?: ResourcesCompat.getFont(c, R.font.silkscreen)!!.also { silkT = it }
     fun monoMed(c: Context): Typeface = silkBoldT ?: ResourcesCompat.getFont(c, R.font.silkscreen_bold)!!.also { silkBoldT = it }
     fun vt(c: Context): Typeface = vtT ?: ResourcesCompat.getFont(c, R.font.vt323)!!.also { vtT = it }
@@ -73,9 +82,9 @@ object Ui {
     fun card(c: Context): LinearLayout = LinearLayout(c).apply {
         orientation = LinearLayout.VERTICAL
         background = ContextCompat.getDrawable(c, R.drawable.card)
-        setPadding(dp(c, 19), dp(c, 19), dp(c, 19), dp(c, 19))
+        setPadding(dp(c, 18), dp(c, 18), dp(c, 18), dp(c, 18))
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            .apply { bottomMargin = dp(c, 13) }
+            .apply { bottomMargin = dp(c, 12) }
     }
 
     /** Mono, uppercase, widely tracked label. */
@@ -89,15 +98,15 @@ object Ui {
         typeface = mono(c); includeFontPadding = false
     }
 
-    /** Serif screen headline (Instrument Serif). */
-    fun display(c: Context, t: String, size: Float = 36f) = TextView(c).apply {
+    /** Pixel display headline (screen titles). */
+    fun display(c: Context, t: String, size: Float = 34f) = TextView(c).apply {
         text = t; setTextColor(TEXT); textSize = size
-        typeface = serif(c); includeFontPadding = false; setLineSpacing(0f, 0.98f)
+        typeface = serif(c); includeFontPadding = false; setLineSpacing(0f, 1f)
     }
 
-    /** Serif card headline. */
+    /** Card headline — clean sans, semibold. */
     fun serifHead(c: Context, t: String, size: Float = 22f) = TextView(c).apply {
-        text = t; setTextColor(TEXT); textSize = size; typeface = serif(c); includeFontPadding = false
+        text = t; setTextColor(TEXT); textSize = size; typeface = sansMed(c); includeFontPadding = false
     }
 
     /** Serif italic — for the user's own words (identity, prompts). */
@@ -108,7 +117,7 @@ object Ui {
 
     /** Sans semibold — item names, button-like labels. */
     fun title(c: Context, t: String, size: Float = 15.5f) = TextView(c).apply {
-        text = t; setTextColor(TEXT); textSize = size; typeface = sans(c); weight(600)
+        text = t; setTextColor(TEXT); textSize = size; typeface = sansMed(c)
     }
 
     fun body(c: Context, t: String, color: Int = MUTED, size: Float = 14f) = TextView(c).apply {
@@ -164,13 +173,13 @@ object Ui {
             addView(body(c, sentence, MUTED, 14f))
         }
 
-    fun statTile(c: Context, num: String, label: String): Pair<LinearLayout, TextView> {
+    fun statTile(c: Context, num: String, label: String, color: Int = SAGE): Pair<LinearLayout, TextView> {
         val tile = LinearLayout(c).apply {
             orientation = LinearLayout.VERTICAL
             background = ContextCompat.getDrawable(c, R.drawable.card2)
-            setPadding(dp(c, 15), dp(c, 15), dp(c, 15), dp(c, 15))
+            setPadding(dp(c, 16), dp(c, 16), dp(c, 16), dp(c, 16))
         }
-        val n = numeral(c, num, 30f, SAGE)
+        val n = numeral(c, num, 30f, color)
         val l = eyebrow(c, label).also { it.setPadding(0, dp(c, 5), 0, 0) }
         tile.addView(n); tile.addView(l)
         return tile to n

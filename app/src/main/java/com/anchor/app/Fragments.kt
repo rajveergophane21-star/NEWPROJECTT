@@ -62,6 +62,7 @@ class TodayFragment : BaseFragment() {
     private val tick = object : Runnable {
         override fun run() {
             if (focusLabel == null) return
+            if (focusFill?.parent == null) return   // view was rebuilt; a fresh tick will take over
             if (!Store.focusActive()) { refresh(); return }
             val remain = Store.focusRemainingMs(); val total = Store.focusTotalMs.coerceAtLeast(1)
             focusLabel?.text = mmss(remain)
@@ -229,7 +230,7 @@ class TodayFragment : BaseFragment() {
         val tcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
         tcol.addView(Ui.title(c, h.name, 15f))
         tcol.addView(Ui.mono(c, if (h.anchor.isNotEmpty()) "after ${h.anchor}" else "replacement habit", Ui.MUTED, 10f).also { it.setPadding(0, Ui.dp(c,3),0,0) })
-        val streak = Ui.numeral(c, "${Store.currentStreak(h)}", 27f, Ui.SAGE)
+        val streak = Ui.numeral(c, "${Store.currentStreak(h)}", 27f, Ui.GREEN)
         val d = Ui.mono(c, "d", Ui.MUTED, 10f)
         val sRow = Ui.row(c); sRow.addView(streak); sRow.addView(d)
         row.addView(check); row.addView(tcol); row.addView(sRow)
@@ -249,8 +250,8 @@ class TodayFragment : BaseFragment() {
         fun restyle() {
             pills.forEachIndexed { i, p ->
                 val on = i == sel
-                p.setTextColor(if (on) Ui.ACC_TEXT else Ui.MUTED)
-                p.backgroundTintList = ColorStateList.valueOf(if (on) Ui.SELECT else Ui.SURFACE2)
+                p.setTextColor(if (on) Ui.GREEN_TEXT else Ui.MUTED)
+                p.backgroundTintList = ColorStateList.valueOf(if (on) Ui.GREEN_WASH else Ui.SURFACE2)
             }
         }
         labels.forEachIndexed { i, l ->
@@ -338,7 +339,7 @@ class ShieldFragment : BaseFragment() {
         tcol.addView(titleRow)
         val isBlock = r.mode == Mode.BLOCK
         val modeChip = TextView(c).apply {
-            text = (if (isBlock) "Block - hard stop" else "Friction - 12s pause").uppercase()
+            text = (if (isBlock) "Block - hard stop" else "Friction - 8s pause").uppercase()
             textSize = 10f; letterSpacing = 0.06f; typeface = Ui.monoMed(c)
             setTextColor(if (isBlock) Ui.ACC_TEXT else 0xFF8A4E0E.toInt())
             setPadding(Ui.dp(c,11), Ui.dp(c,6), Ui.dp(c,11), Ui.dp(c,6))
@@ -462,7 +463,12 @@ class HabitsFragment : BaseFragment() {
                 val n = name.text.toString().trim()
                 if (n.isNotEmpty()) { h.name = n; h.anchor = anchor.text.toString().trim(); Store.save(); refresh() }
             }
-            .setNeutralButton("Delete") { _, _ -> Store.deleteHabit(h); refresh() }
+            .setNeutralButton("Delete") { _, _ ->
+                AlertDialog.Builder(c).setTitle("Delete \"${h.name}\"?")
+                    .setMessage("This removes the habit and its check-in history.")
+                    .setPositiveButton("Delete") { _, _ -> Store.deleteHabit(h); refresh() }
+                    .setNegativeButton("Cancel", null).show()
+            }
             .setNegativeButton("Cancel", null)
             .show()
     }
@@ -613,7 +619,7 @@ class InsightsFragment : BaseFragment() {
         // two stats, not four
         val row = Ui.row(c)
         val (t1, _) = Ui.statTile(c, "${Store.resistedTotal()}", "turned away in all")
-        val (t2, _) = Ui.statTile(c, "${Store.resistedMomentum()}", "day momentum")
+        val (t2, _) = Ui.statTile(c, "${Store.resistedMomentum()}", "day momentum", Ui.GREEN)
         t1.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { it.marginEnd = Ui.dp(c,10) }
         t2.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         row.addView(t1); row.addView(t2)
@@ -689,7 +695,7 @@ class InsightsFragment : BaseFragment() {
             }
             colmn.addView(View(c).apply { layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, (max - total).toFloat()) })
             if (proceeded[i] > 0) colmn.addView(View(c).apply { setBackgroundColor(0xFFB59B73.toInt()); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, proceeded[i].toFloat()) })
-            if (resisted[i] > 0) colmn.addView(View(c).apply { setBackgroundColor(Ui.SAGE); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, resisted[i].toFloat()) })
+            if (resisted[i] > 0) colmn.addView(View(c).apply { setBackgroundColor(Ui.GREEN); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, resisted[i].toFloat()) })
             row.addView(colmn)
         }
         return row

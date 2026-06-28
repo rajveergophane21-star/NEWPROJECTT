@@ -342,6 +342,9 @@ object Store {
                 reviews.add(WeeklyReview(o.getLong("week"), o.optString("noticed", ""), o.optString("focus", ""), o.optInt("outcome", -1)))
             }
         } catch (_: Exception) { }
+        // Defensive: never hand out an id that already exists (guards against a corrupt/partial
+        // nextId so newId() can't collide with a restored rule/habit).
+        nextId = maxOf(nextId, ((rules.map { it.id } + habits.map { it.id }).maxOrNull() ?: 0L) + 1L)
     }
 
     fun save() {
