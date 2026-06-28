@@ -448,8 +448,61 @@ class RuleEditorActivity : AppCompatActivity() {
         setOnClickListener { onClick() }
     }
 
+    /** A pixel "set the clock" stepper, JRPG style — chunky -/+ keys, big VT323 readout. */
     private fun pickTime(currentMin: Int, onSet: (Int) -> Unit) {
-        TimePickerDialog(this, { _, h, m -> onSet(h * 60 + m) }, currentMin / 60, currentMin % 60, true).show()
+        val c = this
+        var h = (currentMin / 60).coerceIn(0, 23)
+        var m = ((currentMin % 60) / 5 * 5).coerceIn(0, 55)
+        val hh = Ui.numeral(c, "", 46f).apply { gravity = Gravity.CENTER }
+        val mm = Ui.numeral(c, "", 46f).apply { gravity = Gravity.CENTER }
+        fun upd() { hh.text = "%02d".format(h); mm.text = "%02d".format(m) }
+        upd()
+
+        fun key(label: String, onTap: () -> Unit) = TextView(c).apply {
+            text = label; gravity = Gravity.CENTER; textSize = 20f; typeface = Ui.serif(c); setTextColor(Ui.TEXT)
+            background = ContextCompat.getDrawable(c, R.drawable.btn_ghost)
+            setPadding(Ui.dp(c,14), Ui.dp(c,8), Ui.dp(c,16), Ui.dp(c,12))
+            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,46), Ui.dp(c,46))
+            setOnClickListener { Ui.haptic(this); onTap(); upd() }
+        }
+        fun unit(num: TextView, dec: () -> Unit, inc: () -> Unit): LinearLayout {
+            val r = Ui.row(c).apply { gravity = Gravity.CENTER }
+            r.addView(key("-", dec))
+            r.addView(LinearLayout(c).apply {
+                gravity = Gravity.CENTER
+                background = ContextCompat.getDrawable(c, R.drawable.card2)
+                setPadding(Ui.dp(c,14), Ui.dp(c,6), Ui.dp(c,14), Ui.dp(c,8))
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                    .also { it.marginStart = Ui.dp(c,8); it.marginEnd = Ui.dp(c,8) }
+                addView(num)
+            })
+            r.addView(key("+", inc))
+            return r
+        }
+
+        val container = LinearLayout(c).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(Ui.dp(c,22), Ui.dp(c,22), Ui.dp(c,22), Ui.dp(c,18))
+        }
+        container.addView(Ui.eyebrow(c, "Set time").also { it.gravity = Gravity.CENTER_HORIZONTAL })
+        val grid = Ui.row(c).apply { gravity = Gravity.CENTER; setPadding(0, Ui.dp(c,16), 0, Ui.dp(c,18)) }
+        val hcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER }
+        hcol.addView(unit(hh, { h = (h + 23) % 24 }, { h = (h + 1) % 24 }))
+        hcol.addView(Ui.eyebrow(c, "Hour").also { it.gravity = Gravity.CENTER_HORIZONTAL; it.setPadding(0, Ui.dp(c,6),0,0) })
+        val mcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER }
+        mcol.addView(unit(mm, { m = (m + 55) % 60 }, { m = (m + 5) % 60 }))
+        mcol.addView(Ui.eyebrow(c, "Min").also { it.gravity = Gravity.CENTER_HORIZONTAL; it.setPadding(0, Ui.dp(c,6),0,0) })
+        grid.addView(hcol)
+        grid.addView(TextView(c).apply { text = ":"; typeface = Ui.vt(c); textSize = 38f; setTextColor(Ui.MUTED); setPadding(Ui.dp(c,8),0,Ui.dp(c,8),Ui.dp(c,16)) })
+        grid.addView(mcol)
+        container.addView(grid)
+        val ok = Ui.primary(c, "Set")
+        container.addView(ok)
+
+        val dialog = AlertDialog.Builder(c).setView(container).create()
+        dialog.window?.setBackgroundDrawableResource(R.drawable.card)
+        ok.setOnClickListener { onSet(h * 60 + m); dialog.dismiss() }
+        dialog.show()
     }
 
     private fun toast(s: String) = Toast.makeText(this, s, Toast.LENGTH_SHORT).show()

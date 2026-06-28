@@ -1,7 +1,6 @@
 package com.anchor.app
 
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
@@ -9,11 +8,12 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.anchor.app.databinding.ActivityAppPickerBinding
 
@@ -35,7 +35,9 @@ class AppPickerActivity : AppCompatActivity() {
 
         intent.getStringArrayListExtra(EXTRA_SELECTED)?.let { selected.addAll(it) }
 
-        b.list.layoutManager = LinearLayoutManager(this)
+        b.pickTitle.typeface = Ui.serif(this)
+        b.done.typeface = Ui.serif(this); b.done.cornerRadius = 0; b.done.setTextColor(Ui.INK)
+        b.list.layoutManager = GridLayoutManager(this, 4)
         b.list.adapter = adapter
         b.done.setOnClickListener {
             setResult(RESULT_OK, Intent().putStringArrayListExtra(EXTRA_SELECTED, ArrayList(selected)))
@@ -82,21 +84,29 @@ class AppPickerActivity : AppCompatActivity() {
 
     inner class Adapter : RecyclerView.Adapter<Adapter.VH>() {
         inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+            val slot: FrameLayout = v.findViewById(R.id.slot)
             val icon: ImageView = v.findViewById(R.id.icon)
             val name: TextView = v.findViewById(R.id.name)
-            val check: CheckBox = v.findViewById(R.id.check)
+            val check: TextView = v.findViewById(R.id.check)
         }
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH =
             VH(LayoutInflater.from(parent.context).inflate(R.layout.item_app, parent, false))
         override fun getItemCount() = shown.size
+
+        private fun paint(h: VH, on: Boolean) {
+            h.slot.background = ContextCompat.getDrawable(h.itemView.context, if (on) R.drawable.slot_sel else R.drawable.slot)
+            h.check.visibility = if (on) View.VISIBLE else View.GONE
+            h.name.setTextColor(if (on) Ui.SAGE else Ui.MUTED)
+        }
         override fun onBindViewHolder(h: VH, position: Int) {
             val item = shown[position]
             h.icon.setImageDrawable(item.icon)
             h.name.text = item.label
-            h.check.isChecked = selected.contains(item.pkg)
+            paint(h, selected.contains(item.pkg))
             h.itemView.setOnClickListener {
-                if (selected.contains(item.pkg)) selected.remove(item.pkg) else selected.add(item.pkg)
-                h.check.isChecked = selected.contains(item.pkg)
+                val nowOn = !selected.contains(item.pkg)
+                if (nowOn) selected.add(item.pkg) else selected.remove(item.pkg)
+                Ui.haptic(it); paint(h, nowOn)
             }
         }
     }
