@@ -88,6 +88,18 @@ object Store {
         while (h.checkins.contains(d)) { c++; d-- }
         return c
     }
+    fun bestStreak(h: Habit): Int {
+        if (h.checkins.isEmpty()) return 0
+        val s = h.checkins.sorted(); var best = 1; var run = 1
+        for (i in 1 until s.size) { run = if (s[i] == s[i - 1] + 1) run + 1 else 1; if (run > best) best = run }
+        return best
+    }
+    /** Last [days] days as a done/not-done array (index 0 = oldest, last = today). */
+    fun heatDays(h: Habit, days: Int): BooleanArray {
+        val t = today()
+        return BooleanArray(days) { i -> h.checkins.contains(t - (days - 1 - i)) }
+    }
+    fun setReminder(h: Habit, minutes: Int?) { h.reminderMinutes = minutes; save() }
 
     fun today(): Long = LocalDate.now().toEpochDay()
 
@@ -124,7 +136,8 @@ object Store {
                     val o = ha.getJSONObject(i)
                     val ck = mutableSetOf<Long>()
                     o.optJSONArray("checkins")?.let { for (j in 0 until it.length()) ck.add(it.getLong(j)) }
-                    habits.add(Habit(o.getLong("id"), o.getString("name"), ck))
+                    val rem = if (o.has("reminder")) o.getInt("reminder") else null
+                    habits.add(Habit(o.getLong("id"), o.getString("name"), ck, rem))
                 } catch (_: Exception) {}   // skip only the bad habit
             }
             grants.clear()
@@ -154,7 +167,9 @@ object Store {
         val ha = JSONArray()
         for (h in habits) {
             val o = JSONObject(); o.put("id", h.id); o.put("name", h.name)
-            val ca = JSONArray(); h.checkins.sorted().forEach { ca.put(it) }; o.put("checkins", ca); ha.put(o)
+            val ca = JSONArray(); h.checkins.sorted().forEach { ca.put(it) }; o.put("checkins", ca)
+            h.reminderMinutes?.let { o.put("reminder", it) }
+            ha.put(o)
         }
         root.put("habits", ha)
         val ga = JSONObject(); val nowMs = System.currentTimeMillis()

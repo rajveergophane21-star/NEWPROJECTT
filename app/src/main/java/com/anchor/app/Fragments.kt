@@ -201,6 +201,17 @@ class HabitsFragment : BaseFragment() {
         val status = if (done) "Done today" else "Not done today"
         tcol.addView(Ui.body(c, status, if (done) Ui.GREEN_TEXT else Ui.MUTED, 12.5f).also { it.setPadding(0, Ui.dp(c, 3), 0, 0) })
 
+        // Reminder chip — tappable to set / change / remove.
+        val rem = h.reminderMinutes
+        val remChip = TextView(c).apply {
+            text = if (rem != null) "⏰  ${fmtTime(rem)}" else "+ Add reminder"
+            textSize = 12f; typeface = Ui.sans(c)
+            setTextColor(if (rem != null) Ui.ACC_TEXT else Ui.MUTED)
+            setPadding(0, Ui.dp(c, 6), 0, 0); isClickable = true
+            setOnClickListener { Ui.haptic(this); reminderFlow(c, h) }
+        }
+        tcol.addView(remChip)
+
         row.addView(check); row.addView(tcol)
 
         // Streak chip — only once there's a streak to show (no discouraging "0").
@@ -212,8 +223,44 @@ class HabitsFragment : BaseFragment() {
         }
 
         card.addView(row)
+
+        // The contribution grid — last 16 weeks of check-ins.
+        card.addView(HeatmapView(c).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                .also { it.topMargin = Ui.dp(c, 14) }
+            setDays(Store.heatDays(h, 16 * 7), 16)
+        })
+        val bestLine = "Best ${Store.bestStreak(h)} days"
+        card.addView(Ui.body(c, bestLine, Ui.FAINT, 11f).also { it.setPadding(0, Ui.dp(c, 8), 0, 0) })
+
         card.setOnClickListener { editHabit(c, h) }
         return card
+    }
+
+    private fun fmtTime(min: Int): String =
+        java.time.LocalTime.of(min / 60, min % 60).format(java.time.format.DateTimeFormatter.ofPattern("h:mm a"))
+
+    private fun reminderFlow(c: Context, h: Habit) {
+        val rem = h.reminderMinutes
+        if (rem == null) {
+            pickReminderTime(c, h, 8 * 60)
+        } else {
+            AlertDialog.Builder(c).setTitle("Reminder · ${fmtTime(rem)}")
+                .setItems(arrayOf("Change time", "Remove reminder")) { _, which ->
+                    if (which == 0) pickReminderTime(c, h, rem)
+                    else { Store.setReminder(h, null); ReminderScheduler.cancel(c, h); refresh() }
+                }
+                .setNegativeButton("Cancel", null).show()
+        }
+    }
+
+    private fun pickReminderTime(c: Context, h: Habit, current: Int) {
+        android.app.TimePickerDialog(c, { _, hh, mm ->
+            Store.setReminder(h, hh * 60 + mm)
+            ReminderScheduler.schedule(c, h)
+            if (!Perms.hasNotifications(c)) Toast.makeText(c, "Turn on notifications to get reminders", Toast.LENGTH_LONG).show()
+            refresh()
+        }, current / 60, current % 60, false).show()
     }
 
     private fun editHabit(c: Context, h: Habit) {
@@ -231,7 +278,7 @@ class HabitsFragment : BaseFragment() {
             .setNeutralButton("Delete") { _, _ ->
                 AlertDialog.Builder(c).setTitle("Delete \"${h.name}\"?")
                     .setMessage("This removes the habit and its history.")
-                    .setPositiveButton("Delete") { _, _ -> Store.deleteHabit(h); refresh() }
+                    .setPositiveButton("Delete") { _, _ -> ReminderScheduler.cancel(c, h); Store.deleteHabit(h); refresh() }
                     .setNegativeButton("Cancel", null).show()
             }
             .setNegativeButton("Cancel", null)

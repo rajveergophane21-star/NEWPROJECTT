@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         b = ActivityMainBinding.inflate(layoutInflater)
         setContentView(b.root)
         buildBar()
+        ReminderScheduler.scheduleAll(this)   // make sure habit reminders are armed
         current = savedInstanceState?.getInt("tab", 0) ?: 0
         if (savedInstanceState == null) select(current) else chromeOnly(current)
 

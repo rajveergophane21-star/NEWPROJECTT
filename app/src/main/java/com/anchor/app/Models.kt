@@ -68,5 +68,14 @@ class Rule(
     }
 }
 
-/** A simple daily habit. [checkins] are epoch-days the user marked it done. */
-class Habit(val id: Long, var name: String, val checkins: MutableSet<Long> = mutableSetOf())
+/**
+ * A simple daily habit.
+ * [checkins] are epoch-days the user marked it done.
+ * [reminderMinutes] is an optional daily reminder time (minutes from midnight; null = none).
+ */
+class Habit(
+    val id: Long,
+    var name: String,
+    val checkins: MutableSet<Long> = mutableSetOf(),
+    var reminderMinutes: Int? = null
+)

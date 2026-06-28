@@ -17,5 +17,7 @@ class BootReceiver : BroadcastReceiver() {
             Perms.coreReady(context) && Store.rules.any { it.enabled }) {
             MonitorService.start(context)
         }
+        // Alarms are cleared on reboot — re-arm every habit reminder.
+        ReminderScheduler.scheduleAll(context)
     }
 }
