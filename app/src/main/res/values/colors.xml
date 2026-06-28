@@ -2,16 +2,16 @@
 <resources>
     <!-- Margin — clean, premium, white. Warm ink + a single terracotta accent;
          surfaces are near-white with a whisper of a bevel, not chunky panels. -->
-    <color name="bg">#FFFFFF</color>          <!-- white -->
-    <color name="surface">#FBFAF7</color>      <!-- card face (barely warm, lifts off white) -->
-    <color name="surface2">#F2F0EA</color>     <!-- recessed (inputs/tiles) -->
+    <color name="bg">#FFFFFF</color>          <!-- white canvas -->
+    <color name="surface">#F5F0E7</color>      <!-- warm card face — clearly lifts off white -->
+    <color name="surface2">#EAE2D4</color>     <!-- recessed (inputs/tiles) -->
     <color name="panel_hi">#FFFFFF</color>     <!-- bevel highlight -->
-    <color name="panel_sh">#E6E2D8</color>     <!-- bevel shadow (soft warm grey) -->
-    <color name="line">#EEEAE2</color>
-    <color name="card_border">#E2DDD2</color>
+    <color name="panel_sh">#D8CDB8</color>     <!-- bevel shadow (defined) -->
+    <color name="line">#E8E1D4</color>
+    <color name="card_border">#D8CDB8</color>
     <color name="text">#2B2622</color>         <!-- warm near-black ink -->
-    <color name="muted">#8A8178</color>
-    <color name="faint">#B7AFA4</color>
+    <color name="muted">#857A6B</color>
+    <color name="faint">#ABA08E</color>
 
     <!-- Accent: warm terracotta -->
     <color name="sage">#E07A3E</color>

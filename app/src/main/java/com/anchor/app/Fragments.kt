@@ -100,12 +100,19 @@ class TodayFragment : BaseFragment() {
 
         col.addView(Ui.display(c, "Good ${part.lowercase()}.", 40f).also { it.setPadding(0, Ui.dp(c,14),0,0) })
 
-        // identity — your own words
-        col.addView(Ui.eyebrow(c, "You're someone who").also { it.setPadding(0, Ui.dp(c,24),0,0) })
+        // identity — your own words, on a warm hero card
+        val idCard = LinearLayout(c).apply {
+            orientation = LinearLayout.VERTICAL
+            background = ContextCompat.getDrawable(c, R.drawable.card_accent)
+            setPadding(Ui.dp(c,19), Ui.dp(c,17), Ui.dp(c,19), Ui.dp(c,19))
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                .also { it.topMargin = Ui.dp(c,22) }
+            setOnClickListener { identityDialog(c) }
+        }
+        idCard.addView(Ui.eyebrow(c, "You're someone who").also { it.setTextColor(Ui.ACC_TEXT) })
         val idText = if (Store.identity.isEmpty()) "still becoming — tap to name it." else Store.identity
-        col.addView(Ui.serifQuote(c, idText, Ui.TEXT, 25f).also {
-            it.setPadding(0, Ui.dp(c,10),0,0); it.setOnClickListener { identityDialog(c) }
-        })
+        idCard.addView(Ui.serifQuote(c, idText, Ui.TEXT, 24f).also { it.setPadding(0, Ui.dp(c,9),0,0) })
+        col.addView(idCard)
 
         statusRow(c, hour)
         focusSection(c)
@@ -157,7 +164,7 @@ class TodayFragment : BaseFragment() {
 
         if (Store.focusActive()) {
             val numRow = Ui.row(c).also { it.setPadding(0, Ui.dp(c,10),0,0); it.gravity = Gravity.BOTTOM }
-            val label = Ui.numeral(c, mmss(Store.focusRemainingMs()), 56f)
+            val label = Ui.numeral(c, mmss(Store.focusRemainingMs()), 56f, Ui.SAGE)
             focusLabel = label
             numRow.addView(label)
             numRow.addView(Ui.eyebrow(c, "remaining").also { it.setPadding(Ui.dp(c,12),0,0, Ui.dp(c,10)) })
@@ -187,7 +194,7 @@ class TodayFragment : BaseFragment() {
                     isClickable = true
                     setOnClickListener { Ui.haptic(this); startFocus(m) }
                 }
-                btn.addView(Ui.numeral(c, "$m", 27f))
+                btn.addView(Ui.numeral(c, "$m", 27f, Ui.SAGE))
                 btn.addView(Ui.eyebrow(c, "min").also { it.setPadding(0, Ui.dp(c,3),0,0) })
                 rowB.addView(btn)
             }
@@ -222,7 +229,7 @@ class TodayFragment : BaseFragment() {
         val tcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
         tcol.addView(Ui.title(c, h.name, 15f))
         tcol.addView(Ui.mono(c, if (h.anchor.isNotEmpty()) "after ${h.anchor}" else "replacement habit", Ui.MUTED, 10f).also { it.setPadding(0, Ui.dp(c,3),0,0) })
-        val streak = Ui.numeral(c, "${Store.currentStreak(h)}", 27f)
+        val streak = Ui.numeral(c, "${Store.currentStreak(h)}", 27f, Ui.SAGE)
         val d = Ui.mono(c, "d", Ui.MUTED, 10f)
         val sRow = Ui.row(c); sRow.addView(streak); sRow.addView(d)
         row.addView(check); row.addView(tcol); row.addView(sRow)

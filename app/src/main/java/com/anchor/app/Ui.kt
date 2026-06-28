@@ -17,8 +17,8 @@ import androidx.core.content.res.ResourcesCompat
 object Ui {
     // palette — pixel · daylight (warm parchment)
     const val TEXT = 0xFF2B2622.toInt()
-    const val MUTED = 0xFF8A8178.toInt()
-    const val FAINT = 0xFFB7AFA4.toInt()
+    const val MUTED = 0xFF857A6B.toInt()
+    const val FAINT = 0xFFABA08E.toInt()
     const val SAGE = 0xFFE07A3E.toInt()        // terracotta accent (fills/dots only)
     const val GREEN = 0xFF4FA64F.toInt()       // success / done
     const val BLUE = 0xFF3E8FD0.toInt()        // info
@@ -26,10 +26,10 @@ object Ui {
     const val ACC_TEXT = 0xFF9A4A1E.toInt()    // accent for small text — passes on light washes
     const val ACC_GLOW = 0xFFE07A3E.toInt()
     const val INK = 0xFFFFFBF0.toInt()         // light text on accent
-    const val SURFACE = 0xFFFBFAF7.toInt()
-    const val SURFACE2 = 0xFFF2F0EA.toInt()
-    const val LINE = 0xFFEEEAE2.toInt()
-    const val CARD_BORDER = 0xFFE2DDD2.toInt()
+    const val SURFACE = 0xFFF5F0E7.toInt()
+    const val SURFACE2 = 0xFFEAE2D4.toInt()
+    const val LINE = 0xFFE8E1D4.toInt()
+    const val CARD_BORDER = 0xFFD8CDB8.toInt()
     const val SELECT = 0xFFF6E2CE.toInt()
     const val CLAY = 0xFFC8485B.toInt()        // danger
     const val TERRA = 0xFFD98E3E.toInt()       // amber / friction
@@ -170,7 +170,7 @@ object Ui {
             background = ContextCompat.getDrawable(c, R.drawable.card2)
             setPadding(dp(c, 15), dp(c, 15), dp(c, 15), dp(c, 15))
         }
-        val n = numeral(c, num, 30f)
+        val n = numeral(c, num, 30f, SAGE)
         val l = eyebrow(c, label).also { it.setPadding(0, dp(c, 5), 0, 0) }
         tile.addView(n); tile.addView(l)
         return tile to n
