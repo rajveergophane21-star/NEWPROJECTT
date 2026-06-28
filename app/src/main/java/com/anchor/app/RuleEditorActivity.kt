@@ -374,7 +374,7 @@ class RuleEditorActivity : AppCompatActivity() {
                 else -> 0xFFF3E6C6.toInt()     // amber wash — Friction
             })
             val head = box.getChildAt(0) as LinearLayout
-            (head.getChildAt(0) as TextView).setTextColor(if (!on) Ui.TEXT else if (block) Ui.ACC_TEXT else 0xFF9A5A12.toInt())
+            (head.getChildAt(0) as TextView).setTextColor(if (!on) Ui.TEXT else if (block) Ui.ACC_TEXT else 0xFF8A4E0E.toInt())
             val radio = head.getChildAt(1)
             radio.backgroundTintList = ColorStateList.valueOf(if (on) (if (block) Ui.SAGE else Ui.TERRA) else 0x00000000)
             radio.visibility = if (on) View.VISIBLE else View.INVISIBLE

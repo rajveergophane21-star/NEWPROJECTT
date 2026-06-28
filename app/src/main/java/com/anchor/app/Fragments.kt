@@ -337,7 +337,7 @@ class ShieldFragment : BaseFragment() {
         val modeChip = TextView(c).apply {
             text = (if (isBlock) "Block - hard stop" else "Friction - 12s pause").uppercase()
             textSize = 10f; letterSpacing = 0.06f; typeface = Ui.monoMed(c)
-            setTextColor(if (isBlock) Ui.ACC_TEXT else 0xFF9A5A12.toInt())
+            setTextColor(if (isBlock) Ui.ACC_TEXT else 0xFF8A4E0E.toInt())
             setPadding(Ui.dp(c,11), Ui.dp(c,6), Ui.dp(c,11), Ui.dp(c,6))
             background = ContextCompat.getDrawable(c, R.drawable.pill)
             backgroundTintList = ColorStateList.valueOf(if (isBlock) 0xFFF6E2CE.toInt() else 0xFFF3E6C6.toInt())
