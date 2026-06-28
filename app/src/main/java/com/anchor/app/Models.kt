@@ -56,7 +56,8 @@ class Rule(
     val packages: MutableSet<String>,
     val windows: MutableList<TimeWindow>,
     var mode: Mode,
-    var enabled: Boolean
+    var enabled: Boolean,
+    var strict: Boolean = false          // commitment lock: can't be turned off / edited while active
 ) {
     fun activeNow(nowMin: Int, dow: Int) = enabled && windows.any { it.activeAt(nowMin, dow) }
 

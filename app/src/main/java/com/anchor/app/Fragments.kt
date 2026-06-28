@@ -63,10 +63,26 @@ class BlocksFragment : BaseFragment() {
             background = ContextCompat.getDrawable(c, R.drawable.pill)
             backgroundTintList = ColorStateList.valueOf(if (isBlock) 0xFFF6E2CE.toInt() else 0xFFF3E6C6.toInt())
         }
-        tcol.addView(LinearLayout(c).apply { setPadding(0, Ui.dp(c, 6), 0, 0); addView(chip) })
+        val chipRow = LinearLayout(c).apply { setPadding(0, Ui.dp(c, 6), 0, 0); gravity = Gravity.CENTER_VERTICAL; addView(chip) }
+        if (r.strict) {
+            val locked = Store.isLocked(r)
+            val tag = TextView(c).apply {
+                text = if (locked) "LOCKED" else "COMMITTED"
+                textSize = 10f; letterSpacing = 0.08f; typeface = Ui.monoMed(c)
+                setTextColor(if (locked) Ui.CLAY else Ui.MUTED)
+                setPadding(Ui.dp(c, 10), Ui.dp(c, 5), Ui.dp(c, 10), Ui.dp(c, 5))
+                background = ContextCompat.getDrawable(c, R.drawable.pill)
+                backgroundTintList = ColorStateList.valueOf(Ui.SURFACE2)
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                    .also { it.marginStart = Ui.dp(c, 6) }
+            }
+            chipRow.addView(tag)
+        }
+        tcol.addView(chipRow)
 
         val sw = Ui.switch(c).apply {
             isChecked = r.enabled
+            isEnabled = !Store.isLocked(r)   // can't disable a committed rule while it's active
             setOnCheckedChangeListener { _, v ->
                 r.enabled = v; Store.save()
                 if (Perms.coreReady(c)) { if (Store.anyEnabled()) MonitorService.start(c) else MonitorService.stop(c) }
@@ -125,10 +141,40 @@ class HabitsFragment : BaseFragment() {
         col.addView(addCard); col.addView(Ui.spacer(c, 8))
 
         if (Store.habits.isEmpty()) {
-            col.addView(Ui.emptyState(c, "Habits", "Nothing yet.",
-                "Add one tiny habit above — small enough that you can't talk yourself out of it."))
+            // An inviting box, not a plain empty area.
+            val e = Ui.card(c).also { it.setPadding(Ui.dp(c, 20), Ui.dp(c, 24), Ui.dp(c, 20), Ui.dp(c, 24)); it.gravity = Gravity.CENTER }
+            e.addView(android.widget.ImageView(c).apply {
+                background = ContextCompat.getDrawable(c, R.drawable.check_on)
+                layoutParams = LinearLayout.LayoutParams(Ui.dp(c, 40), Ui.dp(c, 40))
+            })
+            e.addView(Ui.title(c, "Build your first habit", 17f).also { it.setPadding(0, Ui.dp(c, 14), 0, 0); it.gravity = Gravity.CENTER })
+            e.addView(Ui.body(c, "Add one tiny habit above — small enough you can't talk yourself out of it. Check it off here each day.", Ui.MUTED, 14f)
+                .also { it.setPadding(0, Ui.dp(c, 6), 0, 0); it.gravity = Gravity.CENTER })
+            col.addView(e)
             return
         }
+
+        // Today-progress box.
+        val doneCount = Store.habits.count { Store.isDoneToday(it) }
+        val total = Store.habits.size
+        val pcard = Ui.card(c)
+        val prow = Ui.row(c).also { it.gravity = Gravity.CENTER_VERTICAL }
+        val ptcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
+        ptcol.addView(Ui.eyebrow(c, "Today"))
+        ptcol.addView(Ui.title(c, "$doneCount of $total done", 17f).also { it.setPadding(0, Ui.dp(c, 4), 0, 0) })
+        prow.addView(ptcol)
+        prow.addView(Ui.numeral(c, "${doneCount * 100 / total}%", 26f, if (doneCount == total) Ui.GREEN else Ui.MUTED))
+        pcard.addView(prow)
+        val bar = LinearLayout(c).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(c, 5)).also { it.topMargin = Ui.dp(c, 12) }
+        }
+        val frac = doneCount.toFloat() / total
+        bar.addView(View(c).apply { setBackgroundColor(Ui.GREEN); layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, frac.coerceAtLeast(0.0001f)) })
+        bar.addView(View(c).apply { setBackgroundColor(Ui.SURFACE2); layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, (1f - frac).coerceAtLeast(0.0001f)) })
+        pcard.addView(bar)
+        col.addView(pcard); col.addView(Ui.spacer(c, 4))
+
         Store.habits.forEach { col.addView(habitRow(c, it)) }
     }
 

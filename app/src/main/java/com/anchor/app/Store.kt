@@ -36,6 +36,13 @@ object Store {
     fun deleteRule(r: Rule) { rules.remove(r); save() }
     fun ruleById(id: Long) = rules.firstOrNull { it.id == id }
 
+    /** A committed rule can't be disabled or edited while its schedule is active. */
+    fun isLocked(r: Rule): Boolean {
+        if (!r.strict) return false
+        val now = LocalTime.now(); val nowMin = now.hour * 60 + now.minute
+        return r.activeNow(nowMin, LocalDate.now().dayOfWeek.value)
+    }
+
     /** Make [rule] the sole owner of its apps so an older rule can't override its mode. */
     fun claimPackages(rule: Rule) {
         rules.forEach { if (it !== rule) it.packages.removeAll(rule.packages) }
@@ -107,7 +114,7 @@ object Store {
                         }
                     }
                     val mode = runCatching { Mode.valueOf(o.optString("mode", "BLOCK")) }.getOrDefault(Mode.BLOCK)
-                    rules.add(Rule(o.getLong("id"), o.getString("name"), pkgs, ws, mode, o.optBoolean("enabled", true)))
+                    rules.add(Rule(o.getLong("id"), o.getString("name"), pkgs, ws, mode, o.optBoolean("enabled", true), o.optBoolean("strict", false)))
                 } catch (_: Exception) {}   // skip only the bad rule
             }
             habits.clear()
@@ -134,7 +141,7 @@ object Store {
         val ra = JSONArray()
         for (r in rules) {
             val o = JSONObject()
-            o.put("id", r.id); o.put("name", r.name); o.put("mode", r.mode.name); o.put("enabled", r.enabled)
+            o.put("id", r.id); o.put("name", r.name); o.put("mode", r.mode.name); o.put("enabled", r.enabled); o.put("strict", r.strict)
             val pa = JSONArray(); r.packages.forEach { pa.put(it) }; o.put("pkgs", pa)
             val wa = JSONArray()
             for (w in r.windows) {

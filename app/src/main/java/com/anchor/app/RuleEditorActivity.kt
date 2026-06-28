@@ -31,6 +31,7 @@ class RuleEditorActivity : AppCompatActivity() {
     private var endMin = 17 * 60
     private val days = mutableSetOf(1, 2, 3, 4, 5, 6, 7)
     private var modeBlock = true
+    private var strict = false
     private var nameText = ""
     private var editing: Rule? = null
 
@@ -55,6 +56,7 @@ class RuleEditorActivity : AppCompatActivity() {
         editing?.let { r ->
             pkgs.addAll(r.packages)
             modeBlock = r.mode == Mode.BLOCK
+            strict = r.strict
             nameText = r.name
             val w = r.windows.firstOrNull()
             if (w != null && w.allDay) {
@@ -73,6 +75,15 @@ class RuleEditorActivity : AppCompatActivity() {
         }
 
         setContentView(build())
+        editing?.let { if (Store.isLocked(it)) lockUi() }
+    }
+
+    private fun lockUi() {
+        AlertDialog.Builder(this).setTitle("This block is locked")
+            .setMessage("Its commitment lock is active right now, so it can't be edited or turned off until the scheduled window ends. That's the point — you committed to this in advance.")
+            .setCancelable(false)
+            .setPositiveButton("OK") { _, _ -> finish() }
+            .show()
     }
 
     private fun build(): View {
@@ -122,6 +133,30 @@ class RuleEditorActivity : AppCompatActivity() {
         modeCard.addView(blockOpt); modeCard.addView(Ui.spacer(this, 8)); modeCard.addView(frictionOpt)
         col.addView(modeCard)
         applyModeSelection()
+
+        // Commitment lock
+        val lockCard = Ui.card(this)
+        val lr = Ui.row(this)
+        val lc = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
+        lc.addView(Ui.title(this, "Commitment lock", 16f))
+        lc.addView(Ui.body(this, "While active, this block can't be turned off or edited. A contract with your future self.").also { it.setPadding(0, Ui.dp(this, 4), 0, 0) })
+        val lsw = Ui.switch(this)
+        lsw.isChecked = strict
+        lsw.setOnCheckedChangeListener { _, v ->
+            if (v && !strict) {
+                lsw.isChecked = false   // hold until confirmed (programmatic set won't re-fire the listener)
+                AlertDialog.Builder(this).setTitle("Lock this block?")
+                    .setMessage("While it's active you won't be able to turn it off or edit it — by design. You decide now, not in a weak moment.")
+                    .setPositiveButton("Lock it") { _, _ -> strict = true; lsw.isChecked = true }
+                    .setNegativeButton("Cancel") { _, _ -> lsw.isChecked = false }
+                    .show()
+            } else {
+                strict = v
+            }
+        }
+        lr.addView(lc); lr.addView(lsw)
+        lockCard.addView(lr)
+        col.addView(lockCard)
 
         // Name
         val nameCard = Ui.card(this)
@@ -265,11 +300,11 @@ class RuleEditorActivity : AppCompatActivity() {
         val saved: Rule
         val r = editing
         if (r == null) {
-            saved = Rule(Store.newId(), name, pkgs.toMutableSet(), windows, mode, true)
+            saved = Rule(Store.newId(), name, pkgs.toMutableSet(), windows, mode, true, strict)
             Store.addRule(saved)
         } else {
             r.name = name; r.packages.clear(); r.packages.addAll(pkgs)
-            r.windows.clear(); r.windows.addAll(windows); r.mode = mode
+            r.windows.clear(); r.windows.addAll(windows); r.mode = mode; r.strict = strict
             saved = r; Store.save()
         }
         Store.claimPackages(saved)
@@ -288,6 +323,7 @@ class RuleEditorActivity : AppCompatActivity() {
 
     private fun confirmDelete() {
         val r = editing ?: return
+        if (Store.isLocked(r)) { toast("Locked while active — can't delete"); return }
         AlertDialog.Builder(this).setTitle("Delete \"${r.name}\"?")
             .setPositiveButton("Delete") { _, _ -> Store.deleteRule(r); finish() }
             .setNegativeButton("Cancel", null).show()
