@@ -61,7 +61,7 @@ object Store {
         return best
     }
 
-    fun grantPass(pkg: String, minutes: Int) { grants[pkg] = System.currentTimeMillis() + minutes * 60_000L }
+    fun grantPass(pkg: String, minutes: Int) { grants[pkg] = System.currentTimeMillis() + minutes * 60_000L; save() }
     fun hasPass(pkg: String): Boolean {
         val until = grants[pkg] ?: return false
         if (System.currentTimeMillis() > until) { grants.remove(pkg); return false }
@@ -93,28 +93,37 @@ object Store {
             rules.clear()
             val ra = root.optJSONArray("rules") ?: JSONArray()
             for (i in 0 until ra.length()) {
-                val o = ra.getJSONObject(i)
-                val pkgs = mutableSetOf<String>()
-                o.optJSONArray("pkgs")?.let { for (j in 0 until it.length()) pkgs.add(it.getString(j)) }
-                val ws = mutableListOf<TimeWindow>()
-                o.optJSONArray("windows")?.let {
-                    for (j in 0 until it.length()) {
-                        val w = it.getJSONObject(j)
-                        val days = mutableSetOf<Int>()
-                        w.optJSONArray("days")?.let { da -> for (k in 0 until da.length()) days.add(da.getInt(k)) }
-                        ws.add(TimeWindow(w.getInt("s"), w.getInt("e"), days))
+                try {
+                    val o = ra.getJSONObject(i)
+                    val pkgs = mutableSetOf<String>()
+                    o.optJSONArray("pkgs")?.let { for (j in 0 until it.length()) pkgs.add(it.getString(j)) }
+                    val ws = mutableListOf<TimeWindow>()
+                    o.optJSONArray("windows")?.let {
+                        for (j in 0 until it.length()) {
+                            val w = it.getJSONObject(j)
+                            val days = mutableSetOf<Int>()
+                            w.optJSONArray("days")?.let { da -> for (k in 0 until da.length()) days.add(da.getInt(k)) }
+                            ws.add(TimeWindow(w.getInt("s"), w.getInt("e"), days))
+                        }
                     }
-                }
-                rules.add(Rule(o.getLong("id"), o.getString("name"), pkgs, ws,
-                    Mode.valueOf(o.optString("mode", "BLOCK")), o.optBoolean("enabled", true)))
+                    val mode = runCatching { Mode.valueOf(o.optString("mode", "BLOCK")) }.getOrDefault(Mode.BLOCK)
+                    rules.add(Rule(o.getLong("id"), o.getString("name"), pkgs, ws, mode, o.optBoolean("enabled", true)))
+                } catch (_: Exception) {}   // skip only the bad rule
             }
             habits.clear()
             val ha = root.optJSONArray("habits") ?: JSONArray()
             for (i in 0 until ha.length()) {
-                val o = ha.getJSONObject(i)
-                val ck = mutableSetOf<Long>()
-                o.optJSONArray("checkins")?.let { for (j in 0 until it.length()) ck.add(it.getLong(j)) }
-                habits.add(Habit(o.getLong("id"), o.getString("name"), ck))
+                try {
+                    val o = ha.getJSONObject(i)
+                    val ck = mutableSetOf<Long>()
+                    o.optJSONArray("checkins")?.let { for (j in 0 until it.length()) ck.add(it.getLong(j)) }
+                    habits.add(Habit(o.getLong("id"), o.getString("name"), ck))
+                } catch (_: Exception) {}   // skip only the bad habit
+            }
+            grants.clear()
+            root.optJSONObject("grants")?.let {
+                val nowMs = System.currentTimeMillis(); val keys = it.keys()
+                while (keys.hasNext()) { val k = keys.next(); val u = it.optLong(k); if (u > nowMs) grants[k] = u }
             }
         } catch (_: Exception) {}
         nextId = maxOf(nextId, ((rules.map { it.id } + habits.map { it.id }).maxOrNull() ?: 0L) + 1L)
@@ -141,6 +150,9 @@ object Store {
             val ca = JSONArray(); h.checkins.sorted().forEach { ca.put(it) }; o.put("checkins", ca); ha.put(o)
         }
         root.put("habits", ha)
+        val ga = JSONObject(); val nowMs = System.currentTimeMillis()
+        for ((pkg, until) in grants) if (until > nowMs) ga.put(pkg, until)
+        root.put("grants", ga)
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, root.toString()).apply()
     }
 }

@@ -72,6 +72,7 @@ class MonitorService : Service() {
         // (which can't press HOME and is less reliable) when it isn't enabled.
         if (AnchorAccessibilityService.connected) return
         val pkg = foregroundPackage() ?: return
+        if (pkg == lastForeground) return   // already handled this foreground; wait for a change
         lastForeground = pkg
         Enforcer.handle(this, pkg)
     }

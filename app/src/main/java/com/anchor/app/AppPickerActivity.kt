@@ -76,8 +76,7 @@ class AppPickerActivity : AppCompatActivity() {
             loaded.sortBy { it.label.lowercase() }
             Handler(Looper.getMainLooper()).post {
                 items.clear(); items.addAll(loaded)
-                shown.clear(); shown.addAll(loaded)
-                adapter.notifyDataSetChanged()
+                filter(b.search.text?.toString() ?: "")   // honour a query typed while loading
             }
         }.start()
     }

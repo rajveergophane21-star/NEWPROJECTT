@@ -184,7 +184,7 @@ class RuleEditorActivity : AppCompatActivity() {
         else if (endMin < startMin) scheduleBox.addView(Ui.body(this, "Overnight — ends the next morning.", Ui.MUTED, 12f).also { it.setPadding(0, Ui.dp(this, 8), 0, 0) })
 
         val dayRow = Ui.row(this).also { it.setPadding(0, Ui.dp(this, 14), 0, 0) }
-        val names = arrayOf("M", "T", "W", "T", "F", "S", "S")
+        val names = arrayOf("M", "T", "W", "Th", "F", "Sa", "Su")
         for (d in 1..7) {
             val on = days.contains(d)
             dayRow.addView(TextView(this).apply {

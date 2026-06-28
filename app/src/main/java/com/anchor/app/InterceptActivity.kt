@@ -69,6 +69,14 @@ class InterceptActivity : AppCompatActivity() {
         if (mode == Mode.BLOCK) renderBlock() else renderFriction()
     }
 
+    /** singleTask: a new blocked app while this screen is alive must replace its contents,
+     *  never show the previous app/mode (which could grant a pass to the wrong package). */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        recreate()
+    }
+
     private lateinit var root: LinearLayout
 
     private fun buildUi(): View {
@@ -99,12 +107,20 @@ class InterceptActivity : AppCompatActivity() {
     // ---------------------------------------------------------------- block
     private fun renderBlock() {
         headline.text = "Not now."
-        appLine.text = buildString {
-            append(appName())
-            append(if (minutesLeft > 0) " is blocked until ${untilTime()}." else " is blocked right now.")
-        }
+        appLine.text = "${appName()} is blocked${untilSuffix()}."
         primaryBtn = filledButton("Turn back") { leave() }
         root.addView(primaryBtn, btnParams(topDp = 32))
+    }
+
+    /** " until HH:mm" for a same-day scheduled window under 12h; otherwise " right now". */
+    private fun untilSuffix(): String {
+        if (minutesLeft in 1 until 12 * 60) {
+            val now = LocalTime.now()
+            if (now.toSecondOfDay() + minutesLeft * 60 < 86400) {
+                return " until ${now.plusMinutes(minutesLeft.toLong()).format(DateTimeFormatter.ofPattern("HH:mm"))}"
+            }
+        }
+        return " right now"
     }
 
     // ------------------------------------------------------------- friction
@@ -152,6 +168,8 @@ class InterceptActivity : AppCompatActivity() {
     // ----------------------------------------------------------------- exits
     /** Turn back: go to the home screen so the blocked app is never revealed. */
     private fun leave() {
+        // Clear the debounce so an immediate re-tap of the same app re-intercepts (no bypass window).
+        Enforcer.reset()
         cleanup()
         startActivity(Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_HOME); flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -180,13 +198,6 @@ class InterceptActivity : AppCompatActivity() {
     private fun appName(): String = try {
         packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
     } catch (_: Exception) { "this app" }
-
-    private fun untilTime(): String {
-        val now = LocalTime.now()
-        val hhmm = now.plusMinutes(minutesLeft.toLong()).format(DateTimeFormatter.ofPattern("HH:mm"))
-        val crossesMidnight = now.toSecondOfDay() + minutesLeft * 60 >= 86400
-        return if (crossesMidnight) "tomorrow $hhmm" else hhmm
-    }
 
     private fun btnParams(topDp: Int) = LinearLayout.LayoutParams(dp(260), ViewGroup.LayoutParams.WRAP_CONTENT)
         .also { it.topMargin = dp(topDp) }

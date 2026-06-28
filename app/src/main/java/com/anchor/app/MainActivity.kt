@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
     fun goTab(i: Int) { select(i) }
 
     private fun select(i: Int) {
+        if (i == current && supportFragmentManager.findFragmentById(R.id.container) != null) return
         chromeOnly(i)
         show(if (i == 0) BlocksFragment() else HabitsFragment())
     }

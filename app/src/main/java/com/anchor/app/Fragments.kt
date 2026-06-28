@@ -92,6 +92,8 @@ class BlocksFragment : BaseFragment() {
 /* ============================== HABITS ============================== */
 
 class HabitsFragment : BaseFragment() {
+    private var pendingAdd = ""
+
     override fun render() {
         val c = requireContext()
         col.addView(Ui.eyebrow(c, "Daily"))
@@ -105,12 +107,19 @@ class HabitsFragment : BaseFragment() {
             background = ContextCompat.getDrawable(c, R.drawable.input)
             setPadding(Ui.dp(c, 14), Ui.dp(c, 12), Ui.dp(c, 14), Ui.dp(c, 12))
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).also { it.topMargin = Ui.dp(c, 8) }
+            // Survive a rebuild (e.g. app resumed) without losing what's being typed.
+            setText(pendingAdd); setSelection(text.length)
+            addTextChangedListener(object : android.text.TextWatcher {
+                override fun afterTextChanged(s: android.text.Editable?) { pendingAdd = s?.toString() ?: "" }
+                override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, d: Int) {}
+                override fun onTextChanged(s: CharSequence?, a: Int, b: Int, d: Int) {}
+            })
         }
         val addBtn = Ui.primary(c, "Add habit").also { it.setPadding(0, Ui.dp(c, 12), 0, Ui.dp(c, 12)) }
         addBtn.setOnClickListener {
             val n = field.text.toString().trim()
             if (n.isEmpty()) { Toast.makeText(c, "Name it first", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-            Ui.haptic(it); Store.addHabit(n); refresh()
+            Ui.haptic(it); pendingAdd = ""; Store.addHabit(n); refresh()
         }
         addCard.addView(field); addCard.addView(Ui.spacer(c, 8)); addCard.addView(addBtn)
         col.addView(addCard); col.addView(Ui.spacer(c, 8))
@@ -128,6 +137,7 @@ class HabitsFragment : BaseFragment() {
         val row = Ui.row(c)
 
         val streak = Ui.numeral(c, "${Store.currentStreak(h)}", 24f, Ui.GREEN)
+        val subtitle = Ui.body(c, "${Store.currentStreak(h)}-day streak", Ui.MUTED, 12f).also { it.setPadding(0, Ui.dp(c, 2), 0, 0) }
         val check = View(c).apply {
             background = ContextCompat.getDrawable(c, if (Store.isDoneToday(h)) R.drawable.check_on else R.drawable.ring)
             layoutParams = LinearLayout.LayoutParams(Ui.dp(c, 30), Ui.dp(c, 30)).also { it.marginEnd = Ui.dp(c, 14) }
@@ -135,7 +145,8 @@ class HabitsFragment : BaseFragment() {
             setOnClickListener {
                 Ui.haptic(this); Store.toggleToday(h)
                 background = ContextCompat.getDrawable(c, if (Store.isDoneToday(h)) R.drawable.check_on else R.drawable.ring)
-                streak.text = "${Store.currentStreak(h)}"
+                val s = Store.currentStreak(h)
+                streak.text = "$s"; subtitle.text = "$s-day streak"
             }
         }
         val tcol = LinearLayout(c).apply {
@@ -143,7 +154,7 @@ class HabitsFragment : BaseFragment() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
         tcol.addView(Ui.title(c, h.name, 16f))
-        tcol.addView(Ui.body(c, "${Store.currentStreak(h)}-day streak", Ui.MUTED, 12f).also { it.setPadding(0, Ui.dp(c, 2), 0, 0) })
+        tcol.addView(subtitle)
 
         val sRow = Ui.row(c).also { it.gravity = Gravity.CENTER_VERTICAL }
         sRow.addView(streak); sRow.addView(Ui.mono(c, "d", Ui.MUTED, 10f).also { it.setPadding(Ui.dp(c, 2), 0, 0, 0) })
