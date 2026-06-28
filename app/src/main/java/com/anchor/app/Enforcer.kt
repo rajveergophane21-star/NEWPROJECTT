@@ -2,33 +2,37 @@ package com.anchor.app
 
 import android.content.Context
 import android.content.Intent
+import android.provider.Settings
 
 /**
- * The single decision point. Given the package that just came to the foreground,
- * decide whether to intervene and, if so, show the intercept screen ON TOP of the app.
+ * The single decision point. Given the package that just came to the foreground, decide whether
+ * to intervene and, if so, show the intercept screen ON TOP of the app (never close it).
  *
- * Unlike a "kick you to the home screen" blocker, we never press HOME — we simply
- * launch a full-screen Activity over the blocked app (allowed because we hold the
- * "draw over other apps" / SYSTEM_ALERT_WINDOW permission). The app keeps running
- * underneath; the user just can't reach it. This is the "show a screen instead of
- * closing the app" behaviour.
+ * [goHome] (supplied by the AccessibilityService) presses HOME via a global action. It's used only
+ * as a fallback when the overlay permission has been revoked and we can't draw the intercept.
  */
 object Enforcer {
     @Volatile private var lastPkg = ""
     @Volatile private var lastAt = 0L
     @Volatile private var homePkg: String? = null
-    private const val DEBOUNCE_MS = 1500L
+    private const val DEBOUNCE_MS = 600L
 
-    fun handle(ctx: Context, pkg: String?) {
+    fun handle(ctx: Context, pkg: String?, goHome: (() -> Unit)? = null) {
         if (pkg.isNullOrEmpty() || pkg == ctx.packageName) return
         // Never intercept the home launcher — blocking it would trap the user on every Home press.
         if (pkg == homePackage(ctx)) return
-        if (Store.hasPass(pkg)) return
+
         val decision = Store.decisionFor(pkg) ?: return
+        // A friction "open anyway" pass excuses FRICTION only — it can never let a BLOCK through.
+        if (decision.mode == Mode.FRICTION && Store.hasPass(pkg)) return
 
         val now = System.currentTimeMillis()
         if (pkg == lastPkg && now - lastAt < DEBOUNCE_MS) return
         lastPkg = pkg; lastAt = now
+
+        // The overlay permission is what lets us launch the intercept over the app from the
+        // background. If it's been revoked, fall back to kicking HOME so the app isn't usable.
+        if (!Settings.canDrawOverlays(ctx)) { goHome?.invoke(); return }
 
         val i = Intent(ctx, InterceptActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
@@ -37,7 +41,7 @@ object Enforcer {
             putExtra(InterceptActivity.EXTRA_LEFT, decision.minutesLeft)
             putExtra(InterceptActivity.EXTRA_RULE, decision.ruleName)
         }
-        try { ctx.startActivity(i) } catch (_: Exception) {}
+        try { ctx.startActivity(i) } catch (_: Exception) { goHome?.invoke() }
     }
 
     /** Allow the next appearance of the same app to re-trigger immediately. */

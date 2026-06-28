@@ -16,10 +16,18 @@ object ReminderScheduler {
     fun schedule(ctx: Context, h: Habit) {
         val min = h.reminderMinutes ?: run { cancel(ctx, h); return }
         val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val trigger = nextTrigger(min)
+        val pi = pendingIntent(ctx, h.id)
+        // setAlarmClock = exact, fires on time even in Doze, and (unlike setExact*) needs NO
+        // SCHEDULE_EXACT_ALARM permission. The show-intent opens the app from the alarm icon.
+        val showPi = PendingIntent.getActivity(ctx, h.id.toInt(),
+            Intent(ctx, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         try {
-            // Inexact (Doze-friendly, no special permission). Re-armed each time it fires.
-            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextTrigger(min), pendingIntent(ctx, h.id))
-        } catch (_: Exception) {}
+            am.setAlarmClock(AlarmManager.AlarmClockInfo(trigger, showPi), pi)
+        } catch (_: Exception) {
+            try { am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pi) } catch (_: Exception) {}
+        }
     }
 
     fun cancel(ctx: Context, h: Habit) {

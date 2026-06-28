@@ -43,10 +43,14 @@ object Store {
         return r.activeNow(nowMin, LocalDate.now().dayOfWeek.value)
     }
 
-    /** Make [rule] the sole owner of its apps so an older rule can't override its mode. */
+    /**
+     * Make [rule] the sole owner of its apps so an older rule can't override its mode — EXCEPT a
+     * currently-locked (committed & active) rule, which keeps its apps so a new permissive rule
+     * can't quietly strip a commitment lock's coverage.
+     */
     fun claimPackages(rule: Rule) {
-        rules.forEach { if (it !== rule) it.packages.removeAll(rule.packages) }
-        rules.removeAll { it !== rule && it.packages.isEmpty() }
+        rules.forEach { if (it !== rule && !isLocked(it)) it.packages.removeAll(rule.packages) }
+        rules.removeAll { it !== rule && it.packages.isEmpty() && !isLocked(it) }
         save()
     }
 

@@ -21,7 +21,8 @@ class AnchorAccessibilityService : AccessibilityService() {
         val pkg = event.packageName?.toString() ?: return
         // Ignore the system UI / launcher noise quickly; Enforcer also guards our own package.
         if (pkg == packageName) return
-        Enforcer.handle(this, pkg)
+        // Provide a HOME-press fallback for the case where the overlay permission was revoked.
+        Enforcer.handle(this, pkg) { performGlobalAction(GLOBAL_ACTION_HOME) }
     }
 
     override fun onInterrupt() {}

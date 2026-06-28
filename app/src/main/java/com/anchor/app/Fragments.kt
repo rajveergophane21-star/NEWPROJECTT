@@ -205,7 +205,7 @@ class HabitsFragment : BaseFragment() {
         // Reminder chip — tappable to set / change / remove.
         val rem = h.reminderMinutes
         val remChip = TextView(c).apply {
-            text = if (rem != null) "⏰  ${fmtTime(rem)}" else "+ Add reminder"
+            text = if (rem != null) "⏰  ${fmtTime(rem)} alarm" else "+ Add alarm reminder"
             textSize = 12f; typeface = Ui.sans(c)
             setTextColor(if (rem != null) Ui.ACC_TEXT else Ui.MUTED)
             setPadding(0, Ui.dp(c, 6), 0, 0); isClickable = true
@@ -251,7 +251,7 @@ class HabitsFragment : BaseFragment() {
                     if (which == 0) pickReminderTime(c, h, rem)
                     else {
                         Store.setReminder(h, null); ReminderScheduler.cancel(c, h)
-                        androidx.core.app.NotificationManagerCompat.from(c).cancel(h.id.toInt()); refresh()
+                        AlarmService.stop(c); refresh()
                     }
                 }
                 .setNegativeButton("Cancel", null).show()
@@ -289,8 +289,7 @@ class HabitsFragment : BaseFragment() {
                 AlertDialog.Builder(c).setTitle("Delete \"${h.name}\"?")
                     .setMessage("This removes the habit and its history.")
                     .setPositiveButton("Delete") { _, _ ->
-                        ReminderScheduler.cancel(c, h)
-                        androidx.core.app.NotificationManagerCompat.from(c).cancel(h.id.toInt())
+                        ReminderScheduler.cancel(c, h); AlarmService.stop(c)
                         Store.deleteHabit(h); refresh()
                     }
                     .setNegativeButton("Cancel", null).show()
