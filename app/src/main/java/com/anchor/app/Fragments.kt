@@ -133,33 +133,38 @@ class HabitsFragment : BaseFragment() {
     }
 
     private fun habitRow(c: Context, h: Habit): View {
-        val card = Ui.card(c).also { it.setPadding(Ui.dp(c, 16), Ui.dp(c, 14), Ui.dp(c, 16), Ui.dp(c, 14)) }
+        val card = Ui.card(c).also { it.setPadding(Ui.dp(c, 16), Ui.dp(c, 16), Ui.dp(c, 16), Ui.dp(c, 16)) }
         val row = Ui.row(c)
+        val done = Store.isDoneToday(h)
+        val streak = Store.currentStreak(h)
 
-        val streak = Ui.numeral(c, "${Store.currentStreak(h)}", 24f, Ui.GREEN)
-        val subtitle = Ui.body(c, "${Store.currentStreak(h)}-day streak", Ui.MUTED, 12f).also { it.setPadding(0, Ui.dp(c, 2), 0, 0) }
         val check = View(c).apply {
-            background = ContextCompat.getDrawable(c, if (Store.isDoneToday(h)) R.drawable.check_on else R.drawable.ring)
+            background = ContextCompat.getDrawable(c, if (done) R.drawable.check_on else R.drawable.ring)
             layoutParams = LinearLayout.LayoutParams(Ui.dp(c, 30), Ui.dp(c, 30)).also { it.marginEnd = Ui.dp(c, 14) }
             isClickable = true
-            setOnClickListener {
-                Ui.haptic(this); Store.toggleToday(h)
-                background = ContextCompat.getDrawable(c, if (Store.isDoneToday(h)) R.drawable.check_on else R.drawable.ring)
-                val s = Store.currentStreak(h)
-                streak.text = "$s"; subtitle.text = "$s-day streak"
-            }
+            // pendingAdd is preserved across refresh(), so a full rebuild here is safe and keeps
+            // the streak chip / status line perfectly in sync.
+            setOnClickListener { Ui.haptic(this); Store.toggleToday(h); refresh() }
         }
+
         val tcol = LinearLayout(c).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
         tcol.addView(Ui.title(c, h.name, 16f))
-        tcol.addView(subtitle)
+        val status = if (done) "Done today" else "Not done today"
+        tcol.addView(Ui.body(c, status, if (done) Ui.GREEN_TEXT else Ui.MUTED, 12.5f).also { it.setPadding(0, Ui.dp(c, 3), 0, 0) })
 
-        val sRow = Ui.row(c).also { it.gravity = Gravity.CENTER_VERTICAL }
-        sRow.addView(streak); sRow.addView(Ui.mono(c, "d", Ui.MUTED, 10f).also { it.setPadding(Ui.dp(c, 2), 0, 0, 0) })
+        row.addView(check); row.addView(tcol)
 
-        row.addView(check); row.addView(tcol); row.addView(sRow)
+        // Streak chip — only once there's a streak to show (no discouraging "0").
+        if (streak > 0) {
+            val chip = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER }
+            chip.addView(Ui.numeral(c, "$streak", 24f, Ui.GREEN).also { it.gravity = Gravity.CENTER })
+            chip.addView(Ui.eyebrow(c, "day streak").also { it.gravity = Gravity.CENTER })
+            row.addView(chip)
+        }
+
         card.addView(row)
         card.setOnClickListener { editHabit(c, h) }
         return card
