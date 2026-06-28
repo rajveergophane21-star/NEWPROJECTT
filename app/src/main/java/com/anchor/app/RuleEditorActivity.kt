@@ -74,7 +74,9 @@ class RuleEditorActivity : AppCompatActivity() {
             nameText = r.name
             reasonText = r.reason
         }
-        if (windows.isEmpty()) windows.add(TimeWindow(9 * 60, 17 * 60, mutableSetOf(1, 2, 3, 4, 5)))
+        // Default to all-day, every-day so a freshly made rule actually fires the moment you
+        // test it. Users narrow the window from here; a surprising default reads as "broken".
+        if (windows.isEmpty()) windows.add(TimeWindow(0, 1440, mutableSetOf(1, 2, 3, 4, 5, 6, 7)))
 
         // Prefill from an Insights suggestion ("Block X around the evening").
         if (editing == null) {
@@ -418,9 +420,20 @@ class RuleEditorActivity : AppCompatActivity() {
             Store.save()
         }
         if (Perms.coreReady(this)) MonitorService.start(this)
+        // Tell the user when the rule actually applies — a rule tested outside its window
+        // otherwise reads as "not working".
+        val nowMin = java.time.LocalTime.now().let { it.hour * 60 + it.minute }
+        val dow = java.time.LocalDate.now().dayOfWeek.value
+        val activeNow = valid.any { it.activeAt(nowMin, dow) }
         if (firstRun) {
             val first = try { val pm = packageManager; pm.getApplicationLabel(pm.getApplicationInfo(pkgs.first(), 0)).toString() } catch (_: Exception) { "that app" }
             Toast.makeText(this, "Shield armed. Open $first to see Margin work.", Toast.LENGTH_LONG).show()
+        } else if (!Perms.coreReady(this)) {
+            Toast.makeText(this, "Saved. Finish setup in Today to start enforcing.", Toast.LENGTH_LONG).show()
+        } else if (activeNow) {
+            Toast.makeText(this, "Saved and active now — open the app to see it work.", Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(this, "Saved. Active ${valid.first().label()}.", Toast.LENGTH_LONG).show()
         }
         finish()
     }
