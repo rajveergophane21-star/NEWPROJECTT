@@ -99,18 +99,16 @@ class TodayFragment : BaseFragment() {
         brandRow.addView(Ui.eyebrow(c, LocalDate.now().format(DateTimeFormatter.ofPattern("EEE d MMM"))))
         col.addView(brandRow)
 
-        col.addView(Ui.display(c, "Good ${part.lowercase()}.", 40f).also { it.setPadding(0, Ui.dp(c,14),0,0) })
-
         // identity — your own words, on a warm hero card
         val idCard = LinearLayout(c).apply {
             orientation = LinearLayout.VERTICAL
             background = ContextCompat.getDrawable(c, R.drawable.card_accent)
-            setPadding(Ui.dp(c,19), Ui.dp(c,17), Ui.dp(c,19), Ui.dp(c,19))
+            setPadding(Ui.dp(c,18), Ui.dp(c,16), Ui.dp(c,18), Ui.dp(c,18))
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-                .also { it.topMargin = Ui.dp(c,22) }
+                .also { it.topMargin = Ui.dp(c,16) }
             setOnClickListener { identityDialog(c) }
         }
-        idCard.addView(Ui.eyebrow(c, "You're someone who").also { it.setTextColor(Ui.ACC_TEXT) })
+        idCard.addView(Ui.eyebrow(c, "Good ${part.lowercase()} — you're becoming").also { it.setTextColor(Ui.ACC_TEXT) })
         val idText = if (Store.identity.isEmpty()) "still becoming — tap to name it." else Store.identity
         idCard.addView(Ui.serifQuote(c, idText, Ui.TEXT, 24f).also { it.setPadding(0, Ui.dp(c,9),0,0) })
         col.addView(idCard)
@@ -181,22 +179,18 @@ class TodayFragment : BaseFragment() {
             bar.addView(fill); bar.addView(empty); col.addView(bar)
             handler.removeCallbacks(tick); handler.post(tick)
         } else {
-            val n = Store.rules.flatMap { it.packages }.toSet().size
-            val sub = if (n == 0) "Add a rule first — a focus session holds back the apps in your rules."
-                      else "Holds back your $n blocked ${if (n==1) "app" else "apps"} for a set stretch."
-            col.addView(Ui.body(c, sub).also { it.setPadding(0, Ui.dp(c,9),0, Ui.dp(c,14)) })
+            col.addView(Ui.body(c, "Hold back your blocked apps for a set stretch.", Ui.MUTED, 13f).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,12)) })
             val rowB = Ui.row(c)
             listOf(25, 45, 60).forEachIndexed { i, m ->
-                val btn = LinearLayout(c).apply {
-                    orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+                val btn = TextView(c).apply {
+                    text = "$m min"; gravity = Gravity.CENTER; textSize = 14f; typeface = Ui.sansMed(c)
+                    setTextColor(Ui.TEXT)
                     background = ContextCompat.getDrawable(c, R.drawable.card)
-                    setPadding(0, Ui.dp(c,16),0, Ui.dp(c,14))
+                    setPadding(0, Ui.dp(c,12),0, Ui.dp(c,14))
                     layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { if (i>0) it.marginStart = Ui.dp(c,10) }
                     isClickable = true
                     setOnClickListener { Ui.haptic(this); startFocus(m) }
                 }
-                btn.addView(Ui.numeral(c, "$m", 27f, Ui.SAGE))
-                btn.addView(Ui.eyebrow(c, "min").also { it.setPadding(0, Ui.dp(c,3),0,0) })
                 rowB.addView(btn)
             }
             col.addView(rowB)

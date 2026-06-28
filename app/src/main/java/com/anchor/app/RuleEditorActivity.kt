@@ -411,14 +411,20 @@ class RuleEditorActivity : AppCompatActivity() {
         if (pkgs.isEmpty() || valid.isEmpty()) { toast("Add apps and a valid schedule"); return }
         val mode = if (modeBlock) Mode.BLOCK else Mode.FRICTION
 
+        val saved: Rule
         val r = editing
         if (r == null) {
-            Store.addRule(Rule(Store.newId(), name, pkgs.toMutableSet(), valid.toMutableList(), mode, true, strict, reasonText.trim()))
+            saved = Rule(Store.newId(), name, pkgs.toMutableSet(), valid.toMutableList(), mode, true, strict, reasonText.trim())
+            Store.addRule(saved)
         } else {
             r.name = name; r.packages.clear(); r.packages.addAll(pkgs)
             r.windows.clear(); r.windows.addAll(valid); r.mode = mode; r.strict = strict; r.reason = reasonText.trim()
+            saved = r
             Store.save()
         }
+        // This rule now exclusively owns its apps, so an older rule (e.g. a leftover Block)
+        // can't override the mode the user just chose.
+        Store.claimPackages(saved)
         if (Perms.coreReady(this)) MonitorService.start(this)
         // Tell the user when the rule actually applies — a rule tested outside its window
         // otherwise reads as "not working".

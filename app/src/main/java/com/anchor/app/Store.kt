@@ -60,6 +60,17 @@ object Store {
     fun deleteRule(r: Rule) { rules.remove(r); save() }
     fun ruleById(id: Long) = rules.firstOrNull { it.id == id }
 
+    /**
+     * Make [rule] the sole owner of its packages: strip those apps from every other rule and
+     * drop any rule left empty. Prevents a stale BLOCK rule from overriding a new FRICTION rule
+     * for the same app — the user's most recently saved rule always governs.
+     */
+    fun claimPackages(rule: Rule) {
+        rules.forEach { if (it !== rule) it.packages.removeAll(rule.packages) }
+        rules.removeAll { it !== rule && it.packages.isEmpty() }
+        save()
+    }
+
     /** Whether a strict rule currently locks editing (active right now). */
     fun isLocked(r: Rule): Boolean {
         if (!r.strict) return false
