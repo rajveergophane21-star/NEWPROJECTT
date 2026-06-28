@@ -73,7 +73,7 @@ class MonitorService : Service() {
         if (AnchorAccessibilityService.connected) return
         val pkg = foregroundPackage() ?: return
         lastForeground = pkg
-        Enforcer.handle(this, pkg, null)
+        Enforcer.handle(this, pkg)
     }
 
     /** Most recently foregrounded package over the last few seconds. */

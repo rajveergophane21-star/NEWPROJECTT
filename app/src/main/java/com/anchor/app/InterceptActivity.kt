@@ -1,241 +1,218 @@
 package com.anchor.app
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Intent
-import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.View
-import android.widget.FrameLayout
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import com.anchor.app.databinding.ActivityInterceptBinding
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 /**
- * The wall, or the pause. Shown over a blocked app.
+ * The screen shown OVER a blocked app (the app keeps running underneath — we never close it).
  *
- * BLOCK mode: a calm, final stop — the only way out is to leave.
- * FRICTION mode: a mandatory breath, then an honest choice. Friction reliably
- * stops the impulse in the moment; pairing it with a real decision is what the
- * evidence supports (per-instance abandonment, not magic willpower).
+ * BLOCK   — a calm wall; the only way out is to turn back.
+ * FRICTION — a short mandatory pause, then an honest choice to continue or turn back.
  */
 class InterceptActivity : AppCompatActivity() {
 
-    private lateinit var b: ActivityInterceptBinding
     private lateinit var pkg: String
     private var mode = Mode.BLOCK
     private var minutesLeft = -1
     private var ruleName = ""
-    private var reason = ""
-    private var pauseTimer: CountDownTimer? = null
-    private var breathAnimator: ValueAnimator? = null
-    private var frictionRing: RingView? = null
+
+    private var timer: CountDownTimer? = null
+    private var breath: ValueAnimator? = null
     private var canProceed = false
-    private var inhale = true
+
+    private lateinit var headline: TextView
+    private lateinit var appLine: TextView
+    private lateinit var primaryBtn: TextView
+    private var secondaryBtn: TextView? = null
+    private var orb: View? = null
+
+    // dark, calm palette
+    private val bg = 0xFF241C16.toInt()
+    private val ink = 0xFFF4ECD8.toInt()
+    private val soft = 0xFFC2A87E.toInt()
+    private val accent = 0xFFE07A3E.toInt()
+    private val glow = 0xFFFFCD75.toInt()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Store.init(this)
-        b = ActivityInterceptBinding.inflate(layoutInflater)
-        setContentView(b.root)
-
-        // Arrive deliberately: one quiet fade-up and a single grounding haptic.
-        b.root.alpha = 0f
-        b.root.animate().alpha(1f).setDuration(200).start()
-        b.root.post { b.root.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) }
-        styleDark()
 
         pkg = intent.getStringExtra(EXTRA_PKG) ?: run { finish(); return }
-        mode = Mode.valueOf(intent.getStringExtra(EXTRA_MODE) ?: "BLOCK")
+        mode = runCatching { Mode.valueOf(intent.getStringExtra(EXTRA_MODE) ?: "BLOCK") }.getOrDefault(Mode.BLOCK)
         minutesLeft = intent.getIntExtra(EXTRA_LEFT, -1)
         ruleName = intent.getStringExtra(EXTRA_RULE) ?: "Margin"
-        reason = intent.getStringExtra(EXTRA_REASON) ?: ""
 
-        // Back = leave (the good outcome), never fall through to the app.
+        setContentView(buildUi())
+        window.statusBarColor = bg
+        window.navigationBarColor = bg
+
+        // Back must never fall through to the blocked app.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() = leave(logWin = true)
+            override fun handleOnBackPressed() = leave()
         })
 
+        root.post { root.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) }
         if (mode == Mode.BLOCK) renderBlock() else renderFriction()
     }
 
-    /** Editorial dark styling: serif + mono on warm-black paper. */
-    private fun styleDark() {
-        val cream = 0xFFFFCD75.toInt(); val soft = 0xFFC2A87E.toInt()
-        b.eyebrow.typeface = Ui.monoMed(this); b.eyebrow.setTextColor(Ui.ACC_GLOW)
-        b.headline.typeface = Ui.serif(this); b.headline.setTextColor(Ui.DARK_TEXT); b.headline.textSize = 32f
-        b.appLine.typeface = Ui.sans(this); b.appLine.setTextColor(soft)
-        b.sub.typeface = Ui.serifItalic(this); b.sub.setTextColor(cream); b.sub.textSize = 19f
-        b.breathCount.typeface = Ui.serif(this); b.breathCount.setTextColor(Ui.DARK_TEXT)
-        b.breathOrb.backgroundTintList = ColorStateList.valueOf(Ui.SAGE)
-        // Beveled pixel buttons (backgrounds set in XML); just apply the pixel display font.
-        b.btnPrimary.typeface = Ui.serif(this)
-        b.btnSecondary.typeface = Ui.monoMed(this); b.btnSecondary.setTextColor(Ui.ACC_GLOW)
-        b.btnReplace.typeface = Ui.serif(this); b.btnReplace.setTextColor(Ui.TEXT)
-    }
+    private lateinit var root: LinearLayout
 
-    private fun appName(): String = try {
-        val pm = packageManager
-        pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString()
-    } catch (_: Exception) { "this app" }
+    private fun buildUi(): View {
+        root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(bg)
+            fitsSystemWindows = true
+            setPadding(dp(34), dp(24), dp(34), dp(34))
+        }
+
+        val eyebrow = TextView(this).apply {
+            text = ruleName.uppercase(); setTextColor(accent); textSize = 12f
+            letterSpacing = 0.18f; typeface = Ui.monoMed(this@InterceptActivity); gravity = Gravity.CENTER
+        }
+        headline = TextView(this).apply {
+            setTextColor(ink); textSize = 30f; gravity = Gravity.CENTER
+            typeface = Ui.sansMed(this@InterceptActivity); setPadding(0, dp(14), 0, 0)
+        }
+        appLine = TextView(this).apply {
+            setTextColor(soft); textSize = 15f; gravity = Gravity.CENTER
+            typeface = Ui.sans(this@InterceptActivity); setPadding(0, dp(12), 0, 0); setLineSpacing(dp(3).toFloat(), 1f)
+        }
+        root.addView(eyebrow); root.addView(headline); root.addView(appLine)
+        return root
+    }
 
     // ---------------------------------------------------------------- block
     private fun renderBlock() {
-        b.eyebrow.text = ruleName.uppercase()
-        b.headline.text = "Not now."
-        b.appLine.text = buildString {
+        headline.text = "Not now."
+        appLine.text = buildString {
             append(appName())
-            if (minutesLeft > 0) append(" is closed until ${untilTime()}.")
-            else append(" is closed right now.")
+            append(if (minutesLeft > 0) " is blocked until ${untilTime()}." else " is blocked right now.")
         }
-        b.sub.text = whyLine("You set this boundary when you were thinking clearly. Trust that version of you.")
-        b.breathWrap.visibility = View.GONE
-        b.btnPrimary.text = "Take me back"
-        b.btnPrimary.setOnClickListener { leave(logWin = true) }
-        b.btnSecondary.visibility = View.GONE
-        setupReplacement()
-    }
-
-    /** Recall the user's own words at the moment of choice (values affirmation). */
-    private fun whyLine(default: String): String = when {
-        reason.isNotEmpty() -> "You told yourself: “$reason”"
-        Store.identity.isNotEmpty() -> "Remember — you're becoming ${Store.identity}."
-        else -> default
-    }
-
-    /** Offer the replacement behaviour: doing it instead is the real win. */
-    private fun setupReplacement() {
-        val h = Store.firstUndoneToday()
-        if (h == null) { b.btnReplace.visibility = View.GONE; return }
-        b.btnReplace.visibility = View.VISIBLE
-        b.btnReplace.text = "Instead, ${h.name}  >"
-        b.btnReplace.setOnClickListener {
-            Ui.haptic(b.btnReplace)
-            Store.toggleToday(h)        // mark the replacement done
-            leave(logWin = true)        // a win, and back to home
-        }
+        primaryBtn = filledButton("Turn back") { leave() }
+        root.addView(primaryBtn, btnParams(topDp = 32))
     }
 
     // ------------------------------------------------------------- friction
     private fun renderFriction() {
-        b.eyebrow.text = "PAUSE"
-        b.headline.text = "One breath first."
-        b.appLine.text = "You reached for ${appName()}. Sit with that for a moment before you decide."
-        b.sub.text = whyLine("Most urges crest and fall within a minute. Let this one pass.")
-        b.breathWrap.visibility = View.VISIBLE
-        setupReplacement()
+        headline.text = "Take a breath."
+        appLine.text = "You reached for ${appName()}. Sit with it for a moment."
 
-        // A ring fills behind the breathing orb as the pause elapses.
-        frictionRing = RingView(this).apply {
-            setActiveColor(Ui.SAGE)
-            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+        val wrap = LinearLayout(this).apply {
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(dp(150), dp(150)).also { it.topMargin = dp(28) }
         }
-        b.breathWrap.addView(frictionRing, 0)
+        val o = View(this).apply {
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(accent) }
+            layoutParams = LinearLayout.LayoutParams(dp(110), dp(110))
+        }
+        orb = o; wrap.addView(o); root.addView(wrap)
 
-        b.btnPrimary.text = "Not now — take me back"
-        b.btnPrimary.setOnClickListener { leave(logWin = true) }
+        primaryBtn = filledButton("Turn back") { leave() }
+        root.addView(primaryBtn, btnParams(topDp = 28))
 
-        b.btnSecondary.visibility = View.VISIBLE
-        b.btnSecondary.text = "Wait ${PAUSE_SECONDS}s…"
-        b.btnSecondary.isEnabled = false
-        b.btnSecondary.alpha = 0.5f
-        b.btnSecondary.setOnClickListener { if (canProceed) proceed() }
+        secondaryBtn = textButton("Wait ${PAUSE_SECONDS}s…") { if (canProceed) proceed() }.also {
+            it.isEnabled = false; it.alpha = 0.5f
+            root.addView(it, btnParams(topDp = 12))
+        }
 
         startBreathing()
         val totalMs = PAUSE_SECONDS * 1000L
-        pauseTimer = object : CountDownTimer(totalMs, 250) {
-            override fun onTick(ms: Long) {
-                frictionRing?.setProgress((totalMs - ms).toFloat() / totalMs)
-                val s = (ms / 1000).toInt() + 1
-                b.btnSecondary.text = "Wait ${s}s…"
-            }
+        timer = object : CountDownTimer(totalMs, 250) {
+            override fun onTick(ms: Long) { secondaryBtn?.text = "Wait ${(ms / 1000).toInt() + 1}s…" }
             override fun onFinish() {
                 canProceed = true
-                frictionRing?.setProgress(1f)
-                b.btnSecondary.text = "Open ${appName()} anyway"
-                b.btnSecondary.isEnabled = true
-                b.btnSecondary.animate().alpha(1f).setDuration(220).start()
+                secondaryBtn?.apply { text = "Open ${appName()} anyway"; isEnabled = true; animate().alpha(1f).setDuration(220).start() }
             }
         }.start()
     }
 
-    /** Inhale/exhale orb that paces the breath during the pause; centre shows the phase. */
     private fun startBreathing() {
-        b.breathCount.text = "In"
-        breathAnimator = ValueAnimator.ofFloat(0.62f, 1f).apply {
-            duration = 4000
-            repeatMode = ValueAnimator.REVERSE
-            repeatCount = ValueAnimator.INFINITE
-            addUpdateListener {
-                val v = it.animatedValue as Float
-                b.breathOrb.scaleX = v; b.breathOrb.scaleY = v
-            }
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationRepeat(animation: Animator) {
-                    inhale = !inhale
-                    b.breathCount.text = if (inhale) "In" else "Out"
-                }
-            })
+        breath = ValueAnimator.ofFloat(0.7f, 1f).apply {
+            duration = 4000; repeatMode = ValueAnimator.REVERSE; repeatCount = ValueAnimator.INFINITE
+            addUpdateListener { val v = it.animatedValue as Float; orb?.scaleX = v; orb?.scaleY = v }
             start()
         }
     }
 
     // ----------------------------------------------------------------- exits
-    private fun leave(logWin: Boolean) {
-        if (logWin) Store.logInterception(pkg, proceeded = false)
-        // Do NOT reset the debounce here — let it lapse naturally. Resetting would let the
-        // HOME/teardown window events for this same blocked app immediately re-launch a
-        // second intercept (visible flicker / re-shown wall).
+    /** Turn back: go to the home screen so the blocked app is never revealed. */
+    private fun leave() {
         cleanup()
-        // Send the user to the home screen rather than back into the blocked app.
-        val home = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        startActivity(home)
+        startActivity(Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME); flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        })
         finish()
     }
 
+    /** Friction "open anyway": grant a short pass and reveal the app the user chose to enter. */
     private fun proceed() {
-        Store.logInterception(pkg, proceeded = true)
-        Store.grantPass(pkg, GRANT_MINUTES)   // short pass so we don't loop
+        Store.grantPass(pkg, GRANT_MINUTES)
         Enforcer.reset()
         cleanup()
-        // We pressed HOME to get here, so re-open the app the user chose to enter.
-        val launch = packageManager.getLaunchIntentForPackage(pkg)
-        if (launch != null) {
-            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(launch)
+        packageManager.getLaunchIntentForPackage(pkg)?.let {
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(it)
+        } ?: run {
+            startActivity(Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_HOME); flags = Intent.FLAG_ACTIVITY_NEW_TASK })
         }
         finish()
     }
 
-    private fun cleanup() {
-        pauseTimer?.cancel(); pauseTimer = null
-        breathAnimator?.cancel(); breathAnimator = null
-    }
+    private fun cleanup() { timer?.cancel(); timer = null; breath?.cancel(); breath = null }
+    override fun onDestroy() { cleanup(); super.onDestroy() }
+
+    // ------------------------------------------------------------- helpers
+    private fun appName(): String = try {
+        packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
+    } catch (_: Exception) { "this app" }
 
     private fun untilTime(): String {
         val now = LocalTime.now()
-        val hhmm = now.plusMinutes(minutesLeft.toLong()).withSecond(0)
-            .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+        val hhmm = now.plusMinutes(minutesLeft.toLong()).format(DateTimeFormatter.ofPattern("HH:mm"))
         val crossesMidnight = now.toSecondOfDay() + minutesLeft * 60 >= 86400
         return if (crossesMidnight) "tomorrow $hhmm" else hhmm
     }
 
-    override fun onDestroy() { cleanup(); super.onDestroy() }
+    private fun btnParams(topDp: Int) = LinearLayout.LayoutParams(dp(260), ViewGroup.LayoutParams.WRAP_CONTENT)
+        .also { it.topMargin = dp(topDp) }
+
+    private fun filledButton(label: String, onTap: () -> Unit) = TextView(this).apply {
+        text = label; gravity = Gravity.CENTER; setTextColor(0xFF241C16.toInt()); textSize = 16f
+        typeface = Ui.sansMed(this@InterceptActivity)
+        background = GradientDrawable().apply { cornerRadius = dp(14).toFloat(); setColor(glow) }
+        setPadding(0, dp(15), 0, dp(15)); isClickable = true; isFocusable = true
+        setOnClickListener { Ui.haptic(this); onTap() }
+    }
+
+    private fun textButton(label: String, onTap: () -> Unit) = TextView(this).apply {
+        text = label; gravity = Gravity.CENTER; setTextColor(glow); textSize = 14f
+        typeface = Ui.sans(this@InterceptActivity); setPadding(0, dp(12), 0, dp(12)); isClickable = true
+        setOnClickListener { Ui.haptic(this); onTap() }
+    }
+
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
     companion object {
         const val EXTRA_PKG = "pkg"
         const val EXTRA_MODE = "mode"
         const val EXTRA_LEFT = "left"
         const val EXTRA_RULE = "rule"
-        const val EXTRA_REASON = "reason"
         private const val PAUSE_SECONDS = 8
-        private const val GRANT_MINUTES = 3
+        private const val GRANT_MINUTES = 5
     }
 }

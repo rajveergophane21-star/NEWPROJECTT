@@ -4,12 +4,9 @@ import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
 
 /**
- * The engine of the shield. Event-driven (no polling), this fires the instant a
- * window comes to the foreground. If it belongs to a blocked app during an active
- * rule, we press HOME and show the intercept.
- *
- * This is how every reliable non-root blocker works; UsageStats polling in
- * MonitorService is only a fallback for when this service isn't enabled.
+ * The engine of the shield. Event-driven (no polling): the instant a window comes to
+ * the foreground, if it's a blocked app during an active rule, we show the intercept
+ * screen over it. We do NOT touch or close the app — we only read which app is in front.
  */
 class AnchorAccessibilityService : AccessibilityService() {
 
@@ -20,10 +17,11 @@ class AnchorAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event == null) return
-        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = event.packageName?.toString() ?: return
-        Enforcer.handle(this, pkg) { performGlobalAction(GLOBAL_ACTION_HOME) }
+        // Ignore the system UI / launcher noise quickly; Enforcer also guards our own package.
+        if (pkg == packageName) return
+        Enforcer.handle(this, pkg)
     }
 
     override fun onInterrupt() {}
