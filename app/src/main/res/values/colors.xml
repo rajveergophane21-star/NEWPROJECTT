@@ -1,24 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Margin: ink on paper. Light, minimal, editorial. One clay accent. -->
-    <color name="bg">#FFFFFF</color>
+    <!-- Margin "editorial" — warm cream paper, evergreen accent, ink text. -->
+    <color name="bg">#F4EFE5</color>
     <color name="surface">#FFFFFF</color>
-    <color name="surface2">#F4F2ED</color>
-    <color name="line">#E7E4DD</color>
-    <color name="text">#161616</color>
-    <color name="muted">#6E6B64</color>
-    <color name="faint">#9A968D</color>
+    <color name="surface2">#FBF8F1</color>
+    <color name="line">#E7DECE</color>
+    <color name="card_border">#EBE3D5</color>
+    <color name="text">#1B1813</color>
+    <color name="muted">#6E6456</color>
+    <color name="faint">#A99D89</color>
 
-    <!-- Single accent (clay) used for primary, active, and "go" states. -->
-    <color name="sage">#C2674A</color>
-    <color name="sage_deep">#A8523A</color>
-    <!-- Reserved for destructive / warning. -->
-    <color name="clay">#B23A2E</color>
-    <color name="terra">#B23A2E</color>
-    <color name="ink_on_accent">#FFFFFF</color>
+    <!-- Evergreen accent + its tints -->
+    <color name="sage">#3B5141</color>
+    <color name="sage_deep">#2B3A2E</color>
+    <color name="accent_soft">#E7ECE0</color>
+    <color name="accent_glow">#9DB48F</color>
+    <color name="accent_text">#36493A</color>
+    <color name="ink_on_accent">#F6F1E7</color>
+
+    <!-- Warm tones for chips / destructive -->
+    <color name="clay">#7E332B</color>
+    <color name="terra">#8A5A20</color>
+    <color name="friction_bg">#F2E7D4</color>
+    <color name="block_bg">#E8EDE2</color>
+
+    <!-- Dark surfaces (reflection card, intercept) -->
+    <color name="dark_card">#232019</color>
+    <color name="dark_text">#F1EAD9</color>
+    <color name="intercept_bg">#16130E</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="icon_bg">#FFFFFF</color>
-    <color name="intercept_bg">#FFFFFF</color>
+    <color name="icon_bg">#F4EFE5</color>
 </resources>

@@ -57,191 +57,214 @@ private fun choicePill(c: Context, label: String, selected: Boolean, onTap: () -
 
 class TodayFragment : BaseFragment() {
     private val handler = Handler(Looper.getMainLooper())
-    private var focusRing: RingView? = null
+    private var focusLabel: TextView? = null
+    private var focusFill: View? = null
+    private var focusEmpty: View? = null
     private val tick = object : Runnable {
         override fun run() {
-            val r = focusRing ?: return
+            if (focusLabel == null) return
             if (!Store.focusActive()) { refresh(); return }
-            val remain = Store.focusRemainingMs()
-            val total = Store.focusTotalMs.coerceAtLeast(1)
-            r.setProgress((total - remain).toFloat() / total)
-            r.setCenterText(mmss(remain))
+            val remain = Store.focusRemainingMs(); val total = Store.focusTotalMs.coerceAtLeast(1)
+            focusLabel?.text = mmss(remain)
+            val pct = (total - remain).toFloat() / total
+            focusFill?.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, pct.coerceIn(0.0001f, 1f))
+            focusEmpty?.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, (1f - pct).coerceIn(0.0001f, 1f))
+            focusFill?.requestLayout()
             handler.postDelayed(this, 1000)
         }
     }
 
     override fun onPause() { super.onPause(); handler.removeCallbacks(tick) }
-    override fun onResume() { super.onResume(); if (Store.focusActive() && focusRing != null) { handler.removeCallbacks(tick); handler.post(tick) } }
+    override fun onResume() { super.onResume(); if (Store.focusActive() && focusLabel != null) { handler.removeCallbacks(tick); handler.post(tick) } }
 
     private fun mmss(ms: Long): String { val s = (ms / 1000).toInt(); return "%d:%02d".format(s / 60, s % 60) }
 
     override fun render() {
         val c = requireContext()
-        focusRing = null; handler.removeCallbacks(tick)
+        focusLabel = null; handler.removeCallbacks(tick)
         val hour = LocalTime.now().hour
-        val greet = when { hour < 12 -> "Good morning"; hour < 18 -> "Good afternoon"; else -> "Good evening" }
-        col.addView(Ui.eyebrow(c, LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM"))))
-        col.addView(Ui.display(c, "$greet.").also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,20)) })
+        val part = when { hour < 12 -> "Morning"; hour < 18 -> "Afternoon"; else -> "Evening" }
 
-        identityCard(c)
-        shieldCard(c, hour)
-        focusCard(c)
+        // masthead row
+        val dateRow = Ui.row(c).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,12)) }
+        dateRow.addView(Ui.eyebrow(c, LocalDate.now().format(DateTimeFormatter.ofPattern("EEE · d MMM"))))
+        dateRow.addView(View(c).apply { layoutParams = LinearLayout.LayoutParams(0, 1, 1f) })
+        dateRow.addView(Ui.eyebrow(c, part))
+        col.addView(dateRow)
+        col.addView(thinLine(c))
 
-        // Closing reflection — evening only, and only if not yet done.
-        if (hour >= 18 || Store.dayNoteFor(Store.today()) != null) col.addView(reflectionCard(c))
+        col.addView(Ui.display(c, "Good ${part.lowercase()}.", 40f).also { it.setPadding(0, Ui.dp(c,18),0,0) })
 
-        // Replacement habits, as hairline-separated rows in one card.
-        if (Store.habits.isNotEmpty()) {
-            val hcard = Ui.card(c)
-            hcard.addView(Ui.eyebrow(c, "Instead, do this"))
-            hcard.addView(Ui.spacer(c,4))
-            Store.habits.forEachIndexed { i, h ->
-                if (i > 0) hcard.addView(Ui.hairline(c))
-                hcard.addView(habitRow(c, h))
+        // identity — your own words
+        col.addView(Ui.eyebrow(c, "You're someone who").also { it.setPadding(0, Ui.dp(c,24),0,0) })
+        val idText = if (Store.identity.isEmpty()) "…name who you're becoming." else Store.identity
+        col.addView(Ui.serifQuote(c, idText, Ui.TEXT, 25f).also {
+            it.setPadding(0, Ui.dp(c,10),0,0); it.setOnClickListener { identityDialog(c) }
+        })
+
+        statusRow(c, hour)
+        focusSection(c)
+        habitsSection(c)
+        if (hour >= 18 || Store.dayNoteFor(Store.today()) != null) reflectionSection(c)
+    }
+
+    private fun thinLine(c: Context) = View(c).apply {
+        setBackgroundColor(Ui.LINE)
+        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(c,1).coerceAtLeast(1))
+    }
+
+    private fun statusRow(c: Context, hour: Int) {
+        col.addView(View(c).apply { setBackgroundColor(Ui.LINE); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(c,1).coerceAtLeast(1)).also { it.topMargin = Ui.dp(c,24) } })
+        val row = Ui.row(c).also { it.setPadding(0, Ui.dp(c,16),0, Ui.dp(c,16)) }
+        val nowMin = LocalTime.now().let { it.hour * 60 + it.minute }
+        val dow = LocalDate.now().dayOfWeek.value
+        val active = Store.rules.count { it.activeNow(nowMin, dow) }
+        val ready = Perms.coreReady(c)
+        val armed = ready && (active > 0 || Store.focusActive() || Store.rules.any { it.enabled })
+        val (t, s) = when {
+            !ready -> "Shield is off" to "Tap to finish setup"
+            Store.focusActive() -> "In a focus session" to "${mmss(Store.focusRemainingMs())} remaining · distractions held back"
+            active > 0 -> "Shield is up" to "$active ${if (active==1) "rule" else "rules"} holding right now"
+            Store.rules.any { it.enabled } -> "Armed and watching" to "${Store.resistedToday()} urges turned away today"
+            else -> "Nothing's blocked right now" to "Set a boundary in Shield"
+        }
+        val dot = View(c).apply {
+            background = ContextCompat.getDrawable(c, R.drawable.circle)
+            backgroundTintList = ColorStateList.valueOf(if (armed) Ui.SAGE else 0xFFC9BFAD.toInt())
+            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,8), Ui.dp(c,8)).also { it.marginEnd = Ui.dp(c,14) }
+        }
+        val tcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
+        tcol.addView(Ui.title(c, t, 15f))
+        tcol.addView(Ui.body(c, s, Ui.MUTED, 12.5f).also { it.setPadding(0, Ui.dp(c,2),0,0) })
+        row.addView(dot); row.addView(tcol)
+        if (!ready) row.setOnClickListener { startActivity(Intent(c, OnboardingActivity::class.java)) }
+        col.addView(row)
+        col.addView(thinLine(c))
+    }
+
+    private fun focusSection(c: Context) {
+        val head = Ui.row(c).also { it.setPadding(0, Ui.dp(c,26),0,0) }
+        head.addView(Ui.eyebrow(c, "Focus now"))
+        head.addView(View(c).apply { layoutParams = LinearLayout.LayoutParams(0, 1, 1f) })
+        if (Store.focusActive()) {
+            val stop = Ui.eyebrow(c, "Stop"); stop.setOnClickListener { Ui.haptic(it); Store.stopFocus(); refresh() }
+            head.addView(stop)
+        }
+        col.addView(head)
+
+        if (Store.focusActive()) {
+            val numRow = Ui.row(c).also { it.setPadding(0, Ui.dp(c,10),0,0); it.gravity = Gravity.BOTTOM }
+            val label = Ui.numeral(c, mmss(Store.focusRemainingMs()), 56f)
+            focusLabel = label
+            numRow.addView(label)
+            numRow.addView(Ui.eyebrow(c, "remaining").also { it.setPadding(Ui.dp(c,12),0,0, Ui.dp(c,10)) })
+            col.addView(numRow)
+            val bar = LinearLayout(c).apply {
+                orientation = LinearLayout.HORIZONTAL
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(c,3)).also { it.topMargin = Ui.dp(c,14) }
             }
-            col.addView(hcard)
+            val pct = ((Store.focusTotalMs - Store.focusRemainingMs()).toFloat() / Store.focusTotalMs.coerceAtLeast(1)).coerceIn(0.0001f, 1f)
+            val fill = View(c).apply { setBackgroundColor(Ui.SAGE); layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, pct) }
+            val empty = View(c).apply { setBackgroundColor(Ui.LINE); layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f - pct) }
+            focusFill = fill; focusEmpty = empty
+            bar.addView(fill); bar.addView(empty); col.addView(bar)
+            handler.removeCallbacks(tick); handler.post(tick)
+        } else {
+            col.addView(Ui.body(c, "Hold your distractions back for a stretch.").also { it.setPadding(0, Ui.dp(c,9),0, Ui.dp(c,14)) })
+            val rowB = Ui.row(c)
+            listOf(25, 45, 60).forEachIndexed { i, m ->
+                val btn = LinearLayout(c).apply {
+                    orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+                    background = ContextCompat.getDrawable(c, R.drawable.card)
+                    setPadding(0, Ui.dp(c,16),0, Ui.dp(c,14))
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { if (i>0) it.marginStart = Ui.dp(c,10) }
+                    isClickable = true
+                    setOnClickListener { Ui.haptic(this); startFocus(m) }
+                }
+                btn.addView(Ui.numeral(c, "$m", 27f))
+                btn.addView(Ui.eyebrow(c, "min").also { it.setPadding(0, Ui.dp(c,3),0,0) })
+                rowB.addView(btn)
+            }
+            col.addView(rowB)
         }
     }
 
-    private fun identityCard(c: Context) {
-        val card = Ui.card(c)
-        card.addView(Ui.eyebrow(c, "Becoming"))
-        if (Store.identity.isEmpty()) {
-            card.addView(Ui.title(c, "Name who you're becoming.", 18f).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,8)) })
-            card.addView(Ui.body(c, "Margin isn't about using your phone less. It's about becoming someone in particular — every boundary points back to it."))
-            val b = Ui.primary(c, "Set your intention").also { it.setPadding(0, Ui.dp(c,12),0,0) }
-            b.setOnClickListener { Ui.haptic(it); identityDialog(c) }
-            card.addView(Ui.spacer(c,12)); card.addView(b)
-        } else {
-            card.addView(Ui.title(c, Store.identity, 19f).also { it.setPadding(0, Ui.dp(c,8),0,0) })
-            if (Store.identitySetDay > 0L) {
-                val since = LocalDate.ofEpochDay(Store.identitySetDay).format(DateTimeFormatter.ofPattern("MMMM yyyy"))
-                val aligned = Store.alignedDaysTotal()
-                val parts = buildString {
-                    append("Becoming since $since")
-                    if (aligned > 0) append(" · $aligned ${if (aligned==1) "day" else "days"} that felt like you")
-                    if (Store.resistedTotal() > 0) append(" · ${Store.resistedTotal()} urges turned away")
-                }
-                card.addView(Ui.body(c, parts, Ui.FAINT, 12f).also { it.setPadding(0, Ui.dp(c,10),0,0) })
-            }
-            card.setOnClickListener { identityDialog(c) }
+    private fun habitsSection(c: Context) {
+        if (Store.habits.isEmpty()) return
+        col.addView(Ui.serifHead(c, "Today's habits", 23f).also { it.setPadding(0, Ui.dp(c,30),0, Ui.dp(c,2)) })
+        Store.habits.forEach { h ->
+            col.addView(thinLine(c).also { (it.layoutParams as LinearLayout.LayoutParams).topMargin = Ui.dp(c,2) })
+            col.addView(habitRow(c, h))
         }
+    }
+
+    private fun habitRow(c: Context, h: Habit): View {
+        val row = Ui.row(c).also { it.setPadding(0, Ui.dp(c,14),0, Ui.dp(c,14)) }
+        val done = Store.isDoneToday(h)
+        val check = TextView(c).apply {
+            text = if (done) "✓" else ""; gravity = Gravity.CENTER; textSize = 13f; setTextColor(Ui.INK)
+            background = ContextCompat.getDrawable(c, if (done) R.drawable.circle else R.drawable.ring)
+            if (done) backgroundTintList = ColorStateList.valueOf(Ui.SAGE)
+            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,22), Ui.dp(c,22)).also { it.marginEnd = Ui.dp(c,14) }
+            setOnClickListener { Ui.haptic(this); Store.toggleToday(h); refresh() }
+        }
+        val tcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
+        tcol.addView(Ui.title(c, h.name, 15f))
+        tcol.addView(Ui.mono(c, if (h.anchor.isNotEmpty()) "after ${h.anchor}" else "replacement habit", Ui.FAINT, 10f).also { it.setPadding(0, Ui.dp(c,3),0,0) })
+        val streak = Ui.numeral(c, "${Store.currentStreak(h)}", 21f)
+        val d = Ui.mono(c, "d", Ui.FAINT, 9.5f)
+        val sRow = Ui.row(c); sRow.addView(streak); sRow.addView(d)
+        row.addView(check); row.addView(tcol); row.addView(sRow)
+        return row
+    }
+
+    private fun reflectionSection(c: Context) {
+        val card = LinearLayout(c).apply {
+            orientation = LinearLayout.VERTICAL
+            background = ContextCompat.getDrawable(c, R.drawable.card_dark)
+            setPadding(Ui.dp(c,22), Ui.dp(c,22), Ui.dp(c,22), Ui.dp(c,22))
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).also { it.topMargin = Ui.dp(c,28) }
+        }
+        val existing = Store.dayNoteFor(Store.today())
+        card.addView(Ui.eyebrow(c, "Tonight · 10 seconds").also { it.setTextColor(Ui.ACC_GLOW) })
+        card.addView(Ui.serifQuote(c, "How close was today to who you're becoming?", Ui.DARK_TEXT, 21f).also { it.setPadding(0, Ui.dp(c,11),0, Ui.dp(c,16)) })
+
+        var sel = existing?.alignment ?: -1
+        val labels = listOf("Not yet", "Closer", "There")
+        val pills = mutableListOf<TextView>()
+        val pillRow = Ui.row(c)
+        fun restyle() {
+            pills.forEachIndexed { i, p ->
+                val on = i == sel
+                p.setTextColor(if (on) Ui.DARK_TEXT else 0xFF8E8675.toInt())
+                p.backgroundTintList = ColorStateList.valueOf(if (on) 0xFF35312A.toInt() else 0xFF2B2820.toInt())
+            }
+        }
+        labels.forEachIndexed { i, l ->
+            val p = TextView(c).apply {
+                text = l; gravity = Gravity.CENTER; textSize = 13f; typeface = Ui.sans(c)
+                background = ContextCompat.getDrawable(c, R.drawable.pill)
+                setPadding(0, Ui.dp(c,12),0, Ui.dp(c,12))
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { if (i>0) it.marginStart = Ui.dp(c,9) }
+                setOnClickListener {
+                    Ui.haptic(this); sel = i; restyle()
+                    Store.setDayNote(Store.today(), sel, existing?.note ?: "")
+                }
+            }
+            pills.add(p); pillRow.addView(p)
+        }
+        card.addView(pillRow)
+        restyle()
         col.addView(card)
     }
 
     private fun identityDialog(c: Context) {
-        val input = field(c, "I'm someone who…", Store.identity).apply {
-            hint = "I'm someone who… (is present / makes things / sleeps before midnight)"
-        }
+        val input = field(c, "I'm someone who…", Store.identity)
         AlertDialog.Builder(c)
             .setTitle("Who are you becoming?")
             .setView(LinearLayout(c).apply { setPadding(Ui.dp(c,20),Ui.dp(c,8),Ui.dp(c,20),0); addView(input) })
             .setPositiveButton("This is who I'm becoming") { _, _ -> Store.updateIdentity(input.text.toString()); refresh() }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun shieldCard(c: Context, hour: Int) {
-        if (!Perms.coreReady(c)) {
-            val card = Ui.card(c)
-            card.addView(Ui.eyebrow(c, "Shield · offline"))
-            card.addView(Ui.title(c, "Your shield isn't armed yet.", 18f).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,8)) })
-            card.addView(Ui.body(c, "Blocking needs a few system permissions. It takes about a minute."))
-            val b = Ui.primary(c, "Finish setup").also { it.setPadding(0, Ui.dp(c,12),0,0) }
-            b.setOnClickListener { Ui.haptic(it); startActivity(Intent(c, OnboardingActivity::class.java)) }
-            card.addView(Ui.spacer(c,12)); card.addView(b)
-            col.addView(card); return
-        }
-        val nowMin = LocalTime.now().let { it.hour * 60 + it.minute }
-        val dow = LocalDate.now().dayOfWeek.value
-        val active = Store.rules.count { it.activeNow(nowMin, dow) }
-        val card = Ui.card(c)
-        card.addView(Ui.eyebrow(c, "Shield"))
-        val headline = when {
-            Store.focusActive() -> "Focus session running."
-            active > 0 -> "$active ${if (active==1) "boundary" else "boundaries"} holding right now."
-            Store.rules.any { it.enabled } -> "Armed and watching."
-            else -> "No boundaries set."
-        }
-        card.addView(Ui.title(c, headline, 18f).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,10)) })
-        card.addView(Ui.body(c, "${Store.resistedToday()} urges turned away today · ${Store.interceptionsToday()} times Margin stepped in."))
-        col.addView(card)
-    }
-
-    private fun focusCard(c: Context) {
-        val fcard = Ui.card(c)
-        if (Store.focusActive()) {
-            fcard.addView(Ui.eyebrow(c, "Focus session"))
-            val ringRow = Ui.row(c).also { it.setPadding(0, Ui.dp(c,12),0, Ui.dp(c,4)) }
-            val ring = RingView(c).apply {
-                setProgress(((Store.focusTotalMs - Store.focusRemainingMs()).toFloat()) / Store.focusTotalMs.coerceAtLeast(1))
-                setCenterText(mmss(Store.focusRemainingMs())); setSubText("left")
-                layoutParams = LinearLayout.LayoutParams(Ui.dp(c,104), Ui.dp(c,104))
-            }
-            focusRing = ring
-            val rcol = LinearLayout(c).apply {
-                orientation = LinearLayout.VERTICAL
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { it.marginStart = Ui.dp(c,16) }
-            }
-            rcol.addView(Ui.title(c, "Sealed off.", 18f))
-            rcol.addView(Ui.body(c, "Stay with what matters. Margin has the rest.").also { it.setPadding(0, Ui.dp(c,4),0,0) })
-            ringRow.addView(ring); ringRow.addView(rcol)
-            fcard.addView(ringRow)
-            val end = Ui.ghost(c, "End focus early").also { it.setPadding(0, Ui.dp(c,12),0,0) }
-            end.setOnClickListener { Ui.haptic(it); Store.stopFocus(); refresh() }
-            fcard.addView(Ui.spacer(c,12)); fcard.addView(end)
-            handler.removeCallbacks(tick); handler.post(tick)
-        } else {
-            fcard.addView(Ui.eyebrow(c, "Focus now"))
-            fcard.addView(Ui.title(c, "Seal off distractions, right now.", 18f).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,8)) })
-            fcard.addView(Ui.body(c, "Blocks every app in your rules for a set stretch — no schedule needed."))
-            val rowB = Ui.row(c).also { it.setPadding(0, Ui.dp(c,12),0,0) }
-            listOf(25, 45, 60).forEachIndexed { i, m ->
-                val btn = Ui.ghost(c, "${m}m").apply {
-                    layoutParams = LinearLayout.LayoutParams(0, Ui.dp(c,46), 1f).also { if (i>0) it.marginStart = Ui.dp(c,8) }
-                }
-                btn.setOnClickListener { Ui.haptic(it); startFocus(m) }
-                rowB.addView(btn)
-            }
-            fcard.addView(rowB)
-        }
-        col.addView(fcard)
-    }
-
-    private fun reflectionCard(c: Context): View {
-        val card = Ui.card(c)
-        val existing = Store.dayNoteFor(Store.today())
-        card.addView(Ui.eyebrow(c, "Before the day closes"))
-        card.addView(Ui.title(c, "How close were you to that person today?", 17f).also { it.setPadding(0, Ui.dp(c,8),0, Ui.dp(c,12)) })
-
-        var sel = existing?.alignment ?: -1
-        val labels = listOf("Drifted", "Some of the day", "That was me")
-        val pillRow = Ui.row(c)
-        val pills = mutableListOf<TextView>()
-        val note = field(c, "One line, if you want — what pulled you, or what worked.", existing?.note ?: "")
-        val save = Ui.primary(c, if (existing == null) "Close the day" else "Update").also { it.setPadding(0, Ui.dp(c,12),0,0) }
-        fun restyle() {
-            pills.forEachIndexed { i, p ->
-                val on = i == sel
-                p.setTextColor(if (on) Ui.SAGE else Ui.MUTED)
-                p.backgroundTintList = ColorStateList.valueOf(if (on) Ui.SELECT else Ui.SURFACE2)
-            }
-            save.isEnabled = sel >= 0; save.alpha = if (sel >= 0) 1f else 0.45f
-        }
-        labels.forEachIndexed { i, l ->
-            val p = choicePill(c, l, i == sel) { sel = i; restyle() }
-            p.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { if (i>0) it.marginStart = Ui.dp(c,8) }
-            pills.add(p); pillRow.addView(p)
-        }
-        card.addView(pillRow)
-        card.addView(note)
-        save.setOnClickListener {
-            if (sel < 0) return@setOnClickListener
-            Ui.haptic(it); Store.setDayNote(Store.today(), sel, note.text.toString()); refresh()
-        }
-        card.addView(save)
-        restyle()
-        return card
+            .setNegativeButton("Cancel", null).show()
     }
 
     private fun startFocus(min: Int) {
@@ -250,26 +273,6 @@ class TodayFragment : BaseFragment() {
         if (union.isEmpty()) { Toast.makeText(c, "Add a rule with some apps first", Toast.LENGTH_SHORT).show(); return }
         if (!Perms.coreReady(c)) { startActivity(Intent(c, OnboardingActivity::class.java)); return }
         Store.startFocus(union, min); MonitorService.start(c); refresh()
-    }
-
-    private fun habitRow(c: Context, h: Habit): View {
-        val row = Ui.row(c).also { it.setPadding(0, Ui.dp(c,6),0, Ui.dp(c,6)) }
-        val done = Store.isDoneToday(h)
-        val tcol = LinearLayout(c).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-        tcol.addView(Ui.body(c, h.name, Ui.TEXT, 15f))
-        tcol.addView(Ui.body(c, "${Store.currentStreak(h)}-day streak", Ui.FAINT, 12f))
-        val check = TextView(c).apply {
-            text = if (done) "✓" else ""; gravity = Gravity.CENTER; textSize = 18f; setTextColor(Ui.INK)
-            background = ContextCompat.getDrawable(c, R.drawable.circle)
-            backgroundTintList = ColorStateList.valueOf(if (done) Ui.SAGE else Ui.SURFACE2)
-            layoutParams = LinearLayout.LayoutParams(Ui.dp(c,38), Ui.dp(c,38))
-            setOnClickListener { Ui.haptic(this); Store.toggleToday(h); refresh() }
-        }
-        row.addView(tcol); row.addView(check)
-        return row
     }
 }
 
@@ -315,13 +318,14 @@ class ShieldFragment : BaseFragment() {
         titleRow.addView(Ui.title(c, r.name, 17f))
         if (Store.isLocked(r)) titleRow.addView(TextView(c).apply { text = "  🔒"; textSize = 13f })
         tcol.addView(titleRow)
+        val isBlock = r.mode == Mode.BLOCK
         val modeChip = TextView(c).apply {
-            text = if (r.mode == Mode.BLOCK) "BLOCK" else "FRICTION"
-            textSize = 10f; letterSpacing = 0.12f
-            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
-            setTextColor(if (r.mode == Mode.BLOCK) Ui.CLAY else Ui.SAGE)
-            setPadding(Ui.dp(c,8), Ui.dp(c,3), Ui.dp(c,8), Ui.dp(c,3))
+            text = (if (isBlock) "Block · hard stop" else "Friction · 12s pause").uppercase()
+            textSize = 9f; letterSpacing = 0.08f; typeface = Ui.monoMed(c)
+            setTextColor(if (isBlock) Ui.SAGE else Ui.TERRA)
+            setPadding(Ui.dp(c,11), Ui.dp(c,6), Ui.dp(c,11), Ui.dp(c,6))
             background = ContextCompat.getDrawable(c, R.drawable.pill)
+            backgroundTintList = ColorStateList.valueOf(if (isBlock) 0xFFE8EDE2.toInt() else 0xFFF2E7D4.toInt())
         }
         tcol.addView(LinearLayout(c).apply { setPadding(0, Ui.dp(c,6),0,0); addView(modeChip) })
 

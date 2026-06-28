@@ -4,7 +4,7 @@
     <style name="Theme.Anchor" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/sage</item>
         <item name="colorOnPrimary">@color/ink_on_accent</item>
-        <item name="colorSecondary">@color/clay</item>
+        <item name="colorSecondary">@color/terra</item>
         <item name="android:colorBackground">@color/bg</item>
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/text</item>
@@ -13,22 +13,22 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:textColorPrimary">@color/text</item>
         <item name="android:textColorSecondary">@color/muted</item>
-        <item name="android:fontFamily">sans-serif</item>
     </style>
 
-    <!-- Intercept screen: opaque paper, no animation in. -->
+    <!-- Intercept screen: dark warm paper, light icons. -->
     <style name="Theme.Anchor.Intercept" parent="Theme.Anchor">
         <item name="android:windowBackground">@color/intercept_bg</item>
+        <item name="android:statusBarColor">@color/intercept_bg</item>
+        <item name="android:navigationBarColor">@color/intercept_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowAnimationStyle">@null</item>
     </style>
 
-    <!-- Editorial tracked label, used for section eyebrows. -->
     <style name="Label.Eyebrow" parent="">
-        <item name="android:textColor">@color/muted</item>
-        <item name="android:textSize">11sp</item>
-        <item name="android:letterSpacing">0.16</item>
+        <item name="android:textColor">@color/faint</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:letterSpacing">0.18</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
 </resources>

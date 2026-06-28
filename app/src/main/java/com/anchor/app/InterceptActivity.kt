@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.HapticFeedbackConstants
@@ -46,6 +47,7 @@ class InterceptActivity : AppCompatActivity() {
         b.root.alpha = 0f
         b.root.animate().alpha(1f).setDuration(200).start()
         b.root.post { b.root.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) }
+        styleDark()
 
         pkg = intent.getStringExtra(EXTRA_PKG) ?: run { finish(); return }
         mode = Mode.valueOf(intent.getStringExtra(EXTRA_MODE) ?: "BLOCK")
@@ -59,6 +61,23 @@ class InterceptActivity : AppCompatActivity() {
         })
 
         if (mode == Mode.BLOCK) renderBlock() else renderFriction()
+    }
+
+    /** Editorial dark styling: serif + mono on warm-black paper. */
+    private fun styleDark() {
+        val cream = 0xFFF4EFE5.toInt(); val ink = 0xFF16130E.toInt(); val soft = 0xFFB9AE9B.toInt()
+        b.mark.visibility = View.GONE
+        b.eyebrow.typeface = Ui.monoMed(this); b.eyebrow.setTextColor(Ui.ACC_GLOW)
+        b.headline.typeface = Ui.serif(this); b.headline.setTextColor(Ui.DARK_TEXT); b.headline.textSize = 32f
+        b.appLine.typeface = Ui.sans(this); b.appLine.setTextColor(soft)
+        b.sub.typeface = Ui.serifItalic(this); b.sub.setTextColor(cream); b.sub.textSize = 19f
+        b.breathCount.typeface = Ui.serif(this); b.breathCount.setTextColor(Ui.DARK_TEXT)
+        b.breathOrb.backgroundTintList = ColorStateList.valueOf(Ui.SAGE)
+        b.btnPrimary.backgroundTintList = ColorStateList.valueOf(cream)
+        b.btnPrimary.setTextColor(ink); b.btnPrimary.typeface = Ui.sans(this)
+        b.btnSecondary.setTextColor(Ui.ACC_GLOW); b.btnSecondary.typeface = Ui.sans(this)
+        b.btnReplace.setTextColor(Ui.DARK_TEXT); b.btnReplace.typeface = Ui.sans(this)
+        b.btnReplace.strokeColor = ColorStateList.valueOf(0x33FFFFFF)
     }
 
     private fun appName(): String = try {

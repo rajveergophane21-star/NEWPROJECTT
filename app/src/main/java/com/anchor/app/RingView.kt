@@ -17,7 +17,7 @@ class RingView @JvmOverloads constructor(
     private var progress = 0f
     private var centerText = ""
     private var subText = ""
-    private var activeColor = 0xFFC2674A.toInt()
+    private var activeColor = 0xFF3B5141.toInt()
     private val trackColor = 0xFFE7E4DD.toInt()
 
     private val trackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND }
