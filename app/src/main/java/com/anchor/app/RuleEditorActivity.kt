@@ -34,8 +34,8 @@ class RuleEditorActivity : AppCompatActivity() {
     private lateinit var stepSub: TextView
     private lateinit var preview: TextView
     private lateinit var container: FrameLayout
-    private lateinit var backBtn: com.google.android.material.button.MaterialButton
-    private lateinit var nextBtn: com.google.android.material.button.MaterialButton
+    private lateinit var backBtn: TextView
+    private lateinit var nextBtn: TextView
 
     private var step = 0
     private var firstRun = false
@@ -98,7 +98,7 @@ class RuleEditorActivity : AppCompatActivity() {
     private fun buildChrome(): View {
         val rootV = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(0xFFF4EFE5.toInt())
+            setBackgroundColor(0xFF1A1C2C.toInt())
             fitsSystemWindows = true
             setPadding(Ui.dp(this@RuleEditorActivity,20), Ui.dp(this@RuleEditorActivity,16), Ui.dp(this@RuleEditorActivity,20), Ui.dp(this@RuleEditorActivity,16))
         }
@@ -372,8 +372,8 @@ class RuleEditorActivity : AppCompatActivity() {
             box ?: return
             box.backgroundTintList = ColorStateList.valueOf(when {
                 !on -> Ui.SURFACE2
-                block -> 0xFFE8EDE2.toInt()    // green tint
-                else -> 0xFFF2E7D4.toInt()      // ochre tint
+                block -> 0xFF29366F.toInt()    // green tint
+                else -> 0xFF29366F.toInt()      // ochre tint
             })
             val head = box.getChildAt(0) as LinearLayout
             (head.getChildAt(0) as TextView).setTextColor(if (!on) Ui.TEXT else if (block) Ui.SAGE else Ui.TERRA)

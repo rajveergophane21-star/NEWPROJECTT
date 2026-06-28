@@ -130,7 +130,7 @@ class TodayFragment : BaseFragment() {
         }
         val dot = View(c).apply {
             background = ContextCompat.getDrawable(c, R.drawable.circle)
-            backgroundTintList = ColorStateList.valueOf(if (armed) Ui.SAGE else 0xFFC9BFAD.toInt())
+            backgroundTintList = ColorStateList.valueOf(if (armed) Ui.SAGE else 0xFF566C86.toInt())
             layoutParams = LinearLayout.LayoutParams(Ui.dp(c,8), Ui.dp(c,8)).also { it.marginEnd = Ui.dp(c,14) }
         }
         val tcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
@@ -239,8 +239,8 @@ class TodayFragment : BaseFragment() {
         fun restyle() {
             pills.forEachIndexed { i, p ->
                 val on = i == sel
-                p.setTextColor(if (on) Ui.DARK_TEXT else 0xFF8E8675.toInt())
-                p.backgroundTintList = ColorStateList.valueOf(if (on) 0xFF35312A.toInt() else 0xFF2B2820.toInt())
+                p.setTextColor(if (on) Ui.DARK_TEXT else 0xFF94B0C2.toInt())
+                p.backgroundTintList = ColorStateList.valueOf(if (on) 0xFF333C57.toInt() else 0xFF29366F.toInt())
             }
         }
         labels.forEachIndexed { i, l ->
@@ -331,7 +331,7 @@ class ShieldFragment : BaseFragment() {
             setTextColor(if (isBlock) Ui.SAGE else Ui.TERRA)
             setPadding(Ui.dp(c,11), Ui.dp(c,6), Ui.dp(c,11), Ui.dp(c,6))
             background = ContextCompat.getDrawable(c, R.drawable.pill)
-            backgroundTintList = ColorStateList.valueOf(if (isBlock) 0xFFE8EDE2.toInt() else 0xFFF2E7D4.toInt())
+            backgroundTintList = ColorStateList.valueOf(if (isBlock) 0xFF29366F.toInt() else 0xFF29366F.toInt())
         }
         tcol.addView(LinearLayout(c).apply { setPadding(0, Ui.dp(c,6),0,0); addView(modeChip) })
 
@@ -677,7 +677,7 @@ class InsightsFragment : BaseFragment() {
                     .also { it.marginStart = Ui.dp(c,2); it.marginEnd = Ui.dp(c,2) }
             }
             colmn.addView(View(c).apply { layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, (max - total).toFloat()) })
-            if (proceeded[i] > 0) colmn.addView(View(c).apply { setBackgroundColor(0xFFD8CFC4.toInt()); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, proceeded[i].toFloat()) })
+            if (proceeded[i] > 0) colmn.addView(View(c).apply { setBackgroundColor(0xFF566C86.toInt()); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, proceeded[i].toFloat()) })
             if (resisted[i] > 0) colmn.addView(View(c).apply { setBackgroundColor(Ui.SAGE); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, resisted[i].toFloat()) })
             row.addView(colmn)
         }

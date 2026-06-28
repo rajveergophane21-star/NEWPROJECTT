@@ -1,32 +1,8 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <!-- The margin: a single clay rule down the page -->
-    <path
-        android:strokeColor="#C2674A"
-        android:strokeWidth="5"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M42,30 L42,78" />
-    <!-- The text it frames -->
-    <path
-        android:strokeColor="#1C1C1C"
-        android:strokeWidth="5"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M52,40 L82,40" />
-    <path
-        android:strokeColor="#1C1C1C"
-        android:strokeWidth="5"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M52,54 L74,54" />
-    <path
-        android:strokeColor="#1C1C1C"
-        android:strokeWidth="5"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M52,68 L82,68" />
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- 16px lantern, each pixel = 4px, offset 22 (keeps the adaptive safe zone) -->
+    <path android:fillColor="#FFCD75" android:pathData="M42,38 h24 v28 h-24 z" />
+    <path android:fillColor="#FFF3C4" android:pathData="M50,46 h8 v16 h-8 z" />
+    <path android:fillColor="#566C86" android:pathData="M38,38 h4 v28 h-4 z M66,38 h4 v28 h-4 z M42,34 h24 v4 h-24 z M42,74 h24 v4 h-24 z" />
+    <path android:fillColor="#94B0C2" android:pathData="M42,30 h24 v4 h-24 z M42,70 h24 v4 h-24 z M50,22 h8 v4 h-8 z M46,26 h4 v4 h-4 z M58,26 h4 v4 h-4 z M46,78 h16 v4 h-16 z" />
 </vector>

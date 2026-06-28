@@ -65,7 +65,7 @@ class InterceptActivity : AppCompatActivity() {
 
     /** Editorial dark styling: serif + mono on warm-black paper. */
     private fun styleDark() {
-        val cream = 0xFFF4EFE5.toInt(); val ink = 0xFF16130E.toInt(); val soft = 0xFFB9AE9B.toInt()
+        val cream = 0xFFFFCD75.toInt(); val ink = 0xFF1A1C2C.toInt(); val soft = 0xFF94B0C2.toInt()
         b.mark.visibility = View.GONE
         b.eyebrow.typeface = Ui.monoMed(this); b.eyebrow.setTextColor(Ui.ACC_GLOW)
         b.headline.typeface = Ui.serif(this); b.headline.setTextColor(Ui.DARK_TEXT); b.headline.textSize = 32f
@@ -133,7 +133,7 @@ class InterceptActivity : AppCompatActivity() {
 
         // A ring fills behind the breathing orb as the pause elapses.
         frictionRing = RingView(this).apply {
-            setActiveColor(0xFFC2674A.toInt())
+            setActiveColor(Ui.SAGE)
             layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         }
         b.breathWrap.addView(frictionRing, 0)

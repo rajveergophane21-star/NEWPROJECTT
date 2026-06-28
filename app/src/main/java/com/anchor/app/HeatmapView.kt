@@ -15,7 +15,7 @@ class HeatmapView @JvmOverloads constructor(
     private var done = BooleanArray(0)
     private var weeks = 16
     private var activeColor = 0xFF3B5141.toInt()
-    private val emptyColor = 0xFFEBE4D6.toInt()
+    private val emptyColor = 0xFF333C57.toInt()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val rect = RectF()
 

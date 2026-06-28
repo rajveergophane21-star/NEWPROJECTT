@@ -1,35 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Margin "editorial" — warm cream paper, evergreen accent, ink text. -->
-    <color name="bg">#F4EFE5</color>
-    <color name="surface">#FFFFFF</color>
-    <color name="surface2">#FBF8F1</color>
-    <color name="line">#E7DECE</color>
-    <color name="card_border">#EBE3D5</color>
-    <color name="text">#1B1813</color>
-    <color name="muted">#6E6456</color>
-    <color name="faint">#A99D89</color>
+    <!-- Margin "pixel" — based on the Sweetie 16 palette (GrafxKid). Cozy night RPG. -->
+    <color name="bg">#1A1C2C</color>           <!-- night -->
+    <color name="surface">#333C57</color>       <!-- panel face -->
+    <color name="surface2">#29366F</color>      <!-- recessed (inputs) -->
+    <color name="panel_hi">#566C86</color>      <!-- bevel highlight -->
+    <color name="panel_sh">#1A1C2C</color>      <!-- bevel shadow -->
+    <color name="line">#566C86</color>
+    <color name="card_border">#1A1C2C</color>
+    <color name="text">#F4F4F4</color>
+    <color name="muted">#94B0C2</color>
+    <color name="faint">#566C86</color>
 
-    <!-- Evergreen accent + its tints -->
-    <color name="sage">#3B5141</color>
-    <color name="sage_deep">#2B3A2E</color>
-    <color name="accent_soft">#E7ECE0</color>
-    <color name="accent_glow">#9DB48F</color>
-    <color name="accent_text">#36493A</color>
-    <color name="ink_on_accent">#F6F1E7</color>
+    <!-- Accent: warm gold -->
+    <color name="sage">#FFCD75</color>
+    <color name="sage_deep">#C79A3E</color>
+    <color name="gold_hi">#FFE9A8</color>
+    <color name="accent_soft">#3E3A2A</color>
+    <color name="accent_glow">#FFCD75</color>
+    <color name="accent_text">#FFCD75</color>
+    <color name="ink_on_accent">#1A1C2C</color>
 
-    <!-- Warm tones for chips / destructive -->
-    <color name="clay">#7E332B</color>
-    <color name="terra">#8A5A20</color>
-    <color name="friction_bg">#F2E7D4</color>
-    <color name="block_bg">#E8EDE2</color>
+    <!-- Status colours from the palette -->
+    <color name="green">#A7F070</color>
+    <color name="blue">#41A6F6</color>
+    <color name="clay">#B13E53</color>        <!-- danger -->
+    <color name="terra">#EF7D57</color>       <!-- orange / friction -->
 
-    <!-- Dark surfaces (reflection card, intercept) -->
-    <color name="dark_card">#232019</color>
-    <color name="dark_text">#F1EAD9</color>
-    <color name="intercept_bg">#16130E</color>
+    <color name="dark_card">#29366F</color>
+    <color name="dark_text">#F4F4F4</color>
+    <color name="intercept_bg">#1A1C2C</color>
 
-    <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
-    <color name="icon_bg">#F4EFE5</color>
+    <color name="white">#F4F4F4</color>
+    <color name="black">#1A1C2C</color>
+    <color name="icon_bg">#1A1C2C</color>
 </resources>

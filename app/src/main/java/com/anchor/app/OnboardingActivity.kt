@@ -21,7 +21,7 @@ class OnboardingActivity : AppCompatActivity() {
 
     private lateinit var root: LinearLayout
     private val steps = mutableListOf<StepView>()
-    private lateinit var doneBtn: com.google.android.material.button.MaterialButton
+    private lateinit var doneBtn: TextView
     private var progressText: TextView? = null
     private var identityInput: android.widget.EditText? = null
     private var prevReady = false
@@ -151,7 +151,7 @@ class OnboardingActivity : AppCompatActivity() {
         val optional: Boolean = false
     ) {
         private lateinit var chip: TextView
-        private lateinit var btn: com.google.android.material.button.MaterialButton
+        private lateinit var btn: TextView
 
         fun build(): View {
             val c = Ui.card(this@OnboardingActivity)
@@ -178,7 +178,7 @@ class OnboardingActivity : AppCompatActivity() {
             val ok = granted()
             chip.text = if (ok) "Granted" else if (optional) "Optional" else "Needed"
             chip.setTextColor(if (ok) Ui.SAGE else Ui.MUTED)
-            chip.backgroundTintList = ColorStateList.valueOf(if (ok) 0xFFE8EDE2.toInt() else Ui.SURFACE2)
+            chip.backgroundTintList = ColorStateList.valueOf(if (ok) 0xFF29366F.toInt() else Ui.SURFACE2)
             btn.visibility = if (ok) View.GONE else View.VISIBLE
         }
     }

@@ -17,36 +17,42 @@ import com.google.android.material.button.MaterialButton
 
 /** The Margin editorial design kit: warm paper, evergreen accent, serif + mono + sans. */
 object Ui {
-    // palette
-    const val TEXT = 0xFF1B1813.toInt()
-    const val MUTED = 0xFF6E6456.toInt()
-    const val FAINT = 0xFFA99D89.toInt()
-    const val SAGE = 0xFF3B5141.toInt()        // evergreen accent
-    const val ACC_SOFT = 0xFFE7ECE0.toInt()
-    const val ACC_TEXT = 0xFF36493A.toInt()
-    const val ACC_GLOW = 0xFF9DB48F.toInt()
-    const val INK = 0xFFF6F1E7.toInt()         // text on accent / on dark
-    const val SURFACE2 = 0xFFFBF8F1.toInt()
-    const val LINE = 0xFFE7DECE.toInt()
-    const val CARD_BORDER = 0xFFEBE3D5.toInt()
-    const val SELECT = 0xFFE7ECE0.toInt()
-    const val CLAY = 0xFF7E332B.toInt()
-    const val TERRA = 0xFF8A5A20.toInt()
-    const val DARK = 0xFF232019.toInt()
-    const val DARK_TEXT = 0xFFF1EAD9.toInt()
+    // palette — Sweetie 16 (cozy pixel night)
+    const val TEXT = 0xFFF4F4F4.toInt()
+    const val MUTED = 0xFF94B0C2.toInt()
+    const val FAINT = 0xFF566C86.toInt()
+    const val SAGE = 0xFFFFCD75.toInt()        // gold accent (the lantern glow)
+    const val GREEN = 0xFFA7F070.toInt()       // success / done
+    const val BLUE = 0xFF41A6F6.toInt()        // info
+    const val ACC_SOFT = 0xFF29366F.toInt()
+    const val ACC_TEXT = 0xFFFFCD75.toInt()
+    const val ACC_GLOW = 0xFFFFCD75.toInt()
+    const val INK = 0xFF1A1C2C.toInt()         // dark text on accent / on light
+    const val SURFACE = 0xFF333C57.toInt()
+    const val SURFACE2 = 0xFF29366F.toInt()
+    const val LINE = 0xFF566C86.toInt()
+    const val CARD_BORDER = 0xFF1A1C2C.toInt()
+    const val SELECT = 0xFF3E3A2A.toInt()
+    const val CLAY = 0xFFB13E53.toInt()        // danger
+    const val TERRA = 0xFFEF7D57.toInt()       // orange / friction
+    const val DARK = 0xFF29366F.toInt()
+    const val DARK_TEXT = 0xFFF4F4F4.toInt()
 
-    // fonts (cached)
-    private var serifT: Typeface? = null
-    private var serifItalicT: Typeface? = null
-    private var monoT: Typeface? = null
-    private var monoMedT: Typeface? = null
-    private var sansT: Typeface? = null
+    // fonts (cached) — pixel set: Pixelify Sans (display/body), Silkscreen (labels),
+    // VT323 (numerals/timers), Press Start 2P (logo wordmark).
+    private var pixT: Typeface? = null
+    private var silkT: Typeface? = null
+    private var silkBoldT: Typeface? = null
+    private var vtT: Typeface? = null
+    private var pressT: Typeface? = null
 
-    fun serif(c: Context): Typeface = serifT ?: ResourcesCompat.getFont(c, R.font.instrument_serif_regular)!!.also { serifT = it }
-    fun serifItalic(c: Context): Typeface = serifItalicT ?: ResourcesCompat.getFont(c, R.font.instrument_serif_italic)!!.also { serifItalicT = it }
-    fun mono(c: Context): Typeface = monoT ?: ResourcesCompat.getFont(c, R.font.ibm_plex_mono_regular)!!.also { monoT = it }
-    fun monoMed(c: Context): Typeface = monoMedT ?: ResourcesCompat.getFont(c, R.font.ibm_plex_mono_medium)!!.also { monoMedT = it }
-    fun sans(c: Context): Typeface = sansT ?: ResourcesCompat.getFont(c, R.font.hanken_grotesk)!!.also { sansT = it }
+    fun serif(c: Context): Typeface = pixT ?: ResourcesCompat.getFont(c, R.font.pixelify_sans)!!.also { pixT = it }
+    fun serifItalic(c: Context): Typeface = serif(c)
+    fun sans(c: Context): Typeface = serif(c)
+    fun mono(c: Context): Typeface = silkT ?: ResourcesCompat.getFont(c, R.font.silkscreen)!!.also { silkT = it }
+    fun monoMed(c: Context): Typeface = silkBoldT ?: ResourcesCompat.getFont(c, R.font.silkscreen_bold)!!.also { silkBoldT = it }
+    fun vt(c: Context): Typeface = vtT ?: ResourcesCompat.getFont(c, R.font.vt323)!!.also { vtT = it }
+    fun press(c: Context): Typeface = pressT ?: ResourcesCompat.getFont(c, R.font.press_start_2p)!!.also { pressT = it }
 
     private fun TextView.weight(w: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) fontVariationSettings = "'wght' $w"
@@ -112,18 +118,24 @@ object Ui {
         setLineSpacing(dp(c, 3).toFloat(), 1f)
     }
 
-    fun primary(c: Context, t: String): MaterialButton = MaterialButton(c).apply {
-        text = t; setTextColor(INK); textSize = 15f; typeface = sans(c); weight(600)
-        backgroundTintList = ColorStateList.valueOf(SAGE)
-        cornerRadius = dp(c, 14); isAllCaps = false
-        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(c, 52))
+    /** Raised gold pixel button. */
+    fun primary(c: Context, t: String): TextView = TextView(c).apply {
+        text = t; gravity = Gravity.CENTER; setTextColor(INK); textSize = 14f
+        typeface = serif(c); weight(700); includeFontPadding = false
+        background = ContextCompat.getDrawable(c, R.drawable.btn_primary)
+        setPadding(dp(c,16), dp(c,12), dp(c,18), dp(c,16))
+        isClickable = true; isFocusable = true
+        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
-    fun ghost(c: Context, t: String): MaterialButton = MaterialButton(c,
-        null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-        text = t; setTextColor(TEXT); textSize = 15f; isAllCaps = false; typeface = sans(c); weight(600)
-        cornerRadius = dp(c, 14); strokeColor = ColorStateList.valueOf(CARD_BORDER)
-        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(c, 52))
+    /** Raised panel-coloured pixel button. */
+    fun ghost(c: Context, t: String): TextView = TextView(c).apply {
+        text = t; gravity = Gravity.CENTER; setTextColor(TEXT); textSize = 14f
+        typeface = serif(c); weight(600); includeFontPadding = false
+        background = ContextCompat.getDrawable(c, R.drawable.btn_ghost)
+        setPadding(dp(c,16), dp(c,12), dp(c,18), dp(c,16))
+        isClickable = true; isFocusable = true
+        layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
     fun hairline(c: Context) = View(c).apply {
@@ -140,9 +152,9 @@ object Ui {
         })
     }
 
-    /** Big serif numeral. */
-    fun numeral(c: Context, n: String, size: Float = 28f, color: Int = TEXT) = TextView(c).apply {
-        text = n; setTextColor(color); textSize = size; typeface = serif(c); includeFontPadding = false
+    /** Big pixel numeral (VT323, monospaced). */
+    fun numeral(c: Context, n: String, size: Float = 36f, color: Int = TEXT) = TextView(c).apply {
+        text = n; setTextColor(color); textSize = size; typeface = vt(c); includeFontPadding = false
     }
 
     fun emptyState(c: Context, kicker: String, line: String, sentence: String): LinearLayout =
@@ -180,7 +192,7 @@ object Ui {
         com.google.android.material.materialswitch.MaterialSwitch(c).apply {
             val st = arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf())
             thumbTintList = ColorStateList(st, intArrayOf(INK, 0xFFFFFFFF.toInt()))
-            trackTintList = ColorStateList(st, intArrayOf(SAGE, 0xFFD8CFC4.toInt()))
+            trackTintList = ColorStateList(st, intArrayOf(SAGE, 0xFF566C86.toInt()))
             trackDecorationTintList = ColorStateList.valueOf(0x00000000)
         }
 
