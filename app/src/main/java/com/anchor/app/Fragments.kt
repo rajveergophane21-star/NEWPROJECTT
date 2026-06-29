@@ -19,25 +19,25 @@ import java.time.LocalTime
 class BlocksFragment : BaseFragment() {
     override fun render() {
         val c = requireContext()
-        col.addView(Ui.eyebrow(c, "Margin"))
-        col.addView(Ui.display(c, "Blocks").also { it.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 16)) })
+        col.addView(Ui.eyebrow(c, "Tame"))
+        col.addView(Ui.display(c, "Rules").also { it.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 16)) })
 
         if (!Perms.coreReady(c)) {
             val card = Ui.card(c)
             card.addView(Ui.title(c, "Finish setup", 16f))
-            card.addView(Ui.body(c, "Blocking won't work until permissions are granted.").also { it.setPadding(0, Ui.dp(c, 6), 0, Ui.dp(c, 12)) })
+            card.addView(Ui.body(c, "Rules won't take effect until permissions are granted.").also { it.setPadding(0, Ui.dp(c, 6), 0, Ui.dp(c, 12)) })
             val btn = Ui.ghost(c, "Finish setup")
             btn.setOnClickListener { startActivity(Intent(c, OnboardingActivity::class.java)) }
             card.addView(btn); col.addView(card)
         }
 
-        val add = Ui.primary(c, "New block")
+        val add = Ui.primary(c, "New rule")
         add.setOnClickListener { Ui.haptic(it); startActivity(Intent(c, RuleEditorActivity::class.java)) }
         col.addView(add); col.addView(Ui.spacer(c, 18))
 
         if (Store.rules.isEmpty()) {
-            col.addView(Ui.emptyState(c, "Blocks", "Nothing blocked yet.",
-                "Add a block: choose the apps, when they're off-limits, and what happens when you reach for them."))
+            col.addView(Ui.emptyState(c, "Rules", "Nothing tamed yet.",
+                "Add a rule: pick an app or its short-form feed, when it's off-limits, and what happens when you reach for it."))
             return
         }
 
@@ -54,29 +54,19 @@ class BlocksFragment : BaseFragment() {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
         tcol.addView(Ui.title(c, r.name, 17f))
+
         val isBlock = r.mode == Mode.BLOCK
-        val chip = TextView(c).apply {
-            text = (if (isBlock) "Block" else "Friction").uppercase()
-            textSize = 10f; letterSpacing = 0.08f; typeface = Ui.monoMed(c)
-            setTextColor(if (isBlock) Ui.ACC_TEXT else 0xFF8A4E0E.toInt())
-            setPadding(Ui.dp(c, 10), Ui.dp(c, 5), Ui.dp(c, 10), Ui.dp(c, 5))
-            background = ContextCompat.getDrawable(c, R.drawable.pill)
-            backgroundTintList = ColorStateList.valueOf(if (isBlock) 0xFFF6E2CE.toInt() else 0xFFF3E6C6.toInt())
-        }
-        val chipRow = LinearLayout(c).apply { setPadding(0, Ui.dp(c, 6), 0, 0); gravity = Gravity.CENTER_VERTICAL; addView(chip) }
+        val isFeed = r.kind == Kind.FEED
+        val chipRow = LinearLayout(c).apply { setPadding(0, Ui.dp(c, 8), 0, 0); gravity = Gravity.CENTER_VERTICAL }
+        chipRow.addView(Ui.chip(c, if (isFeed) "Feed" else "App", Ui.MUTED, Ui.SURFACE2)
+            .also { (it.layoutParams as? LinearLayout.LayoutParams)?.marginEnd = Ui.dp(c, 6) })
+        chipRow.addView(Ui.chip(c, if (isBlock) "Block" else "Friction",
+            if (isBlock) Ui.CLAY else Ui.GREEN_TEXT, if (isBlock) Ui.CLAY_WASH else Ui.GREEN_WASH)
+            .also { (it.layoutParams as? LinearLayout.LayoutParams)?.marginEnd = Ui.dp(c, 6) })
         if (r.strict) {
             val locked = Store.isLocked(r)
-            val tag = TextView(c).apply {
-                text = if (locked) "LOCKED" else "COMMITTED"
-                textSize = 10f; letterSpacing = 0.08f; typeface = Ui.monoMed(c)
-                setTextColor(if (locked) Ui.CLAY else Ui.MUTED)
-                setPadding(Ui.dp(c, 10), Ui.dp(c, 5), Ui.dp(c, 10), Ui.dp(c, 5))
-                background = ContextCompat.getDrawable(c, R.drawable.pill)
-                backgroundTintList = ColorStateList.valueOf(Ui.SURFACE2)
-                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-                    .also { it.marginStart = Ui.dp(c, 6) }
-            }
-            chipRow.addView(tag)
+            chipRow.addView(Ui.chip(c, if (locked) "Locked" else "Committed",
+                if (locked) 0xFFB8860B.toInt() else Ui.MUTED, if (locked) 0xFFFBF3DC.toInt() else Ui.SURFACE2))
         }
         tcol.addView(chipRow)
 
@@ -91,11 +81,18 @@ class BlocksFragment : BaseFragment() {
         header.addView(tcol); header.addView(sw)
         card.addView(header)
 
-        val apps = if (r.packages.size == 1) "1 app" else "${r.packages.size} apps"
-        card.addView(Ui.body(c, apps, Ui.MUTED, 13f).also { it.setPadding(0, Ui.dp(c, 10), 0, Ui.dp(c, 2)) })
+        val targets = if (r.packages.size == 1) appLabel(c, r.packages.first()) else "${r.packages.size} apps"
+        val sub = if (isFeed) "$targets · ${FeedDetector.feedLabel(r.packages.first())}" else targets
+        card.addView(Ui.body(c, sub, Ui.MUTED, 13f).also { it.setPadding(0, Ui.dp(c, 12), 0, Ui.dp(c, 2)) })
         r.windows.forEach { card.addView(Ui.body(c, it.label(), Ui.MUTED, 13f)) }
+
+        if (isFeed && r.reelLimit != null) {
+            val used = Store.reelCountToday(r.packages.first())
+            card.addView(Ui.body(c, "$used / ${r.reelLimit} reels today",
+                if (used >= r.reelLimit!!) Ui.OVER else Ui.MUTED, 13f).also { it.setPadding(0, Ui.dp(c, 6), 0, 0) })
+        }
         if (r.activeNow(nowMin, dow)) {
-            card.addView(Ui.body(c, "● On now", Ui.ACC_TEXT, 12f).also { it.setPadding(0, Ui.dp(c, 8), 0, 0) })
+            card.addView(Ui.body(c, "● On now", Ui.ACC_TEXT, 12.5f).also { it.setPadding(0, Ui.dp(c, 8), 0, 0) })
         }
 
         card.setOnClickListener {
@@ -103,6 +100,10 @@ class BlocksFragment : BaseFragment() {
         }
         return card
     }
+
+    private fun appLabel(c: Context, pkg: String): String = try {
+        c.packageManager.getApplicationLabel(c.packageManager.getApplicationInfo(pkg, 0)).toString()
+    } catch (_: Exception) { pkg }
 }
 
 /* ============================== HABITS ============================== */
@@ -296,5 +297,247 @@ class HabitsFragment : BaseFragment() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+}
+
+/* =============================== HOME =============================== */
+
+class HomeFragment : BaseFragment() {
+    override fun render() {
+        val c = requireContext()
+        val hour = LocalTime.now().hour
+        val greeting = when {
+            hour < 5 -> "Still up?"
+            hour < 12 -> "Good morning"
+            hour < 17 -> "Good afternoon"
+            hour < 22 -> "Good evening"
+            else -> "Winding down"
+        }
+        val date = LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("EEEE, MMMM d"))
+
+        col.addView(Ui.eyebrow(c, date))
+        val titleRow = Ui.row(c).also { it.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 16)) }
+        titleRow.addView(Ui.display(c, greeting).also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
+        val bestStreak = Store.habits.maxOfOrNull { Store.currentStreak(it) } ?: 0
+        if (bestStreak > 0) titleRow.addView(Ui.chip(c, "⚡ $bestStreak", Ui.GREEN_TEXT, Ui.GREEN_WASH))
+        col.addView(titleRow)
+
+        if (!Perms.coreReady(c)) {
+            val card = Ui.card(c)
+            card.addView(Ui.title(c, "Finish setup", 16f))
+            card.addView(Ui.body(c, "Tame can't step in until permissions are granted.").also { it.setPadding(0, Ui.dp(c, 6), 0, Ui.dp(c, 12)) })
+            val btn = Ui.ghost(c, "Finish setup")
+            btn.setOnClickListener { startActivity(Intent(c, OnboardingActivity::class.java)) }
+            card.addView(btn); col.addView(card)
+        }
+
+        col.addView(heroCard(c))
+
+        // Active now
+        val nowMin = LocalTime.now().let { it.hour * 60 + it.minute }
+        val dow = LocalDate.now().dayOfWeek.value
+        val activeRules = Store.rules.filter { it.activeNow(nowMin, dow) }
+        col.addView(Ui.spacer(c, 4))
+        col.addView(Ui.sectionHeader(c, "Active now").also { it.setPadding(0, Ui.dp(c, 4), 0, Ui.dp(c, 12)) })
+        if (activeRules.isEmpty()) {
+            val card = Ui.card(c)
+            card.addView(Ui.body(c, if (Store.rules.isEmpty()) "No rules yet. Add one to give Frank a break." else "Nothing on right now — you're free.", Ui.MUTED, 14f))
+            val btn = Ui.ghost(c, if (Store.rules.isEmpty()) "New rule" else "Manage rules").also { it.setPadding(0, Ui.dp(c, 12), 0, Ui.dp(c, 12)) }
+            btn.setOnClickListener {
+                if (Store.rules.isEmpty()) startActivity(Intent(c, RuleEditorActivity::class.java))
+                else (activity as? MainActivity)?.goTab(1)
+            }
+            card.addView(Ui.spacer(c, 10)); card.addView(btn)
+            col.addView(card)
+        } else {
+            activeRules.forEach { r -> col.addView(activeRuleRow(c, r)) }
+        }
+
+        // Today's habits
+        if (Store.habits.isNotEmpty()) {
+            col.addView(Ui.spacer(c, 4))
+            col.addView(Ui.sectionHeader(c, "Today's habits").also { it.setPadding(0, Ui.dp(c, 4), 0, Ui.dp(c, 12)) })
+            val card = Ui.card(c)
+            Store.habits.forEachIndexed { i, h ->
+                if (i > 0) card.addView(Ui.hairline(c))
+                card.addView(habitQuickRow(c, h))
+            }
+            col.addView(card)
+        }
+    }
+
+    private fun heroCard(c: Context): View {
+        // Aggregate today's reels across feed rules.
+        val feedRules = Store.rules.filter { it.kind == Kind.FEED }
+        val pkgs = feedRules.flatMap { it.packages }.toSet()
+        val reels = pkgs.sumOf { Store.reelCountToday(it) }
+        val limit = feedRules.mapNotNull { it.reelLimit }.minOrNull()
+        val ratio = if (limit != null && limit > 0) reels.toFloat() / limit else 0f
+        val over = ratio >= 1f
+        val mood = when {
+            over -> "crying"
+            ratio >= 0.85f -> "worried"
+            ratio >= 0.5f -> "neutral"
+            reels > 0 -> "happy"
+            else -> "calm"
+        }
+
+        val card = LinearLayout(c).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = ContextCompat.getDrawable(c, if (over) R.drawable.card_dark else R.drawable.card)
+            setPadding(Ui.dp(c, 20), Ui.dp(c, 20), Ui.dp(c, 20), Ui.dp(c, 20))
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                .apply { bottomMargin = Ui.dp(c, 14) }
+        }
+        card.addView(Ui.frank(c, mood, 84).also { (it.layoutParams as LinearLayout.LayoutParams).marginEnd = Ui.dp(c, 16) })
+
+        val textColor = if (over) Ui.DARK_TEXT else Ui.TEXT
+        val subColor = if (over) 0x99FFFFFF.toInt() else Ui.MUTED
+        val tcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
+        val kicker = when {
+            feedRules.isEmpty() -> "Frank's calm"
+            over -> "Limit reached"
+            ratio >= 0.85f -> "Almost there"
+            else -> "Reels today"
+        }
+        tcol.addView(Ui.eyebrow(c, kicker).also { it.setTextColor(subColor) })
+        val headline = when {
+            feedRules.isEmpty() -> "No feeds to watch"
+            over -> "Feeds locked — rest now"
+            limit != null -> "$reels / $limit"
+            else -> "$reels reels"
+        }
+        tcol.addView(Ui.numeral(c, headline, if (feedRules.isEmpty() || over) 22f else 36f, if (over) Ui.OVER else if (ratio >= 0.85f) Ui.POP else Ui.SAGE)
+            .also { it.setPadding(0, Ui.dp(c, 6), 0, 0) })
+        if (feedRules.isNotEmpty() && limit != null && !over) {
+            // progress bar
+            val bar = LinearLayout(c).apply {
+                orientation = LinearLayout.HORIZONTAL
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(c, 6)).also { it.topMargin = Ui.dp(c, 12) }
+            }
+            val frac = ratio.coerceIn(0f, 1f)
+            val fillColor = if (ratio >= 0.85f) Ui.POP else Ui.SAGE
+            bar.addView(View(c).apply { setBackgroundColor(fillColor); layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, frac.coerceAtLeast(0.0001f)) })
+            bar.addView(View(c).apply { setBackgroundColor(if (over) 0x33FFFFFF else Ui.SURFACE2); layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, (1f - frac).coerceAtLeast(0.0001f)) })
+            tcol.addView(bar)
+            tcol.addView(Ui.body(c, "${(limit - reels).coerceAtLeast(0)} left today", subColor, 12.5f).also { it.setPadding(0, Ui.dp(c, 8), 0, 0) })
+        } else {
+            val sub = when {
+                feedRules.isEmpty() -> "Add a feed rule to keep Frank in check."
+                over -> "They open again tomorrow."
+                else -> "Tame is keeping count."
+            }
+            tcol.addView(Ui.body(c, sub, subColor, 13f).also { it.setPadding(0, Ui.dp(c, 6), 0, 0) })
+        }
+        card.addView(tcol)
+        return card
+    }
+
+    private fun activeRuleRow(c: Context, r: Rule): View {
+        val card = Ui.card(c).also { it.setPadding(Ui.dp(c, 16), Ui.dp(c, 14), Ui.dp(c, 16), Ui.dp(c, 14)) }
+        val row = Ui.row(c)
+        val tcol = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) }
+        tcol.addView(Ui.title(c, r.name, 16f))
+        val kind = if (r.kind == Kind.FEED) "Feed" else "App"
+        val mode = if (r.mode == Mode.BLOCK) "Block" else "Friction"
+        tcol.addView(Ui.body(c, "$kind · $mode", Ui.MUTED, 12.5f).also { it.setPadding(0, Ui.dp(c, 3), 0, 0) })
+        row.addView(tcol)
+        row.addView(Ui.chip(c, if (r.mode == Mode.BLOCK) "On" else "On",
+            if (r.mode == Mode.BLOCK) Ui.CLAY else Ui.GREEN_TEXT, if (r.mode == Mode.BLOCK) Ui.CLAY_WASH else Ui.GREEN_WASH))
+        card.addView(row)
+        card.setOnClickListener { (activity as? MainActivity)?.goTab(1) }
+        return card
+    }
+
+    private fun habitQuickRow(c: Context, h: Habit): View {
+        val row = Ui.row(c).also { it.setPadding(0, Ui.dp(c, 10), 0, Ui.dp(c, 10)) }
+        val done = Store.isDoneToday(h)
+        row.addView(View(c).apply {
+            background = ContextCompat.getDrawable(c, if (done) R.drawable.check_on else R.drawable.ring)
+            layoutParams = LinearLayout.LayoutParams(Ui.dp(c, 28), Ui.dp(c, 28)).also { it.marginEnd = Ui.dp(c, 14) }
+            isClickable = true
+            setOnClickListener { Ui.haptic(this); Store.toggleToday(h); refresh() }
+        })
+        row.addView(Ui.title(c, h.name, 15.5f).also {
+            it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            if (done) it.setTextColor(Ui.MUTED)
+        })
+        val streak = Store.currentStreak(h)
+        if (streak > 0) row.addView(Ui.chip(c, "⚡ $streak", Ui.GREEN_TEXT, Ui.GREEN_WASH))
+        return row
+    }
+}
+
+/* =============================== YOU =============================== */
+
+class YouFragment : BaseFragment() {
+    override fun render() {
+        val c = requireContext()
+        col.addView(Ui.eyebrow(c, "Tame"))
+        col.addView(Ui.display(c, "You").also { it.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 16)) })
+
+        // Frank stats hero
+        val hero = Ui.card(c).also { it.gravity = Gravity.CENTER; it.setPadding(Ui.dp(c, 20), Ui.dp(c, 22), Ui.dp(c, 20), Ui.dp(c, 22)) }
+        val bestStreak = Store.habits.maxOfOrNull { Store.bestStreak(it) } ?: 0
+        val mood = if (bestStreak >= 3) "calm" else "happy"
+        hero.addView(Ui.frank(c, mood, 96).also { it.layoutParams = (it.layoutParams as LinearLayout.LayoutParams).also { lp -> lp.gravity = Gravity.CENTER } })
+        hero.addView(Ui.serifHead(c, "Frank's got your back", 18f).also { it.setPadding(0, Ui.dp(c, 12), 0, 0); it.gravity = Gravity.CENTER })
+        hero.addView(Ui.body(c, "A calmer relationship with your phone — built one rule at a time.", Ui.MUTED, 13.5f)
+            .also { it.setPadding(0, Ui.dp(c, 6), 0, 0); it.gravity = Gravity.CENTER; (it as TextView).gravity = Gravity.CENTER })
+        col.addView(hero)
+
+        // Stats row
+        val statsRow = LinearLayout(c).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).also { it.bottomMargin = Ui.dp(c, 14) }
+        }
+        val reelsToday = Store.rules.filter { it.kind == Kind.FEED }.flatMap { it.packages }.toSet().sumOf { Store.reelCountToday(it) }
+        val committed = Store.rules.count { it.strict }
+        statsRow.addView(Ui.statTile(c, "${Store.rules.size}", "Rules", Ui.SAGE).first.also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { lp -> lp.marginEnd = Ui.dp(c, 8) } })
+        statsRow.addView(Ui.statTile(c, "$reelsToday", "Reels today", if (reelsToday > 0) Ui.POP else Ui.SAGE).first.also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).also { lp -> lp.marginEnd = Ui.dp(c, 8) } })
+        statsRow.addView(Ui.statTile(c, "$bestStreak", "Best streak", Ui.GREEN).first.also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
+        col.addView(statsRow)
+
+        // Commitment
+        if (committed > 0) {
+            val card = Ui.card(c)
+            card.addView(Ui.title(c, "$committed ${if (committed == 1) "rule" else "rules"} committed", 16f))
+            card.addView(Ui.body(c, "Locked in — can't be turned off while active. That's the point.", Ui.MUTED, 13.5f).also { it.setPadding(0, Ui.dp(c, 5), 0, 0) })
+            col.addView(card)
+        }
+
+        // Permissions
+        col.addView(Ui.sectionHeader(c, "Permissions").also { it.setPadding(0, Ui.dp(c, 4), 0, Ui.dp(c, 12)) })
+        val pcard = Ui.card(c)
+        pcard.addView(permRow(c, "Accessibility", Perms.hasAccessibility(c)))
+        pcard.addView(Ui.hairline(c))
+        pcard.addView(permRow(c, "Display over apps", Perms.canDrawOverlays(c)))
+        pcard.addView(Ui.hairline(c))
+        pcard.addView(permRow(c, "Notifications", Perms.hasNotifications(c)))
+        if (!Perms.coreReady(c)) {
+            val fix = Ui.primary(c, "Fix permissions").also { it.setPadding(0, Ui.dp(c, 12), 0, Ui.dp(c, 12)) }
+            fix.setOnClickListener { startActivity(Intent(c, OnboardingActivity::class.java)) }
+            pcard.addView(Ui.spacer(c, 12)); pcard.addView(fix)
+        }
+        col.addView(pcard)
+
+        // Privacy + replay
+        val card = Ui.card(c)
+        card.addView(Ui.title(c, "Private by design", 16f))
+        card.addView(Ui.body(c, "Tame is fully offline. No account, no servers, no analytics — everything stays on this device.", Ui.MUTED, 13.5f).also { it.setPadding(0, Ui.dp(c, 5), 0, 0) })
+        val replay = Ui.ghost(c, "Replay intro").also { it.setPadding(0, Ui.dp(c, 12), 0, Ui.dp(c, 12)) }
+        replay.setOnClickListener { startActivity(Intent(c, OnboardingActivity::class.java)) }
+        card.addView(Ui.spacer(c, 12)); card.addView(replay)
+        col.addView(card)
+
+        col.addView(Ui.body(c, "Tame v1.0", Ui.FAINT, 12f).also { it.gravity = Gravity.CENTER; it.setPadding(0, Ui.dp(c, 8), 0, Ui.dp(c, 8)); (it as TextView).gravity = Gravity.CENTER })
+    }
+
+    private fun permRow(c: Context, label: String, on: Boolean): View {
+        val row = Ui.row(c).also { it.setPadding(0, Ui.dp(c, 10), 0, Ui.dp(c, 10)) }
+        row.addView(Ui.title(c, label, 15f).also { it.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f) })
+        row.addView(Ui.chip(c, if (on) "On" else "Off", if (on) Ui.GREEN_TEXT else Ui.CLAY, if (on) Ui.GREEN_WASH else Ui.CLAY_WASH))
+        return row
     }
 }

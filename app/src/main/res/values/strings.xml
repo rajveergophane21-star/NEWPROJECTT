@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Margin</string>
-    <string name="accessibility_desc">Margin watches for the apps you choose to block and steps in with your intervention screen the instant one opens. It only reads which app is in the foreground — never your content, and nothing leaves your device.</string>
+    <string name="app_name">Tame</string>
+    <string name="accessibility_desc">Tame watches for the apps and short-form feeds you choose to limit and steps in with your block, friction, or reel-counter screen the instant one opens. It only reads which app and screen are in the foreground — never your content, and nothing leaves your device.</string>
 </resources>

@@ -3,6 +3,9 @@ package com.anchor.app
 /** How a rule steps in when a blocked app is opened. */
 enum class Mode { BLOCK, FRICTION }
 
+/** What a rule targets: the whole app, or just its short-form video feed. */
+enum class Kind { APP, FEED }
+
 /**
  * A recurring schedule slot. [days] are java.time DayOfWeek values (1=Mon … 7=Sun).
  * Times are minutes from midnight; a window that ends at/<= its start wraps past midnight.
@@ -57,7 +60,9 @@ class Rule(
     val windows: MutableList<TimeWindow>,
     var mode: Mode,
     var enabled: Boolean,
-    var strict: Boolean = false          // commitment lock: can't be turned off / edited while active
+    var strict: Boolean = false,         // commitment lock: can't be turned off / edited while active
+    var kind: Kind = Kind.APP,           // whole app, or just its short-form feed
+    var reelLimit: Int? = null           // FEED only: daily reel allowance before the mode kicks in
 ) {
     fun activeNow(nowMin: Int, dow: Int) = enabled && windows.any { it.activeAt(nowMin, dow) }
 

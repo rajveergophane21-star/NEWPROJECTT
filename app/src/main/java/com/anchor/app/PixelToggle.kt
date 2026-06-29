@@ -39,27 +39,20 @@ class PixelToggle(context: Context) : View(context) {
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        setMeasuredDimension(px(54f).toInt(), px(30f).toInt())
+        setMeasuredDimension(px(50f).toInt(), px(30f).toInt())
     }
 
     override fun onDraw(canvas: Canvas) {
         val w = width.toFloat(); val h = height.toFloat()
-        val frame = px(2f)
-        // recessed track: dark frame, then fill. OFF track is darker than the card so the
-        // pale knob reads clearly; ON track is the terracotta accent.
-        paint.color = if (checkedState) Ui.SAGE else Ui.CARD_BORDER
-        canvas.drawRect(0f, 0f, w, h, paint)
-        paint.color = if (checkedState) Ui.SAGE else Ui.SURFACE2  // warm recessed track when off
-        canvas.drawRect(frame, frame, w - frame, h - frame, paint)
-
-        // raised white knob (square), parked left when off / right when on
-        val knob = h - frame * 2
-        val left = if (checkedState) w - frame - knob else frame
-        val top = frame
-        paint.color = Ui.MUTED                                 // knob frame
-        canvas.drawRect(left, top, left + knob, top + knob, paint)
-        paint.color = 0xFFFFFFFF.toInt()                       // knob face
-        canvas.drawRect(left + frame, top + frame, left + knob - frame, top + knob - frame, paint)
-        canvas.drawRect(left + frame, top + frame, left + knob - frame, top + knob - frame, paint)
+        val r = h / 2f
+        // soft rounded track — evergreen when on, warm grey when off
+        paint.color = if (checkedState) Ui.SAGE else 0xFFD9D5C8.toInt()
+        canvas.drawRoundRect(0f, 0f, w, h, r, r, paint)
+        // round white knob, parked left when off / right when on
+        val pad = px(3f)
+        val d = h - pad * 2
+        val cx = if (checkedState) w - pad - d / 2f else pad + d / 2f
+        paint.color = 0xFFFFFFFF.toInt()
+        canvas.drawCircle(cx, h / 2f, d / 2f, paint)
     }
 }

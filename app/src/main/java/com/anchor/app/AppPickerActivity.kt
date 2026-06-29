@@ -27,12 +27,14 @@ class AppPickerActivity : AppCompatActivity() {
     private val items = mutableListOf<AppItem>()        // all apps
     private val shown = mutableListOf<AppItem>()         // filtered view
     private val adapter = Adapter()
+    private var feedOnly = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         b = ActivityAppPickerBinding.inflate(layoutInflater)
         setContentView(b.root)
 
+        feedOnly = intent.getBooleanExtra(EXTRA_FEED_ONLY, false)
         intent.getStringArrayListExtra(EXTRA_SELECTED)?.let { selected.addAll(it) }
 
         b.pickTitle.typeface = Ui.serif(this)
@@ -75,6 +77,8 @@ class AppPickerActivity : AppCompatActivity() {
             for (ri in resolved) {
                 val pkg = ri.activityInfo.packageName
                 if (pkg in protectedPkgs || !seen.add(pkg)) continue
+                // Feed rules can only target apps that actually have a short-form feed.
+                if (feedOnly && !FeedDetector.isFeedHost(pkg)) continue
                 val label = ri.loadLabel(pm).toString()
                 val icon = ri.loadIcon(pm)
                 loaded.add(AppItem(pkg, label, icon))
@@ -121,5 +125,8 @@ class AppPickerActivity : AppCompatActivity() {
         }
     }
 
-    companion object { const val EXTRA_SELECTED = "selected" }
+    companion object {
+        const val EXTRA_SELECTED = "selected"
+        const val EXTRA_FEED_ONLY = "feed_only"
+    }
 }

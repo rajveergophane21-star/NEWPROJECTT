@@ -40,10 +40,10 @@ class AlarmActivity : AppCompatActivity() {
         })
     }
 
-    private val bg = 0xFF241C16.toInt()
-    private val ink = 0xFFF4ECD8.toInt()
-    private val accent = 0xFFE07A3E.toInt()
-    private val glow = 0xFFFFCD75.toInt()
+    private val bg = 0xFF10160F.toInt()
+    private val ink = 0xFFFFFFFF.toInt()
+    private val accent = Ui.POP
+    private val glow = Ui.POP
 
     private fun buildUi(name: String): View {
         val root = LinearLayout(this).apply {
@@ -51,19 +51,25 @@ class AlarmActivity : AppCompatActivity() {
             setBackgroundColor(bg); fitsSystemWindows = true
             setPadding(dp(34), dp(24), dp(34), dp(34))
         }
+        root.addView(android.widget.ImageView(this).apply {
+            setImageResource(Ui.frankRes("panic"))
+            scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+            layoutParams = LinearLayout.LayoutParams(dp(116), dp(116))
+        })
         root.addView(TextView(this).apply {
             text = "HABIT REMINDER"; setTextColor(accent); textSize = 12f
-            letterSpacing = 0.18f; typeface = Ui.monoMed(this@AlarmActivity); gravity = Gravity.CENTER
+            letterSpacing = 0.18f; typeface = Ui.sansMed(this@AlarmActivity); gravity = Gravity.CENTER
+            setPadding(0, dp(16), 0, 0)
         })
         root.addView(TextView(this).apply {
-            text = name; setTextColor(ink); textSize = 30f; gravity = Gravity.CENTER
-            typeface = Ui.sansMed(this@AlarmActivity); setPadding(0, dp(16), 0, dp(8))
+            text = name; setTextColor(ink); textSize = 32f; gravity = Gravity.CENTER
+            typeface = Ui.serif(this@AlarmActivity); setPadding(0, dp(8), 0, dp(8))
         })
         root.addView(TextView(this).apply {
-            text = "Time to do it."; setTextColor(0xFFC2A87E.toInt()); textSize = 15f
+            text = "Frank's not letting this slide. Time to do it."; setTextColor(0xB3FFFFFF.toInt()); textSize = 15f
             gravity = Gravity.CENTER; typeface = Ui.sans(this@AlarmActivity)
         })
-        root.addView(button("Mark done", glow, 0xFF241C16.toInt()) { markDone() }, btnParams(36))
+        root.addView(button("Mark done", glow, 0xFF10160F.toInt()) { markDone() }, btnParams(32))
         root.addView(button("Stop", 0x22FFFFFF, ink) { stop() }, btnParams(12))
         return root
     }

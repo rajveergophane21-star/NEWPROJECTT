@@ -29,7 +29,7 @@
         <item name="android:textSize">10sp</item>
         <item name="android:letterSpacing">0.12</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:fontFamily">@font/silkscreen</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
 </resources>

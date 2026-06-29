@@ -39,10 +39,14 @@ class OnboardingActivity : AppCompatActivity() {
     override fun onResume() { super.onResume(); render() }
 
     private fun build() {
-        root.addView(Ui.eyebrow(this, "Set up Margin"))
+        root.addView(Ui.frank(this, "calm", 96).also {
+            (it.layoutParams as LinearLayout.LayoutParams).also { lp -> lp.gravity = android.view.Gravity.CENTER_HORIZONTAL }
+            it.setPadding(0, Ui.dp(this, 8), 0, 0)
+        })
+        root.addView(Ui.eyebrow(this, "Set up Tame"))
         root.addView(Ui.display(this, "Three quick grants.").also { it.setPadding(0, Ui.dp(this, 10), 0, Ui.dp(this, 10)) })
         root.addView(Ui.body(this,
-            "Blocking apps without rooting your phone means borrowing a few of Android's own controls. Margin only reads which app is in front — never your screen content — and nothing ever leaves your device.")
+            "Taming apps and feeds without rooting your phone means borrowing a few of Android's own controls. Tame only reads which app and screen are in front — never your content — and nothing ever leaves your device.")
             .also { it.setPadding(0, 0, 0, Ui.dp(this, 16)) })
 
         progressText = Ui.eyebrow(this, "").also { it.setPadding(0, 0, 0, Ui.dp(this, 12)) }
@@ -50,10 +54,10 @@ class OnboardingActivity : AppCompatActivity() {
 
         steps.clear()
         steps += StepView("Accessibility",
-            "The engine. Switch Margin on in the list. It lets the shield notice the moment a blocked app opens and show your block screen. It reads only which app is in front — never your content.",
+            "The engine. Switch Tame on in the list. It lets Tame notice the moment a blocked app or feed opens and step in. It reads only which app and screen are in front — never your content.",
             { Perms.hasAccessibility(this) }, { startActivity(Perms.accessibilityIntent()) })
         steps += StepView("Display over other apps",
-            "So the block screen can appear on top of a blocked app the instant it opens.",
+            "So the block screen and the live reel counter can appear on top of an app the instant it opens.",
             { Perms.canDrawOverlays(this) }, { startActivity(Perms.overlayIntent(this)) })
         steps += StepView("Notifications",
             "A quiet, permanent notification keeps the shield alive in the background.",
@@ -86,7 +90,7 @@ class OnboardingActivity : AppCompatActivity() {
     private fun render() {
         steps.forEach { it.update() }
         val ready = listOf(Perms.hasAccessibility(this), Perms.canDrawOverlays(this), Perms.hasNotifications(this)).count { it }
-        progressText?.text = if (ready == 3) "All set — your shield is ready" else "$ready of 3 essentials ready"
+        progressText?.text = if (ready == 3) "All set — Tame is ready" else "$ready of 3 essentials ready"
         progressText?.setTextColor(if (ready == 3) Ui.GREEN_TEXT else Ui.MUTED)
         if (::doneBtn.isInitialized) {
             val core = ready == 3

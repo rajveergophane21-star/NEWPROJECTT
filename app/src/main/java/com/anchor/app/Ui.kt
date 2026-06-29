@@ -7,73 +7,91 @@ import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 
-/** The Margin editorial design kit: warm paper, evergreen accent, serif + mono + sans. */
+/** The Tame design kit: warm paper, evergreen accent, one warm-yellow pop, deep ink — clean sans. */
 object Ui {
-    // palette — pixel · daylight (warm parchment)
-    const val TEXT = 0xFF2B2622.toInt()
-    const val MUTED = 0xFF857A6B.toInt()
-    const val FAINT = 0xFFABA08E.toInt()
-    const val SAGE = 0xFFE07A3E.toInt()        // terracotta accent — intention / brand / active
-    const val GREEN = 0xFF3E7D5A.toInt()       // evergreen — done / progress / momentum
-    const val GREEN_TEXT = 0xFF2E6047.toInt()  // green for small text on light
-    const val GREEN_WASH = 0xFFDCE9DF.toInt()  // green selected pill wash
-    const val BLUE = 0xFF3E8FD0.toInt()        // info
-    const val ACC_SOFT = 0xFFF6E2CE.toInt()
-    const val ACC_TEXT = 0xFF9A4A1E.toInt()    // accent for small text — passes on light washes
-    const val ACC_GLOW = 0xFFE07A3E.toInt()
-    const val INK = 0xFFFFFBF0.toInt()         // light text on accent
-    const val SURFACE = 0xFFF5F0E7.toInt()
-    const val SURFACE2 = 0xFFEAE2D4.toInt()
-    const val LINE = 0xFFE8E1D4.toInt()
-    const val CARD_BORDER = 0xFFD8CDB8.toInt()
-    const val SELECT = 0xFFF6E2CE.toInt()
-    const val CLAY = 0xFFC8485B.toInt()        // danger
-    const val TERRA = 0xFFD98E3E.toInt()       // amber / friction
-    const val DARK = 0xFF2A2018.toInt()        // warm-dark card
-    const val DARK_TEXT = 0xFFF4ECD8.toInt()
+    // palette — Tame
+    const val TEXT = 0xFF19211C.toInt()         // deep ink
+    const val MUTED = 0xFF7B827A.toInt()
+    const val FAINT = 0xFFA0A69D.toInt()
+    const val SAGE = 0xFF2F7A5A.toInt()         // evergreen accent — brand / active
+    const val SAGE_DEEP = 0xFF246048.toInt()
+    const val POP = 0xFFF2B705.toInt()          // warm-yellow pop
+    const val GREEN = 0xFF2F7A5A.toInt()        // done / progress / momentum
+    const val GREEN_TEXT = 0xFF1F7A52.toInt()
+    const val GREEN_WASH = 0xFFE4F2EA.toInt()
+    const val BLUE = 0xFF3E8FD0.toInt()
+    const val ACC_SOFT = 0xFFE4F2EA.toInt()
+    const val ACC_TEXT = 0xFF1F7A52.toInt()
+    const val ACC_GLOW = 0xFF2F7A5A.toInt()
+    const val INK = 0xFFFFFFFF.toInt()          // white text on accent
+    const val BG = 0xFFF5F3EC.toInt()           // warm paper canvas
+    const val SURFACE = 0xFFFFFFFF.toInt()      // white card
+    const val SURFACE2 = 0xFFF1EEE2.toInt()
+    const val LINE = 0xFFECE8DC.toInt()
+    const val CARD_BORDER = 0xFFECE8DC.toInt()
+    const val SELECT = 0xFFE4F2EA.toInt()
+    const val CLAY = 0xFFC0392B.toInt()         // danger / block
+    const val CLAY_WASH = 0xFFFBEAE6.toInt()
+    const val TERRA = 0xFFF2B705.toInt()        // friction / amber pop
+    const val DARK = 0xFF19211C.toInt()         // ink card / takeover
+    const val DARK_TEXT = 0xFFFFFFFF.toInt()
+    const val OVER = 0xFFE1574C.toInt()         // over-limit warm red
 
-    // fonts (cached) — pixel set: Pixelify Sans (display/body), Silkscreen (labels),
-    // VT323 (numerals/timers), Press Start 2P (logo wordmark).
-    private var pixT: Typeface? = null
-    private var silkT: Typeface? = null
-    private var silkBoldT: Typeface? = null
-    private var vtT: Typeface? = null
-    private var pressT: Typeface? = null
+    // fonts — clean modern sans (Bricolage/Hanken-flavoured): chunky black display + humanist body.
+    private var displayT: Typeface? = null
     private var sansT: Typeface? = null
     private var sansMedT: Typeface? = null
-    private var serifItT: Typeface? = null
+    private var sansBoldT: Typeface? = null
+    private var italicT: Typeface? = null
 
-    // Pixelify is the display/character face (screen headlines, button labels, wordmark).
-    fun serif(c: Context): Typeface = pixT ?: ResourcesCompat.getFont(c, R.font.pixelify_sans)!!.also { pixT = it }
-    // Clean humanist sans for body + titles — the readable base under the pixel accents.
+    /** Chunky display face for headlines + wordmark + big numerals. */
+    fun serif(c: Context): Typeface = displayT
+        ?: Typeface.create("sans-serif-black", Typeface.NORMAL).also { displayT = it }
     fun sans(c: Context): Typeface = sansT ?: Typeface.create("sans-serif", Typeface.NORMAL).also { sansT = it }
     fun sansMed(c: Context): Typeface = sansMedT ?: Typeface.create("sans-serif-medium", Typeface.NORMAL).also { sansMedT = it }
-    // Editorial serif italic for the user's own words (identity, why, reflection prompts).
-    fun serifItalic(c: Context): Typeface = serifItT ?: Typeface.create("serif", Typeface.ITALIC).also { serifItT = it }
-    fun mono(c: Context): Typeface = silkT ?: ResourcesCompat.getFont(c, R.font.silkscreen)!!.also { silkT = it }
-    fun monoMed(c: Context): Typeface = silkBoldT ?: ResourcesCompat.getFont(c, R.font.silkscreen_bold)!!.also { silkBoldT = it }
-    fun vt(c: Context): Typeface = vtT ?: ResourcesCompat.getFont(c, R.font.vt323)!!.also { vtT = it }
-    fun press(c: Context): Typeface = pressT ?: ResourcesCompat.getFont(c, R.font.press_start_2p)!!.also { pressT = it }
-
-    private fun TextView.weight(w: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) fontVariationSettings = "'wght' $w"
-    }
+    fun sansBold(c: Context): Typeface = sansBoldT ?: Typeface.create("sans-serif", Typeface.BOLD).also { sansBoldT = it }
+    fun serifItalic(c: Context): Typeface = italicT ?: Typeface.create("sans-serif", Typeface.ITALIC).also { italicT = it }
+    fun mono(c: Context): Typeface = sansMed(c)
+    fun monoMed(c: Context): Typeface = sansMed(c)
+    fun vt(c: Context): Typeface = serif(c)
+    fun press(c: Context): Typeface = serif(c)
 
     fun dp(c: Context, v: Int) = (v * c.resources.displayMetrics.density).toInt()
+
+    // ---- Frank the monkey ------------------------------------------------
+    fun frankRes(mood: String): Int = when (mood) {
+        "calm", "zen", "breathe" -> R.drawable.frank_calm
+        "happy", "normal" -> R.drawable.frank_normal
+        "neutral" -> R.drawable.frank_normal
+        "worried", "sad" -> R.drawable.frank_sad
+        "crying", "over" -> R.drawable.frank_crying
+        "panic" -> R.drawable.frank_panic
+        "angry", "fullstop" -> R.drawable.frank_angry
+        else -> R.drawable.frank_normal
+    }
+
+    /** Frank at a given mood, sized to [size] dp. */
+    fun frank(c: Context, mood: String, size: Int): ImageView = ImageView(c).apply {
+        setImageResource(frankRes(mood))
+        adjustViewBounds = true
+        scaleType = ImageView.ScaleType.FIT_CENTER
+        layoutParams = LinearLayout.LayoutParams(dp(c, size), dp(c, size))
+    }
 
     fun scroll(c: Context): Pair<ScrollView, LinearLayout> {
         val col = LinearLayout(c).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(c, 22), dp(c, 12), dp(c, 22), dp(c, 48))
+            setPadding(dp(c, 20), dp(c, 10), dp(c, 20), dp(c, 52))
         }
         val sv = ScrollView(c).apply {
             isFillViewport = true; clipToPadding = false
+            overScrollMode = View.OVER_SCROLL_NEVER
             addView(col, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
         return sv to col
@@ -84,35 +102,35 @@ object Ui {
         background = ContextCompat.getDrawable(c, R.drawable.card)
         setPadding(dp(c, 18), dp(c, 18), dp(c, 18), dp(c, 18))
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            .apply { bottomMargin = dp(c, 12) }
+            .apply { bottomMargin = dp(c, 14) }
     }
 
-    /** Mono, uppercase, widely tracked label. */
+    /** Uppercase, tracked label. */
     fun eyebrow(c: Context, t: String) = TextView(c).apply {
-        text = t.uppercase(); setTextColor(MUTED); textSize = 10f
-        letterSpacing = 0.2f; typeface = monoMed(c); includeFontPadding = false
+        text = t.uppercase(); setTextColor(MUTED); textSize = 11f
+        letterSpacing = 0.14f; typeface = sansMed(c); includeFontPadding = false
     }
 
-    fun mono(c: Context, t: String, color: Int = FAINT, size: Float = 10.5f) = TextView(c).apply {
-        text = t; setTextColor(color); textSize = size; letterSpacing = 0.04f
-        typeface = mono(c); includeFontPadding = false
+    fun mono(c: Context, t: String, color: Int = FAINT, size: Float = 12f) = TextView(c).apply {
+        text = t; setTextColor(color); textSize = size; letterSpacing = 0.02f
+        typeface = sansMed(c); includeFontPadding = false
     }
 
-    /** Pixel display headline (screen titles). */
-    fun display(c: Context, t: String, size: Float = 34f) = TextView(c).apply {
+    /** Chunky display headline (screen titles). */
+    fun display(c: Context, t: String, size: Float = 30f) = TextView(c).apply {
         text = t; setTextColor(TEXT); textSize = size
-        typeface = serif(c); includeFontPadding = false; setLineSpacing(0f, 1f)
+        typeface = serif(c); includeFontPadding = false; setLineSpacing(0f, 1.02f)
+        letterSpacing = -0.01f
     }
 
-    /** Card headline — clean sans, semibold. */
-    fun serifHead(c: Context, t: String, size: Float = 22f) = TextView(c).apply {
-        text = t; setTextColor(TEXT); textSize = size; typeface = sansMed(c); includeFontPadding = false
+    /** Card headline — semibold sans. */
+    fun serifHead(c: Context, t: String, size: Float = 20f) = TextView(c).apply {
+        text = t; setTextColor(TEXT); textSize = size; typeface = sansBold(c); includeFontPadding = false
     }
 
-    /** Serif italic — for the user's own words (identity, prompts). */
-    fun serifQuote(c: Context, t: String, color: Int = TEXT, size: Float = 21f) = TextView(c).apply {
-        text = t; setTextColor(color); textSize = size; typeface = serifItalic(c)
-        setLineSpacing(0f, 1.3f)
+    fun serifQuote(c: Context, t: String, color: Int = TEXT, size: Float = 19f) = TextView(c).apply {
+        text = t; setTextColor(color); textSize = size; typeface = sansMed(c)
+        setLineSpacing(0f, 1.25f)
     }
 
     /** Sans semibold — item names, button-like labels. */
@@ -125,22 +143,22 @@ object Ui {
         setLineSpacing(dp(c, 3).toFloat(), 1f)
     }
 
-    /** Raised gold pixel button. */
+    /** Evergreen pill button. */
     fun primary(c: Context, t: String): TextView = TextView(c).apply {
-        text = t; gravity = Gravity.CENTER; setTextColor(INK); textSize = 14f
-        typeface = serif(c); weight(700); includeFontPadding = false
+        text = t; gravity = Gravity.CENTER; setTextColor(INK); textSize = 15f
+        typeface = sansBold(c); includeFontPadding = false
         background = ContextCompat.getDrawable(c, R.drawable.btn_primary)
-        setPadding(dp(c,16), dp(c,12), dp(c,18), dp(c,16))
+        setPadding(dp(c,16), dp(c,15), dp(c,16), dp(c,15))
         isClickable = true; isFocusable = true
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
-    /** Raised panel-coloured pixel button. */
+    /** White outlined button. */
     fun ghost(c: Context, t: String): TextView = TextView(c).apply {
-        text = t; gravity = Gravity.CENTER; setTextColor(TEXT); textSize = 14f
-        typeface = serif(c); weight(600); includeFontPadding = false
+        text = t; gravity = Gravity.CENTER; setTextColor(TEXT); textSize = 15f
+        typeface = sansMed(c); includeFontPadding = false
         background = ContextCompat.getDrawable(c, R.drawable.btn_ghost)
-        setPadding(dp(c,16), dp(c,12), dp(c,18), dp(c,16))
+        setPadding(dp(c,16), dp(c,15), dp(c,16), dp(c,15))
         isClickable = true; isFocusable = true
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
@@ -159,17 +177,17 @@ object Ui {
         })
     }
 
-    /** Big pixel numeral (VT323, monospaced). */
-    fun numeral(c: Context, n: String, size: Float = 36f, color: Int = TEXT) = TextView(c).apply {
-        text = n; setTextColor(color); textSize = size; typeface = vt(c); includeFontPadding = false
+    /** Big bold numeral. */
+    fun numeral(c: Context, n: String, size: Float = 34f, color: Int = TEXT) = TextView(c).apply {
+        text = n; setTextColor(color); textSize = size; typeface = serif(c); includeFontPadding = false
     }
 
     fun emptyState(c: Context, kicker: String, line: String, sentence: String): LinearLayout =
         LinearLayout(c).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(0, dp(c, 20), 0, dp(c, 20))
+            setPadding(0, dp(c, 18), 0, dp(c, 18))
             addView(eyebrow(c, kicker))
-            addView(display(c, line, 28f).also { it.setPadding(0, dp(c, 10), 0, dp(c, 8)) })
+            addView(display(c, line, 26f).also { it.setPadding(0, dp(c, 10), 0, dp(c, 8)) })
             addView(body(c, sentence, MUTED, 14f))
         }
 
@@ -179,7 +197,7 @@ object Ui {
             background = ContextCompat.getDrawable(c, R.drawable.card2)
             setPadding(dp(c, 16), dp(c, 16), dp(c, 16), dp(c, 16))
         }
-        val n = numeral(c, num, 30f, color)
+        val n = numeral(c, num, 28f, color)
         val l = eyebrow(c, label).also { it.setPadding(0, dp(c, 5), 0, 0) }
         tile.addView(n); tile.addView(l)
         return tile to n
@@ -194,7 +212,17 @@ object Ui {
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(c, h))
     }
 
-    /** A hard-edged pixel toggle that matches the bevel kit. */
+    /** A soft rounded chip with text. [bg] fill, [fg] text colour. */
+    fun chip(c: Context, t: String, fg: Int, bg: Int): TextView = TextView(c).apply {
+        text = t; setTextColor(fg); textSize = 11.5f; typeface = sansBold(c)
+        letterSpacing = 0.02f; includeFontPadding = false
+        gravity = Gravity.CENTER
+        setPadding(dp(c, 10), dp(c, 5), dp(c, 10), dp(c, 6))
+        background = android.graphics.drawable.GradientDrawable().apply {
+            cornerRadius = dp(c, 20).toFloat(); setColor(bg)
+        }
+    }
+
     fun switch(c: Context): PixelToggle = PixelToggle(c)
 
     // ---- Motion (restrained) ---------------------------------------------

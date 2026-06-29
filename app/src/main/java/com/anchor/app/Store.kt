@@ -20,6 +20,10 @@ object Store {
     // After "open anyway", a short in-memory pass so we don't re-intercept immediately.
     private val grants = mutableMapOf<String, Long>()
 
+    // Reels watched today, per package; reset when the day rolls over.
+    private val reelCounts = mutableMapOf<String, Int>()
+    private var reelDay = 0L
+
     private var nextId = 1L
     private lateinit var ctx: Context
 
@@ -44,22 +48,24 @@ object Store {
     }
 
     /**
-     * Make [rule] the sole owner of its apps so an older rule can't override its mode — EXCEPT a
-     * currently-locked (committed & active) rule, which keeps its apps so a new permissive rule
-     * can't quietly strip a commitment lock's coverage.
+     * Make [rule] the sole owner of its apps among rules of the SAME kind, so an older rule can't
+     * override its mode — EXCEPT a currently-locked (committed & active) rule, which keeps its apps
+     * so a new permissive rule can't quietly strip a commitment lock's coverage. An APP rule and a
+     * FEED rule may both target the same package (block the whole app vs limit only its feed).
      */
     fun claimPackages(rule: Rule) {
-        rules.forEach { if (it !== rule && !isLocked(it)) it.packages.removeAll(rule.packages) }
+        rules.forEach { if (it !== rule && it.kind == rule.kind && !isLocked(it)) it.packages.removeAll(rule.packages) }
         rules.removeAll { it !== rule && it.packages.isEmpty() && !isLocked(it) }
         save()
     }
 
-    /** Decide what to do for [pkg] right now. BLOCK beats FRICTION; longer window wins. */
+    /** Decide what to do for the whole app [pkg] right now. BLOCK beats FRICTION; longer window wins. */
     fun decisionFor(pkg: String): Decision? {
         val now = LocalTime.now(); val nowMin = now.hour * 60 + now.minute
         val dow = LocalDate.now().dayOfWeek.value
         var best: Decision? = null
         for (r in rules) {
+            if (r.kind != Kind.APP) continue
             if (!r.enabled || !r.packages.contains(pkg)) continue
             if (!r.activeNow(nowMin, dow)) continue
             val left = r.minutesLeft(nowMin, dow)
@@ -70,6 +76,47 @@ object Store {
             }
         }
         return best
+    }
+
+    // ---- Short-form feeds (reels) ----------------------------------------
+    /** The active FEED rule covering [pkg] right now, or null. */
+    fun feedRuleActive(pkg: String): Rule? {
+        val now = LocalTime.now(); val nowMin = now.hour * 60 + now.minute
+        val dow = LocalDate.now().dayOfWeek.value
+        return rules.firstOrNull { it.kind == Kind.FEED && it.enabled && it.packages.contains(pkg) && it.activeNow(nowMin, dow) }
+    }
+
+    /** Reels watched today on [pkg]. */
+    fun reelCountToday(pkg: String): Int { rollReelDay(); return reelCounts[pkg] ?: 0 }
+
+    /** Count one more reel on [pkg]; returns the new total. */
+    fun incReel(pkg: String): Int {
+        rollReelDay()
+        val n = (reelCounts[pkg] ?: 0) + 1
+        reelCounts[pkg] = n; save(); return n
+    }
+
+    /** The daily reel allowance for [pkg]'s active feed rule, or null if none/unlimited. */
+    fun reelLimitFor(pkg: String): Int? = feedRuleActive(pkg)?.reelLimit
+
+    /**
+     * What to do on [pkg]'s feed right now. Returns a Decision when the feed should be intervened on:
+     * either an always-on scheduled feed block (no limit set) or the daily reel limit is reached.
+     * Returns null when the feed is merely being counted (under limit).
+     */
+    fun feedDecision(pkg: String): Decision? {
+        val r = feedRuleActive(pkg) ?: return null
+        val now = LocalTime.now(); val nowMin = now.hour * 60 + now.minute
+        val dow = LocalDate.now().dayOfWeek.value
+        val left = r.minutesLeft(nowMin, dow)
+        val limit = r.reelLimit
+        if (limit == null || reelCountToday(pkg) >= limit) return Decision(r.mode, left, r.name)
+        return null
+    }
+
+    private fun rollReelDay() {
+        val t = today()
+        if (reelDay != t) { reelDay = t; reelCounts.clear(); save() }
     }
 
     fun grantPass(pkg: String, minutes: Int) { grants[pkg] = System.currentTimeMillis() + minutes * 60_000L; save() }
@@ -130,7 +177,9 @@ object Store {
                         }
                     }
                     val mode = runCatching { Mode.valueOf(o.optString("mode", "BLOCK")) }.getOrDefault(Mode.BLOCK)
-                    rules.add(Rule(o.getLong("id"), o.getString("name"), pkgs, ws, mode, o.optBoolean("enabled", true), o.optBoolean("strict", false)))
+                    val kind = runCatching { Kind.valueOf(o.optString("kind", "APP")) }.getOrDefault(Kind.APP)
+                    val limit = if (o.has("reelLimit") && !o.isNull("reelLimit")) o.getInt("reelLimit") else null
+                    rules.add(Rule(o.getLong("id"), o.getString("name"), pkgs, ws, mode, o.optBoolean("enabled", true), o.optBoolean("strict", false), kind, limit))
                 } catch (_: Exception) {}   // skip only the bad rule
             }
             habits.clear()
@@ -149,6 +198,14 @@ object Store {
                 val nowMs = System.currentTimeMillis(); val keys = it.keys()
                 while (keys.hasNext()) { val k = keys.next(); val u = it.optLong(k); if (u > nowMs) grants[k] = u }
             }
+            reelCounts.clear()
+            reelDay = root.optLong("reelDay", 0L)
+            if (reelDay == today()) {
+                root.optJSONObject("reelCounts")?.let {
+                    val keys = it.keys()
+                    while (keys.hasNext()) { val k = keys.next(); reelCounts[k] = it.optInt(k) }
+                }
+            } else reelDay = 0L
         } catch (_: Exception) {}
         nextId = maxOf(nextId, ((rules.map { it.id } + habits.map { it.id }).maxOrNull() ?: 0L) + 1L)
     }
@@ -159,6 +216,7 @@ object Store {
         for (r in rules) {
             val o = JSONObject()
             o.put("id", r.id); o.put("name", r.name); o.put("mode", r.mode.name); o.put("enabled", r.enabled); o.put("strict", r.strict)
+            o.put("kind", r.kind.name); r.reelLimit?.let { o.put("reelLimit", it) }
             val pa = JSONArray(); r.packages.forEach { pa.put(it) }; o.put("pkgs", pa)
             val wa = JSONArray()
             for (w in r.windows) {
@@ -179,6 +237,9 @@ object Store {
         val ga = JSONObject(); val nowMs = System.currentTimeMillis()
         for ((pkg, until) in grants) if (until > nowMs) ga.put(pkg, until)
         root.put("grants", ga)
+        root.put("reelDay", reelDay)
+        val rc = JSONObject(); for ((pkg, n) in reelCounts) rc.put(pkg, n)
+        root.put("reelCounts", rc)
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, root.toString()).apply()
     }
 }

@@ -1,40 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Margin — clean, premium, white. Warm ink + a single terracotta accent;
-         surfaces are near-white with a whisper of a bevel, not chunky panels. -->
-    <color name="bg">#FFFFFF</color>          <!-- white canvas -->
-    <color name="surface">#F5F0E7</color>      <!-- warm card face — clearly lifts off white -->
-    <color name="surface2">#EAE2D4</color>     <!-- recessed (inputs/tiles) -->
+    <!-- Tame — a calmer relationship with your phone.
+         Warm paper canvas, evergreen accent, a single warm-yellow pop, deep ink.
+         Cards are white and lift off the paper; takeovers go near-black. -->
+    <color name="bg">#F5F3EC</color>          <!-- warm paper canvas -->
+    <color name="surface">#FFFFFF</color>      <!-- white card face -->
+    <color name="surface2">#F1EEE2</color>     <!-- recessed (inputs/tiles) -->
     <color name="panel_hi">#FFFFFF</color>     <!-- bevel highlight -->
-    <color name="panel_sh">#D8CDB8</color>     <!-- bevel shadow (defined) -->
-    <color name="line">#E8E1D4</color>
-    <color name="card_border">#D8CDB8</color>
-    <color name="text">#2B2622</color>         <!-- warm near-black ink -->
-    <color name="muted">#857A6B</color>
-    <color name="faint">#ABA08E</color>
+    <color name="panel_sh">#E4E0D2</color>    <!-- soft shadow line -->
+    <color name="line">#ECE8DC</color>
+    <color name="card_border">#ECE8DC</color>
+    <color name="text">#19211C</color>         <!-- deep ink -->
+    <color name="muted">#7B827A</color>
+    <color name="faint">#A0A69D</color>
 
-    <!-- Accent: warm terracotta -->
-    <color name="sage">#E07A3E</color>
-    <color name="sage_deep">#B85C28</color>
-    <color name="gold_hi">#F2A968</color>
-    <color name="accent_soft">#F6E2CE</color>
-    <color name="accent_glow">#E07A3E</color>
-    <color name="accent_text">#9A4A1E</color>
-    <color name="ink_on_accent">#FFFBF0</color>
+    <!-- Accent: evergreen -->
+    <color name="sage">#2F7A5A</color>
+    <color name="sage_deep">#246048</color>
+    <color name="gold_hi">#F2B705</color>      <!-- the warm-yellow pop -->
+    <color name="accent_soft">#E4F2EA</color>
+    <color name="accent_glow">#2F7A5A</color>
+    <color name="accent_text">#1F7A52</color>
+    <color name="ink_on_accent">#FFFFFF</color>
 
-    <color name="green">#3E7D5A</color>        <!-- evergreen: done / progress -->
-    <color name="success_text">#2E6047</color>
-    <color name="success_wash">#DCE9DF</color>
+    <color name="green">#2F7A5A</color>        <!-- evergreen: done / progress -->
+    <color name="success_text">#1F7A52</color>
+    <color name="success_wash">#E4F2EA</color>
     <color name="blue">#3E8FD0</color>
-    <color name="clay">#C8485B</color>        <!-- danger -->
-    <color name="terra">#D98E3E</color>       <!-- amber / friction -->
+    <color name="clay">#C0392B</color>        <!-- danger / block -->
+    <color name="clay_wash">#FBEAE6</color>
+    <color name="terra">#F2B705</color>       <!-- amber / friction pop -->
 
-    <!-- A warm-dark card / the intercept modal -->
-    <color name="dark_card">#2A2018</color>
-    <color name="dark_text">#F4ECD8</color>
-    <color name="intercept_bg">#241C16</color>
+    <!-- Takeover surfaces -->
+    <color name="dark_card">#19211C</color>
+    <color name="dark_text">#FFFFFF</color>
+    <color name="intercept_bg">#10160F</color>
 
     <color name="white">#FFFFFF</color>
-    <color name="black">#2B2622</color>
-    <color name="icon_bg">#2A2018</color>
+    <color name="black">#19211C</color>
+    <color name="icon_bg">#19211C</color>
 </resources>

@@ -14,7 +14,7 @@ import com.anchor.app.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
 
     private lateinit var b: ActivityMainBinding
-    private val tabs = listOf("Blocks", "Habits")
+    private val tabs = listOf("Home", "Rules", "Habits", "You")
     private val ticks = mutableListOf<View>()
     private val labels = mutableListOf<TextView>()
     private var current = 0
@@ -68,7 +68,12 @@ class MainActivity : AppCompatActivity() {
     private fun select(i: Int) {
         if (i == current && supportFragmentManager.findFragmentById(R.id.container) != null) return
         chromeOnly(i)
-        show(if (i == 0) BlocksFragment() else HabitsFragment())
+        show(when (i) {
+            0 -> HomeFragment()
+            1 -> BlocksFragment()
+            2 -> HabitsFragment()
+            else -> YouFragment()
+        })
     }
 
     private fun chromeOnly(i: Int) {

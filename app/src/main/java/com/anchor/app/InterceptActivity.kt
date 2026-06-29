@@ -2,7 +2,6 @@ package com.anchor.app
 
 import android.animation.ValueAnimator
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -10,6 +9,7 @@ import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -18,15 +18,17 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 /**
- * The screen shown OVER a blocked app (the app keeps running underneath — we never close it).
+ * The takeover shown after Tame closes a blocked app or feed. The app is already gone (we pressed
+ * Home); this screen sits over Home so the only way forward is an intentional one.
  *
- * BLOCK   — a calm wall; the only way out is to turn back.
- * FRICTION — a short mandatory pause, then an honest choice to continue or turn back.
+ * BLOCK   — a calm wall with Frank; the only way out is to turn back.
+ * FRICTION — Frank breathes with you, then an honest choice to continue or stay out.
  */
 class InterceptActivity : AppCompatActivity() {
 
     private lateinit var pkg: String
     private var mode = Mode.BLOCK
+    private var kind = Kind.APP
     private var minutesLeft = -1
     private var ruleName = ""
 
@@ -34,18 +36,19 @@ class InterceptActivity : AppCompatActivity() {
     private var breath: ValueAnimator? = null
     private var canProceed = false
 
+    private lateinit var root: LinearLayout
     private lateinit var headline: TextView
     private lateinit var appLine: TextView
+    private lateinit var frank: ImageView
     private lateinit var primaryBtn: TextView
     private var secondaryBtn: TextView? = null
-    private var orb: View? = null
 
-    // dark, calm palette
-    private val bg = 0xFF241C16.toInt()
-    private val ink = 0xFFF4ECD8.toInt()
-    private val soft = 0xFFC2A87E.toInt()
-    private val accent = 0xFFE07A3E.toInt()
-    private val glow = 0xFFFFCD75.toInt()
+    // Tame takeover palette
+    private val bg = 0xFF10160F.toInt()
+    private val ink = 0xFFFFFFFF.toInt()
+    private val soft = 0xB3FFFFFF.toInt()
+    private val accent = Ui.SAGE
+    private val pop = Ui.POP
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,14 +56,14 @@ class InterceptActivity : AppCompatActivity() {
 
         pkg = intent.getStringExtra(EXTRA_PKG) ?: run { finish(); return }
         mode = runCatching { Mode.valueOf(intent.getStringExtra(EXTRA_MODE) ?: "BLOCK") }.getOrDefault(Mode.BLOCK)
+        kind = runCatching { Kind.valueOf(intent.getStringExtra(EXTRA_KIND) ?: "APP") }.getOrDefault(Kind.APP)
         minutesLeft = intent.getIntExtra(EXTRA_LEFT, -1)
-        ruleName = intent.getStringExtra(EXTRA_RULE) ?: "Margin"
+        ruleName = intent.getStringExtra(EXTRA_RULE) ?: "Tame"
 
         setContentView(buildUi())
         window.statusBarColor = bg
         window.navigationBarColor = bg
 
-        // Back must never fall through to the blocked app.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() = leave()
         })
@@ -69,15 +72,11 @@ class InterceptActivity : AppCompatActivity() {
         if (mode == Mode.BLOCK) renderBlock() else renderFriction()
     }
 
-    /** singleTask: a new blocked app while this screen is alive must replace its contents,
-     *  never show the previous app/mode (which could grant a pass to the wrong package). */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         recreate()
     }
-
-    private lateinit var root: LinearLayout
 
     private fun buildUi(): View {
         root = LinearLayout(this).apply {
@@ -85,35 +84,45 @@ class InterceptActivity : AppCompatActivity() {
             gravity = Gravity.CENTER
             setBackgroundColor(bg)
             fitsSystemWindows = true
-            setPadding(dp(34), dp(24), dp(34), dp(34))
+            setPadding(dp(34), dp(24), dp(34), dp(36))
         }
 
+        frank = ImageView(this).apply {
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            layoutParams = LinearLayout.LayoutParams(dp(124), dp(124))
+        }
         val eyebrow = TextView(this).apply {
-            text = ruleName.uppercase(); setTextColor(accent); textSize = 12f
-            letterSpacing = 0.18f; typeface = Ui.monoMed(this@InterceptActivity); gravity = Gravity.CENTER
+            text = (if (kind == Kind.FEED) FeedDetector.feedLabel(pkg) else ruleName).uppercase()
+            setTextColor(pop); textSize = 12f
+            letterSpacing = 0.18f; typeface = Ui.sansMed(this@InterceptActivity); gravity = Gravity.CENTER
+            setPadding(0, dp(18), 0, 0)
         }
         headline = TextView(this).apply {
-            setTextColor(ink); textSize = 30f; gravity = Gravity.CENTER
-            typeface = Ui.sansMed(this@InterceptActivity); setPadding(0, dp(14), 0, 0)
+            setTextColor(ink); textSize = 32f; gravity = Gravity.CENTER
+            typeface = Ui.serif(this@InterceptActivity); setPadding(0, dp(8), 0, 0)
         }
         appLine = TextView(this).apply {
-            setTextColor(soft); textSize = 15f; gravity = Gravity.CENTER
+            setTextColor(soft); textSize = 15.5f; gravity = Gravity.CENTER
             typeface = Ui.sans(this@InterceptActivity); setPadding(0, dp(12), 0, 0); setLineSpacing(dp(3).toFloat(), 1f)
         }
-        root.addView(eyebrow); root.addView(headline); root.addView(appLine)
+        root.addView(frank); root.addView(eyebrow); root.addView(headline); root.addView(appLine)
         return root
     }
 
+    private fun targetLabel(): String =
+        if (kind == Kind.FEED) "${FeedDetector.feedLabel(pkg)} on ${appName()}" else appName()
+
     // ---------------------------------------------------------------- block
     private fun renderBlock() {
+        frank.setImageResource(Ui.frankRes("angry"))
         headline.text = "Not now."
-        appLine.text = "${appName()} is blocked${untilSuffix()}."
-        primaryBtn = filledButton("Turn back") { leave() }
-        root.addView(primaryBtn, btnParams(topDp = 32))
+        appLine.text = "${targetLabel()} is blocked${untilSuffix()}."
+        primaryBtn = filledButton("Turn back", pop, 0xFF10160F.toInt()) { leave() }
+        root.addView(primaryBtn, btnParams(topDp = 30))
     }
 
-    /** " until HH:mm" for a same-day scheduled window under 12h; otherwise " right now". */
     private fun untilSuffix(): String {
+        if (kind == Kind.FEED && Store.reelLimitFor(pkg) != null) return " for today"
         if (minutesLeft in 1 until 12 * 60) {
             val now = LocalTime.now()
             if (now.toSecondOfDay() + minutesLeft * 60 < 86400) {
@@ -125,25 +134,16 @@ class InterceptActivity : AppCompatActivity() {
 
     // ------------------------------------------------------------- friction
     private fun renderFriction() {
+        frank.setImageResource(Ui.frankRes("calm"))
         headline.text = "Take a breath."
-        appLine.text = "You reached for ${appName()}. Sit with it for a moment."
+        appLine.text = "You reached for ${targetLabel()}. Sit with it for a moment."
 
-        val wrap = LinearLayout(this).apply {
-            gravity = Gravity.CENTER
-            layoutParams = LinearLayout.LayoutParams(dp(150), dp(150)).also { it.topMargin = dp(28) }
-        }
-        val o = View(this).apply {
-            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(accent) }
-            layoutParams = LinearLayout.LayoutParams(dp(110), dp(110))
-        }
-        orb = o; wrap.addView(o); root.addView(wrap)
-
-        primaryBtn = filledButton("Turn back") { leave() }
+        primaryBtn = filledButton("No — I'm good", pop, 0xFF10160F.toInt()) { leave() }
         root.addView(primaryBtn, btnParams(topDp = 28))
 
         secondaryBtn = textButton("Wait ${PAUSE_SECONDS}s…") { if (canProceed) proceed() }.also {
             it.isEnabled = false; it.alpha = 0.5f
-            root.addView(it, btnParams(topDp = 12))
+            root.addView(it, btnParams(topDp = 10))
         }
 
         startBreathing()
@@ -158,17 +158,15 @@ class InterceptActivity : AppCompatActivity() {
     }
 
     private fun startBreathing() {
-        breath = ValueAnimator.ofFloat(0.7f, 1f).apply {
+        breath = ValueAnimator.ofFloat(0.86f, 1.06f).apply {
             duration = 4000; repeatMode = ValueAnimator.REVERSE; repeatCount = ValueAnimator.INFINITE
-            addUpdateListener { val v = it.animatedValue as Float; orb?.scaleX = v; orb?.scaleY = v }
+            addUpdateListener { val v = it.animatedValue as Float; frank.scaleX = v; frank.scaleY = v }
             start()
         }
     }
 
     // ----------------------------------------------------------------- exits
-    /** Turn back: go to the home screen so the blocked app is never revealed. */
     private fun leave() {
-        // Clear the debounce so an immediate re-tap of the same app re-intercepts (no bypass window).
         Enforcer.reset()
         cleanup()
         startActivity(Intent(Intent.ACTION_MAIN).apply {
@@ -177,7 +175,6 @@ class InterceptActivity : AppCompatActivity() {
         finish()
     }
 
-    /** Friction "open anyway": grant a short pass and reveal the app the user chose to enter. */
     private fun proceed() {
         Store.grantPass(pkg, GRANT_MINUTES)
         Enforcer.reset()
@@ -199,19 +196,19 @@ class InterceptActivity : AppCompatActivity() {
         packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
     } catch (_: Exception) { "this app" }
 
-    private fun btnParams(topDp: Int) = LinearLayout.LayoutParams(dp(260), ViewGroup.LayoutParams.WRAP_CONTENT)
+    private fun btnParams(topDp: Int) = LinearLayout.LayoutParams(dp(264), ViewGroup.LayoutParams.WRAP_CONTENT)
         .also { it.topMargin = dp(topDp) }
 
-    private fun filledButton(label: String, onTap: () -> Unit) = TextView(this).apply {
-        text = label; gravity = Gravity.CENTER; setTextColor(0xFF241C16.toInt()); textSize = 16f
-        typeface = Ui.sansMed(this@InterceptActivity)
-        background = GradientDrawable().apply { cornerRadius = dp(14).toFloat(); setColor(glow) }
-        setPadding(0, dp(15), 0, dp(15)); isClickable = true; isFocusable = true
+    private fun filledButton(label: String, fill: Int, textColor: Int, onTap: () -> Unit) = TextView(this).apply {
+        text = label; gravity = Gravity.CENTER; setTextColor(textColor); textSize = 16f
+        typeface = Ui.sansBold(this@InterceptActivity)
+        background = GradientDrawable().apply { cornerRadius = dp(16).toFloat(); setColor(fill) }
+        setPadding(0, dp(16), 0, dp(16)); isClickable = true; isFocusable = true
         setOnClickListener { Ui.haptic(this); onTap() }
     }
 
     private fun textButton(label: String, onTap: () -> Unit) = TextView(this).apply {
-        text = label; gravity = Gravity.CENTER; setTextColor(glow); textSize = 14f
+        text = label; gravity = Gravity.CENTER; setTextColor(soft); textSize = 14.5f
         typeface = Ui.sans(this@InterceptActivity); setPadding(0, dp(12), 0, dp(12)); isClickable = true
         setOnClickListener { Ui.haptic(this); onTap() }
     }
@@ -221,6 +218,7 @@ class InterceptActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_PKG = "pkg"
         const val EXTRA_MODE = "mode"
+        const val EXTRA_KIND = "kind"
         const val EXTRA_LEFT = "left"
         const val EXTRA_RULE = "rule"
         private const val PAUSE_SECONDS = 8

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Frank, inset into the adaptive-icon safe zone. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:drawable="@drawable/frank_normal"
+        android:gravity="center"
+        android:width="66dp"
+        android:height="66dp" />
+</layer-list>
